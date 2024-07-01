@@ -2,3 +2,4 @@ build/
 current_dist*/
 distributions/
 .DS_Store
+code/custom/custom_4coder.*
