@@ -458,7 +458,6 @@ typedef int socklen_t;
 //~ NOTE(rjf): 4coder Stuff
 #include "generated/managed_id_metadata.cpp"
 
-
 struct Command_Map_ID_Pair
 {
 	Command_Map_ID From;
@@ -554,7 +553,7 @@ F4_SetAbsolutelyNecessaryBindings(Mapping *mapping)
     
     SelectMap(file_map_id);
     ParentMap(global_map_id);
-    BindTextInput(fleury_write_text_input);
+    BindTextInput(f4_write_text_input);
     BindMouse(click_set_cursor_and_mark, MouseCode_Left);
     BindMouseRelease(click_set_cursor, MouseCode_Left);
     BindCore(click_set_cursor_and_mark, CoreCode_ClickActivateView);
@@ -562,7 +561,7 @@ F4_SetAbsolutelyNecessaryBindings(Mapping *mapping)
     
     SelectMap(code_map_id);
     ParentMap(file_map_id);
-    BindTextInput(fleury_write_text_and_auto_indent);
+    BindTextInput(f4_write_text_and_auto_indent);
     BindMouse(f4_lego_click_store_token_1, MouseCode_Right);
     BindMouse(f4_lego_click_store_token_2, MouseCode_Middle);
     
@@ -714,7 +713,7 @@ F4_SetDefaultBindings(Mapping *mapping)
     
     SelectMap(code_map_id);
     ParentMap(file_map_id);
-    BindTextInput(fleury_write_text_and_auto_indent);
+    BindTextInput(f4_write_text_and_auto_indent);
     Bind(move_left_alpha_numeric_boundary,           KeyCode_Left, KeyCode_Control);
     Bind(move_right_alpha_numeric_boundary,          KeyCode_Right, KeyCode_Control);
     Bind(move_left_alpha_numeric_or_camel_boundary,  KeyCode_Left, KeyCode_Alt);
@@ -810,8 +809,7 @@ IsFileReadable(String_Const_u8 path)
 }
 
 
-//~ NOTE(rjf): @f4_startup Whenever 4coder's core is ready for the custom layer to start up,
-// this is called.
+//~ NOTE(edye): @edye_startup called hen 4coder's core is ready for the custom layer to start up
 CUSTOM_COMMAND_SIG(edye_startup)
 CUSTOM_DOC("edye startup event")
 {

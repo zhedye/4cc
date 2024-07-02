@@ -21,7 +21,7 @@ struct Gap_Buffer{
     Base_Allocator *allocator;
     
     u8 *data;
-    i64 size1;
+    i64 size1; // TODO find where this is being set
     i64 gap_size;
     i64 size2;
     i64 max;
