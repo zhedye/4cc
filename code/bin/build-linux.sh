@@ -4,14 +4,15 @@
 set -e
 
 # Set up directories
-
 ME="$(readlink -f "$0")"
 LOCATION="$(dirname "$ME")"
 SRC_ROOT="$(dirname "$LOCATION")"
 PROJECT_ROOT="$(dirname "$SRC_ROOT")"
+
 if [ ! -d "$PROJECT_ROOT/build" ]; then
 mkdir "$PROJECT_ROOT/build"
 fi
+
 BUILD_ROOT="$PROJECT_ROOT/build"
 BIN_ROOT="$SRC_ROOT/bin"
 CUSTOM_ROOT="$SRC_ROOT/custom"
