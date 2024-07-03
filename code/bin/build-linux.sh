@@ -30,6 +30,8 @@ INCLUDES="-I$SRC_ROOT -I$CUSTOM_ROOT"
 
 # Execute
 g++ $WARNINGS $FLAGS $INCLUDES "$BIN_ROOT/4ed_build.cpp" -g -o "$BUILD_ROOT/build"
+
+echo "Running $BUILD_ROOT/build ... "
 pushd "$SRC_ROOT"
 "$BUILD_ROOT/build"
 popd
