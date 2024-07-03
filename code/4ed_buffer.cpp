@@ -611,14 +611,13 @@ buffer_cursor_from_pos(Gap_Buffer *buffer, i64 pos){
 
 internal Buffer_Cursor
 buffer_cursor_from_line_col(Gap_Buffer *buffer, i64 line, i64 col){
-    i64 size = buffer_size(buffer); // TODO for README.md, buffer size is larger than the file. Why? how are the sizes of this buffer beings set
+    i64 size = buffer_size(buffer);
     i64 line_index = line - 1;
     i64 line_count = buffer_line_count(buffer);
     line_index = clamp(0, line_index, line_count - 1);
     
     i64 this_start = buffer->line_starts[line_index];
-    i64 max_col = (buffer->line_starts[line_index + 1] - this_start); // TODO edye fix
-    error
+    i64 max_col = (buffer->line_starts[line_index + 1] - this_start);
     if (line_index + 1 == line_count){
         max_col += 1;
     }

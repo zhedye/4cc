@@ -675,6 +675,7 @@ function BUFFER_HOOK_SIG(F4_BeginBuffer)
     }
     
     // NOTE(rjf): Treat as code if we've identified the language of a file.
+    /* // TODO(edye): hidden extra code checking which files to treat as code
     if(treat_as_code == false)
     {
         F4_Language *language = F4_LanguageFromBuffer(app, buffer_id);
@@ -683,6 +684,7 @@ function BUFFER_HOOK_SIG(F4_BeginBuffer)
             treat_as_code = true;
         }
     }
+    */
     
     String_ID file_map_id = vars_save_string_lit("keys_file");
     String_ID code_map_id = vars_save_string_lit("keys_code");
