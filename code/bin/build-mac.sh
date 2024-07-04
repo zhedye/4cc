@@ -25,10 +25,11 @@ fi
 
 WARNINGS="-Wno-write-strings -Wno-comment -Wno-null-dereference -Wno-logical-op-parentheses -Wno-switch"
 
-FLAGS="-D_GNU_SOURCE -fPIC -fpermissive $BUILD_MODE"
+FLAGS="-O0 -D_GNU_SOURCE -fPIC -fpermissive $BUILD_MODE"
 INCLUDES="-I$SRC_ROOT -I$CUSTOM_ROOT"
 
 # Execute
+echo "Running $BIN_ROOT/build ... "
 clang++ $WARNINGS $FLAGS $INCLUDES "$BIN_ROOT/4ed_build.cpp" -g -o "$BUILD_ROOT/build"
 pushd "$SRC_ROOT"
 "$BUILD_ROOT/build"
