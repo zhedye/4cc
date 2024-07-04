@@ -149,6 +149,7 @@ keys_file =
     
     // NOTE(rjf): Insertion
     { "duplicate_line",              "L", "Control" },
+    { "combine_line",                "L", "Control", "Shift" },
     
     // NOTE(rjf): View
     { "center_view",                 "E", "Control" },
@@ -165,6 +166,7 @@ keys_file =
     
     // NOTE(rjf): Meta
     { "swap_panels",                 "2", "Control" },
+    { "quick_swap_buffer",           "3", "Control" },
     { "if_read_only_goto_position",  "Return" },
     { "if_read_only_goto_position_same_panel", "Return", "Shift" },
     { "view_jump_list_with_lister",  "Period", "Control", "Shift" },

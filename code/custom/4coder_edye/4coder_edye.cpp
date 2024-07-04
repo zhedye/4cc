@@ -525,6 +525,62 @@ F4_ImplicitMap(Application_Links *app, String_ID lang, String_ID mode, Input_Eve
     return(result);
 }
 
+function b32
+combine_line_inner(Application_Links *app, View_ID view, Buffer_ID buffer, i64 line_num){
+	if(!is_valid_line(app, buffer, line_num+1)){ return true; }
+	i64 pos = get_line_end_pos(app, buffer, line_num);
+	Range_i64 range = {};
+	range.min = pos;
+    
+	i64 new_pos = pos + 1;
+	String_Const_u8 delimiter = string_u8_litexpr(" ");
+	if(!line_is_valid_and_blank(app, buffer, line_num+1)){
+		if(character_is_whitespace(buffer_get_char(app, buffer, new_pos))){
+			new_pos = buffer_seek_character_class_change_1_0(app, buffer, &character_predicate_whitespace, Scan_Forward, new_pos);
+		}
+	}else{
+		new_pos = get_line_end_pos(app, buffer, line_num+1);
+		delimiter.size = 0;
+	}
+	i64 end_pos = get_line_side_pos_from_pos(app, buffer, pos, Side_Max);
+	view_set_cursor_and_preferred_x(app, view, seek_pos(end_pos));
+	move_right(app);
+    
+	range.max = new_pos;
+    
+	buffer_replace_range(app, buffer, range, delimiter);
+    
+	return false;
+}
+
+CUSTOM_COMMAND_SIG(combine_line)
+CUSTOM_DOC("Combine/join lines togther like in vim.")
+{
+    View_ID view = get_active_view(app, Access_ReadWriteVisible);
+	Buffer_ID buffer = view_get_buffer(app, view, Access_ReadWriteVisible);
+	if(buffer == 0){ return; }
+	i64 pos = view_get_cursor_pos(app, view);
+	i64 line = buffer_compute_cursor(app, buffer, seek_pos(pos)).line;
+    
+	i32 N = 1;
+    
+    Range_i64 range = get_view_range(app, view);
+    i64 line_min = get_line_number_from_pos(app, buffer, range.min);
+    i64 line_max = get_line_number_from_pos(app, buffer, range.max);
+    N = Max(1, i32(line_max-line_min));
+    view_set_cursor_and_preferred_x(app, view, seek_pos(range.min));
+    view_set_mark(app, view, seek_pos(range.max));
+    line = line_min;
+    
+	History_Group history_group = history_group_begin(app, buffer);
+	for(i32 i=0; i < N; i++){
+		if(combine_line_inner(app, view, buffer, line)){
+			break;
+		}
+	}
+	if(N > 1){ history_group_end(history_group); }
+}
+
 
 //~ NOTE(rjf): Bindings
 
