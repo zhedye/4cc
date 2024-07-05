@@ -562,12 +562,10 @@ CUSTOM_DOC("Combine/join lines togther like in vim.")
 	i64 pos = view_get_cursor_pos(app, view);
 	i64 line = buffer_compute_cursor(app, buffer, seek_pos(pos)).line;
     
-	i32 N = 1;
-    
     Range_i64 range = get_view_range(app, view);
     i64 line_min = get_line_number_from_pos(app, buffer, range.min);
     i64 line_max = get_line_number_from_pos(app, buffer, range.max);
-    N = Max(1, i32(line_max-line_min));
+    i32 N = Max(1, i32(line_max-line_min));
     view_set_cursor_and_preferred_x(app, view, seek_pos(range.min));
     view_set_mark(app, view, seek_pos(range.max));
     line = line_min;
@@ -581,6 +579,398 @@ CUSTOM_DOC("Combine/join lines togther like in vim.")
 	if(N > 1){ history_group_end(history_group); }
 }
 
+#if 0
+function void
+F4_Render(Application_Links *app, Frame_Info frame_info, View_ID view_id)
+{
+    F4_RecentFiles_RefreshView(app, view_id);
+    
+    ProfileScope(app, "[Fleury] Render");
+    Scratch_Block scratch(app);
+    
+    View_ID active_view = get_active_view(app, Access_Always);
+    b32 is_active_view = (active_view == view_id);
+    
+    f32 margin_size = (f32)def_get_config_u64(app, vars_save_string_lit("f4_margin_size"));
+    Rect_f32 view_rect = view_get_screen_rect(app, view_id);
+    Rect_f32 region = rect_inner(view_rect, margin_size);
+    
+    Buffer_ID buffer = view_get_buffer(app, view_id, Access_Always);
+    String_Const_u8 buffer_name = push_buffer_base_name(app, scratch, buffer);
+    
+    //~ NOTE(rjf): Draw background.
+    {
+        ARGB_Color color = fcolor_resolve(fcolor_id(defcolor_back));
+        if(string_match(buffer_name, string_u8_litexpr("*compilation*")))
+        {
+            color = color_blend(color, 0.5f, 0xff000000);
+        }
+        // NOTE(rjf): Inactive background color.
+        else if(is_active_view == 0)
+        {
+            ARGB_Color inactive_bg_color = fcolor_resolve(fcolor_id(fleury_color_inactive_pane_background));
+            if(F4_ARGBIsValid(inactive_bg_color))
+            {
+                color = inactive_bg_color;
+            }
+        }
+        draw_rectangle(app, region, 0.f, color);
+        draw_margin(app, view_rect, region, color);
+    }
+    
+    //~ NOTE(rjf): Draw margin.
+    {
+        ARGB_Color color = fcolor_resolve(fcolor_id(defcolor_margin));
+        if(def_get_config_b32(vars_save_string_lit("f4_margin_use_mode_color")) &&
+           is_active_view)
+        {
+            color = F4_GetColor(app, ColorCtx_Cursor(power_mode.enabled ? ColorFlag_PowerMode : 0,
+                                                     GlobalKeybindingMode));
+        }
+        draw_margin(app, view_rect, region, color);
+    }
+    
+    Rect_f32 prev_clip = draw_set_clip(app, region);
+    
+    Face_ID face_id = get_face_id(app, buffer);
+    Face_Metrics face_metrics = get_face_metrics(app, face_id);
+    f32 line_height = face_metrics.line_height;
+    f32 digit_advance = face_metrics.decimal_digit_advance;
+    
+    // NOTE(allen): file bar
+    b64 showing_file_bar = false;
+    if(view_get_setting(app, view_id, ViewSetting_ShowFileBar, &showing_file_bar) && showing_file_bar)
+    {
+        Rect_f32_Pair pair = layout_file_bar_on_top(region, line_height);
+        F4_DrawFileBar(app, view_id, buffer, face_id, pair.min);
+        region = pair.max;
+    }
+    
+    Buffer_Scroll scroll = view_get_buffer_scroll(app, view_id);
+    Buffer_Point_Delta_Result delta = delta_apply(app, view_id, frame_info.animation_dt, scroll);
+    
+    if(!block_match_struct(&scroll.position, &delta.point))
+    {
+        block_copy_struct(&scroll.position, &delta.point);
+        view_set_buffer_scroll(app, view_id, scroll, SetBufferScroll_NoCursorChange);
+    }
+    
+    if(delta.still_animating)
+    {
+        animate_in_n_milliseconds(app, 0);
+    }
+    
+    // NOTE(allen): query bars
+    {
+        Query_Bar *space[32];
+        Query_Bar_Ptr_Array query_bars = {};
+        query_bars.ptrs = space;
+        if (get_active_query_bars(app, view_id, ArrayCount(space), &query_bars))
+        {
+            for (i32 i = 0; i < query_bars.count; i += 1)
+            {
+                Rect_f32_Pair pair = layout_query_bar_on_top(region, line_height, 1);
+                draw_query_bar(app, query_bars.ptrs[i], face_id, pair.min);
+                region = pair.max;
+            }
+        }
+    }
+    
+    // NOTE(allen): FPS hud
+    if(show_fps_hud)
+    {
+        Rect_f32_Pair pair = layout_fps_hud_on_bottom(region, line_height);
+        draw_fps_hud(app, frame_info, face_id, pair.max);
+        region = pair.min;
+        animate_in_n_milliseconds(app, 1000);
+    }
+    
+    // NOTE(allen): layout line numbers
+    Rect_f32 line_number_rect = {};
+    if(def_get_config_b32(vars_save_string_lit("show_line_number_margins")))
+    {
+        Rect_f32_Pair pair = layout_line_number_margin(app, buffer, region, digit_advance);
+        line_number_rect = pair.min;
+        line_number_rect.x1 += 4;
+        region = pair.max;
+    }
+    
+    // NOTE(allen): begin buffer render
+    Buffer_Point buffer_point = scroll.position;
+    if(is_active_view)
+    {
+        buffer_point.pixel_shift.y += F4_PowerMode_ScreenShake()*1.f;
+    }
+    Text_Layout_ID text_layout_id = text_layout_create(app, buffer, region, buffer_point);
+    
+    // NOTE(allen): draw line numbers
+    if(def_get_config_b32(vars_save_string_lit("show_line_number_margins")))
+    {
+        draw_line_number_margin(app, view_id, buffer, face_id, text_layout_id, line_number_rect);
+    }
+    
+    // NOTE(allen): draw the buffer
+    F4_RenderBuffer(app, view_id, face_id, buffer, text_layout_id, region, frame_info);
+    
+    // NOTE(rjf): Render command server
+#if OS_WINDOWS
+    CS_render_caller(app, frame_info, view_id);
+#endif
+    
+    text_layout_free(app, text_layout_id);
+    draw_set_clip(app, prev_clip);
+}
+
+function void
+byp_render_buffer(Application_Links *app, View_ID view_id, Face_ID face_id, Buffer_ID buffer, Text_Layout_ID text_layout_id, Rect_f32 rect){
+	ProfileScope(app, "render buffer");
+	b32 is_active_view = view_id == get_active_view(app, Access_Always);
+	Rect_f32 prev_clip = draw_set_clip(app, rect);
+
+	Range_i64 visible_range = text_layout_get_visible_range(app, text_layout_id);
+
+	Face_Metrics metrics = get_face_metrics(app, face_id);
+	u64 cursor_roundness_100 = def_get_config_u64(app, vars_save_string_lit("cursor_roundness"));
+	f32 cursor_roundness = metrics.normal_advance*cursor_roundness_100*0.01f;
+	f32 mark_thickness = (f32)def_get_config_u64(app, vars_save_string_lit("mark_thickness"));
+
+	i64 cursor_pos = view_correct_cursor(app, view_id);
+	view_correct_mark(app, view_id);
+
+	b32 use_scope_highlight = def_get_config_b32(vars_save_string_lit("use_scope_highlight"));
+	if(use_scope_highlight){
+		Color_Array colors = finalize_color_array(defcolor_back_cycle);
+		draw_scope_highlight(app, buffer, text_layout_id, cursor_pos, colors.vals, colors.count);
+	}
+
+	b32 highlight_line_at_cursor = def_get_config_b32(vars_save_string_lit("highlight_line_at_cursor"));
+	if(highlight_line_at_cursor && is_active_view){
+		i64 line_number = get_line_number_from_pos(app, buffer, cursor_pos);
+		draw_line_highlight(app, text_layout_id, line_number, fcolor_id(defcolor_highlight_cursor_line));
+	}
+
+	if(is_active_view && byp_col_cursor.pos > 0){
+		byp_col_cursor = buffer_compute_cursor(app, buffer, seek_line_col(byp_col_cursor.line, byp_col_cursor.col));
+
+		i64 rel_pos = cursor_pos;
+		Rect_f32 rel_rect = text_layout_character_on_screen(app, text_layout_id, rel_pos);
+
+		i64 line = get_line_number_from_pos(app, buffer, rel_pos);
+		Vec2_f32 col_rel = view_relative_xy_of_pos(app, view_id, line, byp_col_cursor.pos);
+		Vec2_f32 rel_point = view_relative_xy_of_pos(app, view_id, line, rel_pos);
+		Rect_f32 col_highlight_rect = {};
+		col_highlight_rect.p0 = (rel_rect.p0 - rel_point) + col_rel;
+		col_highlight_rect.p1 = (rel_rect.p1 - rel_point) + col_rel;
+		col_highlight_rect.y0 = rect.y0;
+		col_highlight_rect.y1 = rect.y1;
+
+		draw_rectangle_fcolor(app, col_highlight_rect, 0.f, fcolor_id(defcolor_highlight_cursor_line));
+	}
+
+	Token_Array token_array = get_token_array_from_buffer(app, buffer);
+	if(token_array.tokens == 0){
+		paint_text_color_fcolor(app, text_layout_id, visible_range, fcolor_id(defcolor_text_default));
+	}else{
+		byp_draw_token_colors(app, view_id, buffer, text_layout_id);
+		byp_draw_comments(app, buffer, text_layout_id, &token_array, rect);
+	}
+
+	b32 use_error_highlight = def_get_config_b32(vars_save_string_lit("use_error_highlight"));
+	b32 use_jump_highlight  = def_get_config_b32(vars_save_string_lit("use_jump_highlight"));
+	if(use_error_highlight || use_jump_highlight){
+		Buffer_ID comp_buffer = get_buffer_by_name(app, string_u8_litexpr("*compilation*"), Access_Always);
+		if(use_error_highlight){
+			draw_jump_highlights(app, buffer, text_layout_id, comp_buffer, fcolor_id(defcolor_highlight_junk));
+			byp_draw_compile_errors(app, buffer, text_layout_id, comp_buffer);
+		}
+
+		if(use_jump_highlight){
+			Buffer_ID jump_buffer = get_locked_jump_buffer(app);
+			if(jump_buffer != comp_buffer){
+				draw_jump_highlights(app, buffer, text_layout_id, jump_buffer, fcolor_id(defcolor_highlight_white));
+			}
+		}
+	}
+
+	b32 use_paren_helper = def_get_config_b32(vars_save_string_lit("use_paren_helper"));
+	if(use_paren_helper){
+		Color_Array colors = finalize_color_array(defcolor_text_cycle);
+		draw_paren_highlight(app, buffer, text_layout_id, cursor_pos, colors.vals, colors.count);
+	}
+
+	byp_draw_scope_brackets(app, view_id, buffer, text_layout_id, rect, cursor_pos);
+
+	b64 show_whitespace = false;
+	view_get_setting(app, view_id, ViewSetting_ShowWhitespace, &show_whitespace);
+	if(show_whitespace){
+		if(token_array.tokens == 0){
+			draw_whitespace_highlight(app, buffer, text_layout_id, cursor_roundness);
+		}else{
+			draw_whitespace_highlight(app, text_layout_id, &token_array, cursor_roundness);
+		}
+	}
+
+    // TODO (edye) i want this color hex preview.
+	if(byp_show_hex_colors){
+		byp_hex_color_preview(app, buffer, text_layout_id);
+	}
+
+	if(is_active_view && vim_state.mode == VIM_Visual){
+		vim_draw_visual_mode(app, view_id, buffer, face_id, text_layout_id);
+	}
+
+	fold_draw(app, buffer, text_layout_id);
+
+	vim_draw_search_highlight(app, view_id, buffer, text_layout_id, cursor_roundness);
+
+	switch(fcoder_mode){
+		case FCoderMode_Original:
+		vim_draw_cursor(app, view_id, is_active_view, buffer, text_layout_id, cursor_roundness, mark_thickness); break;
+		case FCoderMode_NotepadLike:
+		draw_notepad_style_cursor_highlight(app, view_id, buffer, text_layout_id, cursor_roundness); break;
+	}
+
+
+	paint_fade_ranges(app, text_layout_id, buffer);
+	draw_text_layout_default(app, text_layout_id);
+
+	vim_draw_after_text(app, view_id, is_active_view, buffer, text_layout_id, cursor_roundness, mark_thickness);
+	if(is_active_view){
+		byp_draw_function_preview(app, buffer, If32(rect.x0, rect.x1), cursor_pos);
+	}
+
+	draw_set_clip(app, prev_clip);
+}
+
+function void
+byp_render_caller(Application_Links *app, Frame_Info frame_info, View_ID view_id){
+	ProfileScope(app, "default render caller");
+
+	Buffer_ID buffer = view_get_buffer(app, view_id, Access_Always);
+
+	Face_ID face_id = get_face_id(app, 0);
+	Face_Metrics face_metrics = get_face_metrics(app, face_id);
+	f32 line_height = face_metrics.line_height;
+	f32 digit_advance = face_metrics.decimal_digit_advance;
+
+	Rect_f32 region = view_get_screen_rect(app, view_id);
+	Rect_f32 prev_clip = draw_set_clip(app, region);
+
+	Rect_f32 global_rect = global_get_screen_rectangle(app);
+	f32 filebar_y = global_rect.y1 - 2.f*line_height - vim_cur_filebar_offset;
+	if(region.y1 >= filebar_y){ region.y1 = filebar_y; }
+
+	draw_rectangle_fcolor(app, region, 0.f, fcolor_id(defcolor_back));
+
+	region = vim_draw_query_bars(app, region, view_id, face_id);
+
+	{
+		Rect_f32_Pair pair = layout_file_bar_on_bot(region, line_height);
+		pair.b = rect_split_top_bottom(pair.b, line_height).a;
+		vim_draw_filebar(app, view_id, buffer, frame_info, face_id, pair.b);
+		region = pair.a;
+	}
+
+	Rect_f32_Pair scrollbar_pair = byp_layout_scrollbars(region, digit_advance);
+	i64 show_scrollbar = false;
+	view_get_setting(app, view_id, ViewSetting_ShowScrollbar, &show_scrollbar);
+	show_scrollbar &= byp_show_scrollbars;
+	if(show_scrollbar){
+		region = scrollbar_pair.a;
+	}
+	draw_set_clip(app, region);
+
+	// Draw borders
+	if(region.x0 > global_rect.x0){
+		Rect_f32_Pair border_pair = rect_split_left_right(region, 2.f);
+		draw_rectangle_fcolor(app, border_pair.a, 0.f, fcolor_id(defcolor_margin));
+		region = border_pair.b;
+	}
+	if(region.x1 < global_rect.x1){
+		Rect_f32_Pair border_pair = rect_split_left_right_neg(region, 2.f);
+		draw_rectangle_fcolor(app, border_pair.b, 0.f, fcolor_id(defcolor_margin));
+		region = border_pair.a;
+	}
+	region.y0 += 3.f;
+
+
+	if(show_fps_hud){
+		Rect_f32_Pair pair = layout_fps_hud_on_bottom(region, line_height);
+		draw_fps_hud(app, frame_info, face_id, pair.max);
+		region = pair.min;
+		animate_in_n_milliseconds(app, 1000);
+	}
+
+	// NOTE(allen): layout line numbers
+	b32 show_line_number_margins = def_get_config_b32(vars_save_string_lit("show_line_number_margins"));
+	Rect_f32_Pair pair = (show_line_number_margins ?
+						  (byp_relative_numbers ?
+						   vim_line_number_margin(app, buffer, region, digit_advance) :
+						   layout_line_number_margin(app, buffer, region, digit_advance)) :
+						  rect_split_left_right(region, 1.5f*digit_advance));
+	Rect_f32 line_number_rect = pair.min;
+	region = pair.max;
+
+	Buffer_Scroll scroll = view_get_buffer_scroll(app, view_id);
+	Buffer_Point_Delta_Result delta = delta_apply(app, view_id, frame_info.animation_dt, scroll);
+	if(!block_match_struct(&scroll.position, &delta.point)){
+		block_copy_struct(&scroll.position, &delta.point);
+		view_set_buffer_scroll(app, view_id, scroll, SetBufferScroll_NoCursorChange);
+	}
+	if(delta.still_animating){ animate_in_n_milliseconds(app, 0); }
+	Buffer_Point buffer_point = scroll.position;
+	Text_Layout_ID text_layout_id = text_layout_create(app, buffer, region, buffer_point);
+
+	if(show_line_number_margins){
+		if(byp_relative_numbers)
+			vim_draw_rel_line_number_margin(app, view_id, buffer, face_id, text_layout_id, line_number_rect);
+		else
+			vim_draw_line_number_margin(app, view_id, buffer, face_id, text_layout_id, line_number_rect);
+	}else{
+		draw_rectangle_fcolor(app, line_number_rect, 0.f, fcolor_id(defcolor_back));
+	}
+
+	if(show_scrollbar){
+		byp_draw_scrollbars(app, view_id, buffer, text_layout_id, scrollbar_pair.b);
+	}
+
+	if(byp_drop_shadow){
+		Buffer_Point shadow_point = buffer_point;
+		Face_Description desc = get_face_description(app, face_id);
+		shadow_point.pixel_shift -= Max((f32(desc.parameters.pt_size) / 8), 1.f)*V2f32(1.f, 1.f);
+		Text_Layout_ID shadow_layout_id = text_layout_create(app, buffer, region, shadow_point);
+		paint_text_color(app, shadow_layout_id, text_layout_get_visible_range(app, text_layout_id), 0xBB000000);
+		draw_text_layout_default(app, shadow_layout_id);
+		text_layout_free(app, shadow_layout_id);
+	}
+
+	byp_render_buffer(app, view_id, face_id, buffer, text_layout_id, region);
+
+	/// NOTE(BYP): If 4coder gets even smaller fonts (smaller than u32=0) this *might* be viable
+	if(false){
+		Buffer_Point point = {};
+		Rect_f32 prev_region = rect_split_left_right_neg(region, 190.f).b;
+		prev_region.x1 -= 10.f;
+		Face_ID prev_face = get_face_id(app, buffer);
+		buffer_set_face(app, buffer, byp_minimal_face);
+		Text_Layout_ID layout_id = text_layout_create(app, buffer, prev_region, point);
+
+		draw_rectangle(app, rect_inner(prev_region, -10.f), 5.f, 0x44000000);
+
+		i32 prev_mode = fcoder_mode;
+		fcoder_mode = 20; // Just don't render/update the cursor
+		byp_render_buffer(app, view_id, byp_minimal_face, buffer, layout_id, prev_region);
+		fcoder_mode = prev_mode;
+
+		buffer_set_face(app, buffer, prev_face);
+		text_layout_free(app, layout_id);
+	}
+
+
+	text_layout_free(app, text_layout_id);
+	draw_set_clip(app, prev_clip);
+}
+#endif
 
 //~ NOTE(rjf): Bindings
 

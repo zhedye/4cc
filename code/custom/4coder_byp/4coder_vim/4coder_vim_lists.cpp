@@ -48,6 +48,7 @@ vim_get_command_from_user(Application_Links *app, i32 *command_ids, i32 command_
 	return (l_result.canceled ? 0 : (Custom_Command_Function *)l_result.user_data);
 }
 
+// TODO (edye) : how do get a bottom lister
 CUSTOM_UI_COMMAND_SIG(vim_command_mode)
 CUSTOM_DOC("Enter Command Mode")
 {
