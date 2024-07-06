@@ -669,11 +669,11 @@ map_set_binding_text_input(Mapping *mapping, Command_Map_ID map_id, Command_Bind
 function void
 command_trigger_stringize_mods(Arena *arena, List_String_Const_u8 *list, Input_Modifier_Set *modifiers){
     if (modifiers->count > 0){
-        string_list_push(arena, list, string_u8_litexpr(" holding:"));
+        // string_list_push(arena, list, string_u8_litexpr(" holding:"));
         i32 count = modifiers->count;
         Key_Code *mods = modifiers->mods;
         for (i32 i = 0; i < count; i += 1){
-            string_list_pushf(arena, list, " %s", ArraySafe(key_code_name, mods[i]));
+            string_list_pushf(arena, list, "%s ", ArraySafe(key_code_name, mods[i]));
         }
     }
 }
@@ -690,38 +690,38 @@ command_trigger_stringize(Arena *arena, List_String_Const_u8 *list, Command_Trig
         case InputEventKind_KeyStroke:
         {
             String_Const_u8 key_name = SCu8(ArraySafe(key_code_name, trigger->sub_code));
-            string_list_push(arena, list, key_name);
             command_trigger_stringize_mods(arena, list, &trigger->mods);
+            string_list_push(arena, list, key_name);
         }break;
         
         case InputEventKind_KeyRelease:
         {
-            string_list_pushf(arena, list, "Release %s", ArraySafe(key_code_name, trigger->sub_code));
             command_trigger_stringize_mods(arena, list, &trigger->mods);
+            string_list_pushf(arena, list, "Release %s", ArraySafe(key_code_name, trigger->sub_code));
         }break;
         
         case InputEventKind_MouseButton:
         {
-            string_list_pushf(arena, list, "Mouse %s", ArraySafe(mouse_code_name, trigger->sub_code));
             command_trigger_stringize_mods(arena, list, &trigger->mods);
+            string_list_pushf(arena, list, "Mouse %s", ArraySafe(mouse_code_name, trigger->sub_code));
         }break;
         
         case InputEventKind_MouseButtonRelease:
         {
-            string_list_pushf(arena, list, "Release Mouse %s", ArraySafe(mouse_code_name, trigger->sub_code));
             command_trigger_stringize_mods(arena, list, &trigger->mods);
+            string_list_pushf(arena, list, "Release Mouse %s", ArraySafe(mouse_code_name, trigger->sub_code));
         }break;
         
         case InputEventKind_MouseWheel:
         {
-            string_list_push(arena, list, string_u8_litexpr("MouseWheel"));
             command_trigger_stringize_mods(arena, list, &trigger->mods);
+            string_list_push(arena, list, string_u8_litexpr("MouseWheel"));
         }break;
         
         case InputEventKind_MouseMove:
         {
-            string_list_push(arena, list, string_u8_litexpr("MouseMove"));
             command_trigger_stringize_mods(arena, list, &trigger->mods);
+            string_list_push(arena, list, string_u8_litexpr("MouseMove"));
         }break;
         
         case InputEventKind_Core:
