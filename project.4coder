@@ -1,0 +1,46 @@
+version(2);
+project_name = "4coder";
+
+patterns = {
+ "*.c",
+ "*.cpp",
+ "*.h",
+ "*.m",
+ "*.mm",
+ "*.bat",
+ "*.sh",
+ "*.4coder",
+ "*.txt",
+};
+blacklist_patterns = {
+ ".*",
+};
+
+load_paths = {
+ .win = {
+  { .path = "./code", .recursive = true, .relative = true, },
+ },
+ .linux = {
+  { .path = "./code", .recursive = true, .relative = true, },
+ },
+ .mac = {
+  { .path = "./code", .recursive = true, .relative = true, },
+ },
+};
+
+
+commands = {
+    .build_x64 = {
+        .win = "echo build: x64 & build.bat",
+        .linux = "echo build: x64 && build-linux.sh",
+        .mac = "echo build: x64 && build-mac.sh",
+        .out = "*compilation*",
+        .footer_panel = true,
+        .save_dirty_files = true,
+        .cursor_at_end = false,
+    },
+};
+
+fkey_command = {
+    .F1 = "build_x64",
+};
