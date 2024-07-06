@@ -203,6 +203,7 @@ calc_col_row(Application_Links *app, Lister *lister){
 }
 
 // TODO(BYP): Be more rigorous here. I'm sure there are off-by-1's and other incorrect assumptions
+// TODO(edye): how do i use this? this is what i want to modify
 function void
 vim_lister_render(Application_Links *app, Frame_Info frame_info, View_ID view){
 	Scratch_Block scratch(app);
