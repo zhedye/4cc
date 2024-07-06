@@ -5,9 +5,13 @@ set -e
 # directories
 
 ME="$(readlink -f "$0")" # absolute path to script
-LOCATION="$(dirname "$ME")" # absolute path to root directory 
+
+# absolute path to root directory, /home/user/code/4cc 
+LOCATION="$(dirname "$ME")" 
 SRC_ROOT="$LOCATION/code"
-PROJECT_ROOT="$(dirname "$SRC_ROOT")" # relative path to root
+
+# relative path to root directory of the project, ./
+PROJECT_ROOT="$(dirname "$SRC_ROOT")"
 
 if [ ! -d "$PROJECT_ROOT/build" ]; then
 	mkdir "$PROJECT_ROOT/build"

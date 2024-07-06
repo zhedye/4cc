@@ -34,7 +34,9 @@ keys_global =
     // NOTE(rjf): Commands
     { "execute_any_cli",                          "Z",      "Alt"                      },
     { "execute_previous_cli",                     "Z",      "Alt",     "Shift"         },
-    { "command_lister",                           "Space", "Control"},
+    { "command_lister",                           "X", "Alt"},
+    { "command_lister",                           "Space", "Alt"},
+    { "command_lister",                           "Space", "Command"},
     
     // NOTE(rjf): Project
     { "build_in_build_panel",                     "M",      "Alt"                      },
@@ -111,8 +113,7 @@ keys_file =
     { "goto_end_of_file",       "PageDown", "Control" },
     
     // NOTE(rjf): Mark
-    // { "set_mark",                    "Space", "Control" },
-    { "set_mark",                    "X", "Alt" },
+    { "set_mark",                    "Space", "Control" },
     { "cursor_mark_swap",            "M", "Control" },
     
     // NOTE(rjf): Search
