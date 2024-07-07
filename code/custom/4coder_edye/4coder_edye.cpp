@@ -440,6 +440,22 @@ CUSTOM_ID(colors, defcolor_non_text);
 #include "../4coder_byp/4coder_vimrc.h"
 #include "../4coder_byp/4coder_vim/4coder_vim_include.h"
 
+#include "../4coder_byp/4coder_byp_helper.h"
+
+#include "../4coder_byp/4coder_byp_token.h"
+#include "../4coder_byp/4coder_byp_token.cpp"
+
+#include "../4coder_byp/4coder_byp_build.cpp"
+#include "../4coder_byp/4coder_byp_colors.cpp"
+#include "../4coder_byp/4coder_byp_commands.cpp"
+
+#include "../4coder_byp/4coder_byp_draw.cpp"
+#include "../4coder_byp/4coder_byp_game.cpp"
+
+#include "../4coder_byp/4coder_byp_bindings.cpp"
+#include "../4coder_byp/4coder_byp_hooks.cpp"
+
+
 //~ NOTE(rjf): @f4_src
 #include "../4coder_fleury/4coder_fleury_ubiquitous.cpp"
 #include "../4coder_fleury/4coder_fleury_audio.cpp"
@@ -596,8 +612,9 @@ CUSTOM_DOC("Combine/join lines togther like in vim.")
 
 #define foreach(i,N) for(i32 i=0; i<N; i++)
 
+// NOTE: byp_hex_color_preview
 function void
-byp_hex_color_preview(Application_Links *app, Buffer_ID buffer_id, Text_Layout_ID text_layout_id){
+hex_color_preview(Application_Links *app, Buffer_ID buffer_id, Text_Layout_ID text_layout_id){
 	Scratch_Block scratch(app);
 	Range_i64 visible_range = text_layout_get_visible_range(app, text_layout_id);
 	u8 *text = push_buffer_range(app, scratch, buffer_id, visible_range).str;
@@ -808,8 +825,7 @@ edye_render_buffer(Application_Links *app, View_ID view_id, Face_ID face_id,
         F4_RenderFlashes(app, view_id, text_layout_id);
     }
     
-    // TODO does this work?
-    byp_hex_color_preview(app, buffer, text_layout_id);
+    hex_color_preview(app, buffer, text_layout_id);
     
     // NOTE(allen): Color parens
     if(def_get_config_b32(vars_save_string_lit("use_paren_helper")))
@@ -1207,7 +1223,11 @@ vim_lister_render(Application_Links *app, Frame_Info frame_info, View_ID view){
 	i32 first_index = (i32)(col_num*scroll_y/(block_height));
 	
 	f32 x_base = region.x0;
-	f32 y_base = region.y1 - vim_cur_filebar_offset;
+    // TODO if vim_cur_filebar_offset == 0, then the lister gets drawn below the view
+    // in byp the filebar is a the bottom so somehow it's being shift upwards when the lister is called.
+    // bottom vs top filebar, doesn't really matter to me i guess.
+    error
+	f32 y_base = region.y1 - vim_cur_filebar_offset; 
 	f32 block_width = rect_width(region)/col_num;
 	Rect_f32 back_rect = region;
 	back_rect.y0 = y_base;
@@ -1975,12 +1995,31 @@ void custom_layer_init(Application_Links *app)
     // NOTE(rjf): Set up hooks.
     {
         set_all_default_hooks(app);
+
+// TODO remove
+
+	vim_buffer_peek_list[ArrayCount(vim_default_peek_list) + 0] = BYP_peek_list[0];
+	vim_buffer_peek_list[ArrayCount(vim_default_peek_list) + 1] = BYP_peek_list[1];
+	vim_request_vtable[VIM_REQUEST_COUNT + BYP_REQUEST_Title]   = byp_apply_title;
+	vim_request_vtable[VIM_REQUEST_COUNT + BYP_REQUEST_Comment] = byp_apply_comment;
+	vim_request_vtable[VIM_REQUEST_COUNT + BYP_REQUEST_UnComment] = byp_apply_uncomment;
+
+	vim_text_object_vtable[VIM_TEXT_OBJECT_COUNT + BYP_OBJECT_param0] = {',', (Vim_Text_Object_Func *)byp_object_param};
+	vim_text_object_vtable[VIM_TEXT_OBJECT_COUNT + BYP_OBJECT_param1] = {';', (Vim_Text_Object_Func *)byp_object_param};
+	vim_text_object_vtable[VIM_TEXT_OBJECT_COUNT + BYP_OBJECT_camel0] = {'_', (Vim_Text_Object_Func *)byp_object_camel};
+	vim_text_object_vtable[VIM_TEXT_OBJECT_COUNT + BYP_OBJECT_camel1] = {'-', (Vim_Text_Object_Func *)byp_object_camel};
+	vim_init(app);
+    
+
+
         //t $          ($  , $                             , $                     );
         set_custom_hook(app, HookID_Tick,                    F4_Tick);
+        set_custom_hook(app, HookID_BufferRegion,            byp_buffer_region);
         set_custom_hook(app, HookID_RenderCaller,            edye_render);
         set_custom_hook(app, HookID_BeginBuffer,             F4_BeginBuffer);
         set_custom_hook(app, HookID_Layout,                  F4_Layout);
-        set_custom_hook(app, HookID_WholeScreenRenderCaller, F4_WholeScreenRender);
+        //set_custom_hook(app, HookID_WholeScreenRenderCaller, F4_WholeScreenRender);
+        set_custom_hook(app, HookID_WholeScreenRenderCaller, byp_whole_screen_render_caller);
         set_custom_hook(app, HookID_DeltaRule,               F4_DeltaRule);
         set_custom_hook(app, HookID_BufferEditRange,         F4_BufferEditRange);
         set_custom_hook_memory_size(app, HookID_DeltaRule, delta_ctx_size(sizeof(Vec2_f32)));
