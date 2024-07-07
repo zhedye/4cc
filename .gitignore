@@ -1,6 +1,7 @@
 build/
 current_dist*/
 code/custom/generated/command_metadata.h
+code/custom/generated/managed_id_metadata.cpp
 distributions/
 .DS_Store
 custom_4coder.*

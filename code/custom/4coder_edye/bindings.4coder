@@ -35,8 +35,11 @@ keys_global =
     { "execute_any_cli",                          "Z",      "Alt"                      },
     { "execute_previous_cli",                     "Z",      "Alt",     "Shift"         },
     { "command_lister",                           "X", "Alt"},
-    { "command_lister",                           "Space", "Alt"},
-    { "command_lister",                           "Space", "Command"},
+    //{ "command_lister",                           "Space", "Alt"},
+    //{ "command_lister",                           "Space", "Command"},
+    //{ "vim_command_lister",                           "X", "Alt"},
+    { "vim_command_lister",                           "Space", "Alt"},
+    //{ "vim_command_lister",                           "Space", "Command"},
     
     // NOTE(rjf): Project
     { "build_in_build_panel",                     "M",      "Alt"                      },

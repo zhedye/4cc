@@ -204,6 +204,7 @@ calc_col_row(Application_Links *app, Lister *lister){
 
 // TODO(BYP): Be more rigorous here. I'm sure there are off-by-1's and other incorrect assumptions
 // TODO(edye): how do i use this? this is what i want to modify
+// it is called in vim_run_lister, and then that is called in each function that uses a lister
 function void
 vim_lister_render(Application_Links *app, Frame_Info frame_info, View_ID view){
 	Scratch_Block scratch(app);
