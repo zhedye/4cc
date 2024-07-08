@@ -995,7 +995,7 @@ edye_render(Application_Links *app, Frame_Info frame_info, View_ID view_id)
     // TODO(edye): this is setting the drawing region so the lister can be drawn at the bottom of the screen
     Rect_f32 global_rect = global_get_screen_rectangle(app);
 	f32 filebar_y = global_rect.y1 - 2.f*line_height - vim_cur_filebar_offset+1;
-	if(region.y1 >= filebar_y){ region.y1 = filebar_y; }
+	if(vim_cur_filebar_offset > 0 && region.y1 >= filebar_y){ region.y1 = filebar_y; }
     
     Buffer_ID buffer = view_get_buffer(app, view_id, Access_Always);
     String_Const_u8 buffer_name = push_buffer_base_name(app, scratch, buffer);

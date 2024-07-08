@@ -448,13 +448,16 @@ vim_draw_whole_screen(Application_Links *app, Frame_Info frame_info){
 	
 	// NOTE(BYP): Drawing the back of the filebar lister
 	Rect_f32 back_rect = vim_get_bottom_rect(app);
+
 	if(vim_cur_filebar_offset > vim_nxt_filebar_offset){
 		draw_rectangle(app, back_rect, 0.f, back_color);
 		draw_rectangle_fcolor(app, rect_split_top_bottom_neg(back_rect, 4.f).b, 0.f, get_item_margin_color(UIHighlight_Active));
 	}
 	
-	draw_rectangle(app, rect_split_top_bottom_neg(region, 2.f*line_height).b, 0.f, back_color);
-	
+	if (vim_cur_filebar_offset > 0){
+		draw_rectangle(app, rect_split_top_bottom_neg(region, 2.f*line_height).b, 0.f, back_color);
+	}
+
 	Vec2_f32 bot_left = {region.x0 + 4.f, region.y1 - 1.5f*line_height};
 	String_Const_u8 bot_string = vim_get_bot_string();
 	
