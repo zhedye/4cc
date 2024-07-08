@@ -46,7 +46,7 @@ black_transparent = 0x44000000;
 defcolor_bar = bgalt;
 defcolor_bar_active = magenta;
 defcolor_base = fg; // text color of the modeline bar
-defcolor_pop1 = blue; // command text color
+defcolor_pop1 = blue; // Query bar, lister text color
 defcolor_pop2 = yellow; // command hotkey color
 
 defcolor_back = bg; // background 
@@ -91,6 +91,23 @@ defcolor_text_cycle = {fg, fg, fgalt, fgalt};
 
 defcolor_line_numbers_back = bgalt;
 defcolor_line_numbers_text = fgalt;
+
+/// BYP Colors
+defcolor_function                   =  0xFFBDA3F9;
+defcolor_type                       =  0xFFB84AFD;
+defcolor_primitive                  =  0xFFB84AFD;
+defcolor_macro                      =  0xFF579EA8;
+defcolor_control                    =  defcolor_preproc;
+defcolor_struct                     =  defcolor_keyword;
+defcolor_non_text                   =  0xFFDAAEFE;
+//defcolor_struct                   =  0xFF70A7F7;
+
+/// Vim Colors
+defcolor_vim_filebar_pop            =  0xFF8A4CDB;
+defcolor_vim_chord_text             =  defcolor_text_default;
+defcolor_vim_chord_unresolved       =  defcolor_mark;
+defcolor_vim_chord_error            =  defcolor_special_character;
+
 
 // NOTE(edye): see comments in 4coder_fluery.cpp
 

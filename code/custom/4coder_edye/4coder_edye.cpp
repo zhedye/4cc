@@ -982,14 +982,27 @@ edye_render(Application_Links *app, Frame_Info frame_info, View_ID view_id)
     
     View_ID active_view = get_active_view(app, Access_Always);
     b32 is_active_view = (active_view == view_id);
+
+	Face_ID face_id = get_face_id(app, 0);
+	Face_Metrics face_metrics = get_face_metrics(app, face_id);
+	f32 line_height = face_metrics.line_height;
+	f32 digit_advance = face_metrics.decimal_digit_advance;
     
     f32 margin_size = (f32)def_get_config_u64(app, vars_save_string_lit("f4_margin_size"));
     Rect_f32 view_rect = view_get_screen_rect(app, view_id);
     Rect_f32 region = rect_inner(view_rect, margin_size);
     
+    // TODO(edye): this is setting the drawing region so the lister can be drawn at the bottom of the screen
+    Rect_f32 global_rect = global_get_screen_rectangle(app);
+	f32 filebar_y = global_rect.y1 - 2.f*line_height - vim_cur_filebar_offset+1;
+	if(region.y1 >= filebar_y){ region.y1 = filebar_y; }
+    
     Buffer_ID buffer = view_get_buffer(app, view_id, Access_Always);
     String_Const_u8 buffer_name = push_buffer_base_name(app, scratch, buffer);
     
+    // TODO(edye)  what is this draw_set_clip?
+    Rect_f32 prev_clip = draw_set_clip(app, region);
+
     //~ NOTE(rjf): Draw background.
     {
         ARGB_Color color = fcolor_resolve(fcolor_id(defcolor_back));
@@ -1014,20 +1027,13 @@ edye_render(Application_Links *app, Frame_Info frame_info, View_ID view_id)
     {
         ARGB_Color color = fcolor_resolve(fcolor_id(defcolor_margin));
         if(def_get_config_b32(vars_save_string_lit("f4_margin_use_mode_color")) &&
-           is_active_view)
+        is_active_view)
         {
             color = F4_GetColor(app, ColorCtx_Cursor(power_mode.enabled ? ColorFlag_PowerMode : 0,
-                                                     GlobalKeybindingMode));
+                                                    GlobalKeybindingMode));
         }
         draw_margin(app, view_rect, region, color);
     }
-    
-    Rect_f32 prev_clip = draw_set_clip(app, region);
-    
-    Face_ID face_id = get_face_id(app, buffer);
-    Face_Metrics face_metrics = get_face_metrics(app, face_id);
-    f32 line_height = face_metrics.line_height;
-    f32 digit_advance = face_metrics.decimal_digit_advance;
     
     // NOTE(allen): file bar
     b64 showing_file_bar = false;
@@ -1113,7 +1119,64 @@ edye_render(Application_Links *app, Frame_Info frame_info, View_ID view_id)
     draw_set_clip(app, prev_clip);
 }
 
+function void
+edye_tick(Application_Links *app, Frame_Info frame_info)
+{
+    linalloc_clear(&global_frame_arena);
+    global_tooltip_count = 0;
+
+    vim_animate_filebar(app, frame_info);
+	// vim_animate_cursor(app, frame_info);
+    
+    F4_TickColors(app, frame_info);
+    F4_Index_Tick(app);
+    F4_CLC_Tick(frame_info);
+    F4_PowerMode_Tick(app, frame_info);
+    F4_UpdateFlashes(app, frame_info);
+    
+    // NOTE(rjf): Default tick stuff from the 4th dimension:
+    default_tick(app, frame_info);
+}
+
+
 #if 0
+
+function void
+byp_tick(Application_Links *app, Frame_Info frame_info){
+	code_index_update_tick(app);
+	if(tick_all_fade_ranges(app, frame_info.animation_dt)){
+		animate_in_n_milliseconds(app, 0);
+	}
+
+	vim_animate_filebar(app, frame_info);
+	vim_animate_cursor(app, frame_info);
+	fold_tick(app, frame_info);
+	byp_tick_colors(app, frame_info);
+
+	vim_cursor_blink++;
+
+	b32 enable_virtual_whitespace = def_get_config_b32(vars_save_string_lit("enable_virtual_whitespace"));
+	if(enable_virtual_whitespace != def_enable_virtual_whitespace){
+		def_enable_virtual_whitespace = enable_virtual_whitespace;
+		clear_all_layouts(app);
+	}
+}
+
+function void
+F4_Tick(Application_Links *app, Frame_Info frame_info)
+{
+    linalloc_clear(&global_frame_arena);
+    global_tooltip_count = 0;
+    
+    F4_TickColors(app, frame_info);
+    F4_Index_Tick(app);
+    F4_CLC_Tick(frame_info);
+    F4_PowerMode_Tick(app, frame_info);
+    F4_UpdateFlashes(app, frame_info);
+    
+    // NOTE(rjf): Default tick stuff from the 4th dimension:
+    default_tick(app, frame_info);
+}
 
 // [0,1]
 #ifndef VIM_USE_BOTTOM_LISTER
@@ -1223,10 +1286,7 @@ vim_lister_render(Application_Links *app, Frame_Info frame_info, View_ID view){
 	i32 first_index = (i32)(col_num*scroll_y/(block_height));
 	
 	f32 x_base = region.x0;
-    // TODO if vim_cur_filebar_offset == 0, then the lister gets drawn below the view
-    // in byp the filebar is a the bottom so somehow it's being shift upwards when the lister is called.
-    // bottom vs top filebar, doesn't really matter to me i guess.
-    error
+    
 	f32 y_base = region.y1 - vim_cur_filebar_offset; 
 	f32 block_width = rect_width(region)/col_num;
 	Rect_f32 back_rect = region;
@@ -2013,7 +2073,7 @@ void custom_layer_init(Application_Links *app)
 
 
         //t $          ($  , $                             , $                     );
-        set_custom_hook(app, HookID_Tick,                    F4_Tick);
+        set_custom_hook(app, HookID_Tick,                    edye_tick);
         set_custom_hook(app, HookID_BufferRegion,            byp_buffer_region);
         set_custom_hook(app, HookID_RenderCaller,            edye_render);
         set_custom_hook(app, HookID_BeginBuffer,             F4_BeginBuffer);
@@ -2023,6 +2083,10 @@ void custom_layer_init(Application_Links *app)
         set_custom_hook(app, HookID_DeltaRule,               F4_DeltaRule);
         set_custom_hook(app, HookID_BufferEditRange,         F4_BufferEditRange);
         set_custom_hook_memory_size(app, HookID_DeltaRule, delta_ctx_size(sizeof(Vec2_f32)));
+
+        	set_custom_hook(app, HookID_BufferEditRange,          vim_buffer_edit_range);
+	set_custom_hook(app, HookID_ViewChangeBuffer,         vim_view_change_buffer);
+	//set_custom_hook(app, HookID_ViewEventHandler,         vim_view_input_handler);
     }
     
     // NOTE(rjf): Set up mapping.

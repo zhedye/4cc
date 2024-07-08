@@ -60,7 +60,7 @@ custom_layer_init(Application_Links *app){
 	set_custom_hook(app, HookID_RenderCaller,             byp_render_caller);
 	set_custom_hook(app, HookID_WholeScreenRenderCaller,  byp_whole_screen_render_caller);
 
-	set_custom_hook(app, HookID_Tick,                      byp_tick);
+	set_custom_hook(app, HookID_Tick,                     byp_tick);
 	set_custom_hook(app, HookID_NewFile,                  byp_new_file);
 	set_custom_hook(app, HookID_BeginBuffer,              byp_begin_buffer);
 	//set_custom_hook(app, HookID_BeginBuffer,              vim_begin_buffer);
