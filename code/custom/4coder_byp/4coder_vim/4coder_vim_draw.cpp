@@ -448,69 +448,71 @@ vim_draw_whole_screen(Application_Links *app, Frame_Info frame_info){
 	
 	// NOTE(BYP): Drawing the back of the filebar lister
 	Rect_f32 back_rect = vim_get_bottom_rect(app);
-
-	if(vim_cur_filebar_offset > vim_nxt_filebar_offset){
-		draw_rectangle(app, back_rect, 0.f, back_color);
-		draw_rectangle_fcolor(app, rect_split_top_bottom_neg(back_rect, 4.f).b, 0.f, get_item_margin_color(UIHighlight_Active));
-	}
-	
-	if (vim_cur_filebar_offset > 0){
-		draw_rectangle(app, rect_split_top_bottom_neg(region, 2.f*line_height).b, 0.f, back_color);
-	}
-
-	Vec2_f32 bot_left = {region.x0 + 4.f, region.y1 - 1.5f*line_height};
-	String_Const_u8 bot_string = vim_get_bot_string();
-	
-	if(vim_use_bottom_cursor){
-		Vec2_f32 p = draw_string(app, face_id, vim_bot_text.string, bot_left, finalize_color(defcolor_text_default, 0));
-		if(ACTIVE_BLINK(vim_cursor_blink)){
-			p.x -= 0.37f*(p.x - bot_left.x)/vim_bot_text.size;
-			draw_string(app, face_id, string_u8_litexpr("|"), p, finalize_color(defcolor_text_default, 0));
-		}
-	}else{
-		draw_string(app, face_id, bot_string, bot_left, finalize_color(defcolor_text_default, 0));
-	}
-	
-	if(vim_lister_view_id == 0){
-		/// NOTE(BYP): This is kinda a hacky pseudo-view
-		if(vim_show_buffer_peek && rect_height(back_rect) > 0.f){
-			Vim_Buffer_Peek_Entry *entry = vim_buffer_peek_list + vim_buffer_peek_index;
-			Buffer_Identifier buffer_iden = entry->buffer_id;
-			Buffer_ID buffer = buffer_identifier_to_id(app, buffer_iden);
-			vim_set_bottom_text(SCu8((u8 *)buffer_iden.name, buffer_iden.name_len));
-			
-			f32 ratio_diff = entry->nxt_ratio - entry->cur_ratio;
-			entry->cur_ratio += ratio_diff*frame_info.animation_dt*20.f;
-			
-			Buffer_Point buffer_point = {};
-			i64 line_count = buffer_get_line_count(app, buffer);
-			//buffer_point.line_number = i64(entry->cur_ratio*(line_count+1) - rect_height(back_rect)/line_height);
-			buffer_point.pixel_shift.y = line_height*entry->cur_ratio*(line_count+1) - rect_height(back_rect);
-			
-			FColor peek_back_color = fcolor_id(defcolor_back);
-			draw_rectangle_fcolor(app, back_rect, 0.f, peek_back_color);
-			Rect_f32_Pair pair = rect_split_top_bottom_neg(back_rect, 4.f);
-			draw_rectangle_fcolor(app, pair.b, 0.f, get_item_margin_color(UIHighlight_Active));
-			back_rect = rect_split_left_right(pair.a, 4.f).b;
-			Rect_f32 prev_clip = draw_set_clip(app, back_rect);
-			
-			Text_Layout_ID text_layout_id = text_layout_create(app, buffer, back_rect, buffer_point);
-			Range_i64 visible_range = text_layout_get_visible_range(app, text_layout_id);
-			
-			paint_text_color_fcolor(app, text_layout_id, visible_range, fcolor_id(defcolor_text_default));
-			paint_fade_ranges(app, text_layout_id, buffer);
-			draw_text_layout_default(app, text_layout_id);
-			
-			text_layout_free(app, text_layout_id);
-			draw_set_clip(app, prev_clip);
-		}
-	}
-	
-	Vec2_f32 bot_right = {region.x1 - 4.f - char_wid*vim_keystroke_text.size, bot_left.y};
-	FColor chord_color = fcolor_id(defcolor_vim_chord_unresolved);
-	if(vim_state.chord_resolved){
-		chord_color = (vim_state.chord_resolved & bit_2 ?  fcolor_id(defcolor_vim_chord_error) : fcolor_id(defcolor_vim_chord_text));
-	}
-	draw_string(app, face_id, vim_keystroke_text.string, bot_right, chord_color);
+    
+    if (vim_cur_filebar_offset > 0){
+        if(vim_cur_filebar_offset > vim_nxt_filebar_offset){
+            draw_rectangle(app, back_rect, 0.f, back_color);
+            draw_rectangle_fcolor(app, rect_split_top_bottom_neg(back_rect, 4.f).b, 0.f, get_item_margin_color(UIHighlight_Active));
+        }
+        	
+    
+        draw_rectangle(app, rect_split_top_bottom_neg(region, 2.f*line_height).b, 0.f, back_color);
+        	
+    
+        Vec2_f32 bot_left = {region.x0 + 4.f, region.y1 - 1.5f*line_height};
+        String_Const_u8 bot_string = vim_get_bot_string();
+        	
+        if(vim_use_bottom_cursor){
+            Vec2_f32 p = draw_string(app, face_id, vim_bot_text.string, bot_left, finalize_color(defcolor_text_default, 0));
+            if(ACTIVE_BLINK(vim_cursor_blink)){
+                p.x -= 0.37f*(p.x - bot_left.x)/vim_bot_text.size;
+                draw_string(app, face_id, string_u8_litexpr("|"), p, finalize_color(defcolor_text_default, 0));
+            }
+        }else{
+            draw_string(app, face_id, bot_string, bot_left, finalize_color(defcolor_text_default, 0));
+        }
+        	
+        if(vim_lister_view_id == 0){
+            /// NOTE(BYP): This is kinda a hacky pseudo-view
+            if(vim_show_buffer_peek && rect_height(back_rect) > 0.f){
+                Vim_Buffer_Peek_Entry *entry = vim_buffer_peek_list + vim_buffer_peek_index;
+                Buffer_Identifier buffer_iden = entry->buffer_id;
+                Buffer_ID buffer = buffer_identifier_to_id(app, buffer_iden);
+                vim_set_bottom_text(SCu8((u8 *)buffer_iden.name, buffer_iden.name_len));
+                			
+                f32 ratio_diff = entry->nxt_ratio - entry->cur_ratio;
+                entry->cur_ratio += ratio_diff*frame_info.animation_dt*20.f;
+                			
+                Buffer_Point buffer_point = {};
+                i64 line_count = buffer_get_line_count(app, buffer);
+                //buffer_point.line_number = i64(entry->cur_ratio*(line_count+1) - rect_height(back_rect)/line_height);
+                buffer_point.pixel_shift.y = line_height*entry->cur_ratio*(line_count+1) - rect_height(back_rect);
+                			
+                FColor peek_back_color = fcolor_id(defcolor_back);
+                draw_rectangle_fcolor(app, back_rect, 0.f, peek_back_color);
+                Rect_f32_Pair pair = rect_split_top_bottom_neg(back_rect, 4.f);
+                draw_rectangle_fcolor(app, pair.b, 0.f, get_item_margin_color(UIHighlight_Active));
+                back_rect = rect_split_left_right(pair.a, 4.f).b;
+                Rect_f32 prev_clip = draw_set_clip(app, back_rect);
+                			
+                Text_Layout_ID text_layout_id = text_layout_create(app, buffer, back_rect, buffer_point);
+                Range_i64 visible_range = text_layout_get_visible_range(app, text_layout_id);
+                			
+                paint_text_color_fcolor(app, text_layout_id, visible_range, fcolor_id(defcolor_text_default));
+                paint_fade_ranges(app, text_layout_id, buffer);
+                draw_text_layout_default(app, text_layout_id);
+                			
+                text_layout_free(app, text_layout_id);
+                draw_set_clip(app, prev_clip);
+            }
+        }
+        	
+        Vec2_f32 bot_right = {region.x1 - 4.f - char_wid*vim_keystroke_text.size, bot_left.y};
+        FColor chord_color = fcolor_id(defcolor_vim_chord_unresolved);
+        if(vim_state.chord_resolved){
+            chord_color = (vim_state.chord_resolved & bit_2 ?  fcolor_id(defcolor_vim_chord_error) : fcolor_id(defcolor_vim_chord_text));
+        }
+        draw_string(app, face_id, vim_keystroke_text.string, bot_right, chord_color);
+        }    
 }
 

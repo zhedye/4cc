@@ -619,13 +619,6 @@ edye_buffer_region(Application_Links *app, View_ID view_id, Rect_f32 region){
 	Face_Metrics metrics = get_face_metrics(app, face_id);
 	f32 line_height = metrics.line_height;
 	f32 digit_advance = metrics.decimal_digit_advance;
-    
-    // NOTE(edye): bottom byp lister
-	Rect_f32 global_rect = global_get_screen_rectangle(app);
-	f32 filebar_y = global_rect.y1 - 2.f*line_height - vim_cur_filebar_offset+1;
-	if(vim_cur_filebar_offset > 0 && region.y1 >= filebar_y){
-		region.y1 = filebar_y;
-	}
 
       // NOTE(allen): margins
     region = rect_inner(region, 3.f);
@@ -661,6 +654,13 @@ edye_buffer_region(Application_Links *app, View_ID view_id, Rect_f32 region){
         Rect_f32_Pair pair = layout_line_number_margin(app, buffer, region, digit_advance);
         region = pair.max;
     }
+    
+    // NOTE(edye): byp vim lister at the bottom of the screen
+	Rect_f32 global_rect = global_get_screen_rectangle(app);
+	f32 filebar_y = global_rect.y1 - 2.f*line_height - vim_cur_filebar_offset+1;
+	if(vim_cur_filebar_offset > 0 && region.y1 >= filebar_y){
+		region.y1 = filebar_y;
+	}
     
 	return(region);
 }
