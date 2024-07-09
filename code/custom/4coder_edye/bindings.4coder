@@ -37,9 +37,9 @@ keys_global =
     { "command_lister",                           "X", "Alt"},
     //{ "command_lister",                           "Space", "Alt"},
     //{ "command_lister",                           "Space", "Command"},
-    //{ "vim_command_lister",                           "X", "Alt"},
-    { "vim_command_lister",                           "Space", "Alt"},
-    //{ "vim_command_lister",                           "Space", "Command"},
+    //{ "vim_command_mode",                           "X", "Alt"},
+    { "vim_command_mode",                           "Space", "Alt"},
+    //{ "vim_command_mode",                           "Space", "Command"},
     
     // NOTE(rjf): Project
     { "build_in_build_panel",                     "M",      "Alt"                      },
