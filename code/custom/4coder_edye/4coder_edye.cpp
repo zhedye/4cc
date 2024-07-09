@@ -610,6 +610,62 @@ CUSTOM_DOC("Combine/join lines togther like in vim.")
 	if(N > 1){ history_group_end(history_group); }
 }
 
+
+function Rect_f32
+edye_buffer_region(Application_Links *app, View_ID view_id, Rect_f32 region){
+    
+	Buffer_ID buffer = view_get_buffer(app, view_id, Access_Always);
+	Face_ID face_id = get_face_id(app, 0);
+	Face_Metrics metrics = get_face_metrics(app, face_id);
+	f32 line_height = metrics.line_height;
+	f32 digit_advance = metrics.decimal_digit_advance;
+    
+    // NOTE(edye): bottom byp lister
+	Rect_f32 global_rect = global_get_screen_rectangle(app);
+	f32 filebar_y = global_rect.y1 - 2.f*line_height - vim_cur_filebar_offset+1;
+	if(vim_cur_filebar_offset > 0 && region.y1 >= filebar_y){
+		region.y1 = filebar_y;
+	}
+
+      // NOTE(allen): margins
+    region = rect_inner(region, 3.f);
+    
+    // NOTE(allen): file bar
+    b64 showing_file_bar = false;
+    if (view_get_setting(app, view_id, ViewSetting_ShowFileBar, &showing_file_bar) &&
+        showing_file_bar){
+        Rect_f32_Pair pair = layout_file_bar_on_top(region, line_height);
+        region = pair.max;
+    }
+    
+    // NOTE(allen): query bars
+    {
+        Query_Bar *space[32];
+        Query_Bar_Ptr_Array query_bars = {};
+        query_bars.ptrs = space;
+        if (get_active_query_bars(app, view_id, ArrayCount(space), &query_bars)){
+            Rect_f32_Pair pair = layout_query_bar_on_top(region, line_height, query_bars.count);
+            region = pair.max;
+        }
+    }
+    
+    // NOTE(allen): FPS hud
+    if (show_fps_hud){
+        Rect_f32_Pair pair = layout_fps_hud_on_bottom(region, line_height);
+        region = pair.min;
+    }
+    
+    // NOTE(allen): line numbers
+    b32 show_line_number_margins = def_get_config_b32(vars_save_string_lit("show_line_number_margins"));
+    if (show_line_number_margins){
+        Rect_f32_Pair pair = layout_line_number_margin(app, buffer, region, digit_advance);
+        region = pair.max;
+    }
+    
+	return(region);
+}
+
+
 #define foreach(i,N) for(i32 i=0; i<N; i++)
 
 // NOTE: byp_hex_color_preview
@@ -1185,7 +1241,7 @@ F4_Tick(Application_Links *app, Frame_Info frame_info)
 
 // n,m : 0 < n <= m
 #ifndef VIM_LISTER_RANGE
-#define VIM_LISTER_RANGE 3,5
+#define VIM_LISTER_RANGE 1,3
 #endif
 
 // (0.f, 1.f]
@@ -2056,25 +2112,26 @@ void custom_layer_init(Application_Links *app)
     {
         set_all_default_hooks(app);
 
-// TODO remove
-
-	vim_buffer_peek_list[ArrayCount(vim_default_peek_list) + 0] = BYP_peek_list[0];
-	vim_buffer_peek_list[ArrayCount(vim_default_peek_list) + 1] = BYP_peek_list[1];
-	vim_request_vtable[VIM_REQUEST_COUNT + BYP_REQUEST_Title]   = byp_apply_title;
-	vim_request_vtable[VIM_REQUEST_COUNT + BYP_REQUEST_Comment] = byp_apply_comment;
-	vim_request_vtable[VIM_REQUEST_COUNT + BYP_REQUEST_UnComment] = byp_apply_uncomment;
-
-	vim_text_object_vtable[VIM_TEXT_OBJECT_COUNT + BYP_OBJECT_param0] = {',', (Vim_Text_Object_Func *)byp_object_param};
-	vim_text_object_vtable[VIM_TEXT_OBJECT_COUNT + BYP_OBJECT_param1] = {';', (Vim_Text_Object_Func *)byp_object_param};
-	vim_text_object_vtable[VIM_TEXT_OBJECT_COUNT + BYP_OBJECT_camel0] = {'_', (Vim_Text_Object_Func *)byp_object_camel};
-	vim_text_object_vtable[VIM_TEXT_OBJECT_COUNT + BYP_OBJECT_camel1] = {'-', (Vim_Text_Object_Func *)byp_object_camel};
-	vim_init(app);
+        // TODO (edye) figure out what all of this does and then remove it if possible
+                    
+        vim_buffer_peek_list[ArrayCount(vim_default_peek_list) + 0] = BYP_peek_list[0];
+        vim_buffer_peek_list[ArrayCount(vim_default_peek_list) + 1] = BYP_peek_list[1];
+        vim_request_vtable[VIM_REQUEST_COUNT + BYP_REQUEST_Title]   = byp_apply_title;
+        vim_request_vtable[VIM_REQUEST_COUNT + BYP_REQUEST_Comment] = byp_apply_comment;
+        vim_request_vtable[VIM_REQUEST_COUNT + BYP_REQUEST_UnComment] = byp_apply_uncomment;
     
+        vim_text_object_vtable[VIM_TEXT_OBJECT_COUNT + BYP_OBJECT_param0] = {',', (Vim_Text_Object_Func *)byp_object_param};
+        vim_text_object_vtable[VIM_TEXT_OBJECT_COUNT + BYP_OBJECT_param1] = {';', (Vim_Text_Object_Func *)byp_object_param};
+        vim_text_object_vtable[VIM_TEXT_OBJECT_COUNT + BYP_OBJECT_camel0] = {'_', (Vim_Text_Object_Func *)byp_object_camel};
+        vim_text_object_vtable[VIM_TEXT_OBJECT_COUNT + BYP_OBJECT_camel1] = {'-', (Vim_Text_Object_Func *)byp_object_camel};
+        vim_init(app);
+            
 
 
         //t $          ($  , $                             , $                     );
         set_custom_hook(app, HookID_Tick,                    edye_tick);
-        set_custom_hook(app, HookID_BufferRegion,            byp_buffer_region);
+        set_custom_hook(app, HookID_BufferRegion,            edye_buffer_region);
+        //set_custom_hook(app, HookID_BufferRegion,            default_buffer_region);
         set_custom_hook(app, HookID_RenderCaller,            edye_render);
         set_custom_hook(app, HookID_BeginBuffer,             F4_BeginBuffer);
         set_custom_hook(app, HookID_Layout,                  F4_Layout);
@@ -2084,9 +2141,9 @@ void custom_layer_init(Application_Links *app)
         set_custom_hook(app, HookID_BufferEditRange,         F4_BufferEditRange);
         set_custom_hook_memory_size(app, HookID_DeltaRule, delta_ctx_size(sizeof(Vec2_f32)));
 
-        	set_custom_hook(app, HookID_BufferEditRange,          vim_buffer_edit_range);
-	set_custom_hook(app, HookID_ViewChangeBuffer,         vim_view_change_buffer);
-	//set_custom_hook(app, HookID_ViewEventHandler,         vim_view_input_handler);
+        //set_custom_hook(app, HookID_BufferEditRange,          vim_buffer_edit_range);
+        //set_custom_hook(app, HookID_ViewChangeBuffer,         vim_view_change_buffer);
+        //set_custom_hook(app, HookID_ViewEventHandler,         vim_view_input_handler);
     }
     
     // NOTE(rjf): Set up mapping.
