@@ -27,5 +27,5 @@ enum BYP_Vim_Objects{
 #define VIM_DEFAULT_REGISTER           unnamed
 
 #define VIM_USE_BOTTOM_LISTER          1
-#define VIM_LISTER_RANGE               3,5
+#define VIM_LISTER_RANGE               1,3
 #define VIM_LISTER_MAX_RATIO           0.35f

@@ -18,7 +18,8 @@ echo ""
 echo "---"
 echo "Building custom layer ... "
 pushd %custom_root%\4coder_edye
-call ..\bin\buildsuper_x64-win.bat 4coder_edye.cpp
+REM debug or release
+call ..\bin\buildsuper_x64-win.bat 4coder_edye.cpp debug
 popd
 
 rem Copy custom_4coder.so to BUILD_ROOT, overwriting if it already exists (/Y flag).
