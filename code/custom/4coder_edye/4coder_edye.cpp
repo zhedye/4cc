@@ -610,6 +610,116 @@ CUSTOM_DOC("Combine/join lines togther like in vim.")
 	if(N > 1){ history_group_end(history_group); }
 }
 
+// i probably want a circular buffer, o well start with just adding to the end.
+i32 recent_command_ids[32];
+i32 recent_command_id_count = 0;
+                                    
+function void
+edye__fill_command_lister(Arena *arena, Lister *lister, i32 *command_ids, i32 command_id_count, Command_Lister_Status_Rule *status_rule){
+    if(command_ids == 0){ command_id_count = command_one_past_last_id; }
+                                                                                                    
+    { // recent commands 
+        for(i32 i=recent_id_count; i >= 0; i--){
+            
+            i32 id = recent_commands_ids[i];
+            Custom_Command_Function *proc = fcoder_metacmd_table[id].proc;
+            
+            Command_Trigger_List triggers = map_get_triggers_recusive(arena, status_rule->mapping, status_rule->map_id, proc);
+            
+            List_String_Const_u8 list = {};
+            if(triggers.first == 0){
+                string_list_push(arena, &list, string_u8_litexpr(""));
+            }
+            for(Command_Trigger *node=triggers.first; node; node=node->next){
+                command_trigger_stringize(arena, &list, node);
+                if(node->next){
+                    string_list_push(arena, &list, string_u8_litexpr(" "));
+                }
+            }
+            
+            String_Const_u8 key_bind = string_list_flatten(arena, list);
+            String_Const_u8 description = SCu8(fcoder_metacmd_table[id].description);
+            String_Const_u8 status = push_stringf(arena, "%.*s\n%.*s", string_expand(key_bind), string_expand(description));
+            
+            lister_add_item(lister, SCu8(fcoder_metacmd_table[id].name), status, (void*)proc, 0);
+        }
+    }
+    
+	for(i32 i=0; i<command_id_count; i++){
+		i32 j = (command_ids ? command_ids[i] : i);
+		j = clamp(0, j, command_one_past_last_id);
+        
+        b32 is_recent_command = false;
+        for(i32 i=recent_id_count; i >= 0; i--){
+            if(j == recent_commands_ids[i]) {
+                is_recent_command = true;
+                break;
+            }
+        }
+        if(is_recent_command) continue;
+        
+		Custom_Command_Function *proc = fcoder_metacmd_table[j].proc;
+        
+		Command_Trigger_List triggers = map_get_triggers_recursive(arena, status_rule->mapping, status_rule->map_id, proc);
+        
+		List_String_Const_u8 list = {};
+		if(triggers.first == 0){
+			string_list_push(arena, &list, string_u8_litexpr(""));
+		}
+		for(Command_Trigger *node=triggers.first; node; node=node->next){
+			command_trigger_stringize(arena, &list, node);
+			if(node->next){
+				string_list_push(arena, &list, string_u8_litexpr(" "));
+			}
+		}
+        
+		String_Const_u8 key_bind = string_list_flatten(arena, list);
+		String_Const_u8 description = SCu8(fcoder_metacmd_table[j].description);
+		String_Const_u8 status = push_stringf(arena, "%.*s\n%.*s", string_expand(key_bind), string_expand(description));
+        
+		lister_add_item(lister, SCu8(fcoder_metacmd_table[j].name), status, (void*)proc, 0);
+	}
+}
+
+function Custom_Command_Function*
+edye_get_command_from_user(Application_Links *app, i32 *command_ids, i32 command_id_count, Command_Lister_Status_Rule *status_rule){
+    
+	Scratch_Block scratch(app);
+	Lister_Block lister(app, scratch);
+	vim_lister_set_default_handlers(lister);
+	lister_set_query(lister, string_u8_litexpr("Command:"));
+	edye__fill_command_lister(scratch, lister, command_ids, command_id_count, status_rule);
+    
+    {
+        vim_reset_bottom_text();
+        string_append(&vim_bot_text, string_u8_litexpr(":"));
+    }
+	Lister_Result l_result = vim_run_lister(app, lister);
+    
+	return (l_result.canceled ? 0 : (Custom_Command_Function *)l_result.user_data);
+}
+
+CUSTOM_UI_COMMAND_SIG(edye_command_lister)
+CUSTOM_DOC("Command Mode from byp")
+{
+	View_ID view = get_this_ctx_view(app, Access_Always);
+	if(view == 0){ return; }
+	Command_Lister_Status_Rule rule = {};
+	Buffer_ID buffer = view_get_buffer(app, view, Access_Visible);
+	Managed_Scope buffer_scope = buffer_get_managed_scope(app, buffer);
+	Command_Map_ID *map_id_ptr = scope_attachment(app, buffer_scope, buffer_map_id, Command_Map_ID);
+	if(map_id_ptr){
+		rule = command_lister_status_bindings(&framework_mapping, *map_id_ptr);
+	}else{
+		rule = command_lister_status_descriptions();
+	}
+    
+	Custom_Command_Function *func = edye_get_command_from_user(app, 0, 0, &rule);
+	if(func != 0){
+		view_enqueue_command_function(app, view, func);
+	}
+}
+
 
 function Rect_f32
 edye_buffer_region(Application_Links *app, View_ID view_id, Rect_f32 region){

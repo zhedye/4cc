@@ -20,6 +20,7 @@ generate_all_buffers_list__output_buffer(Application_Links *app, Lister *lister,
     lister_add_item(lister, buffer_name, status, IntAsPtr(buffer), 0);
 }
 
+// TODO(edye): this is the behavior i want.
 function void
 generate_all_buffers_list(Application_Links *app, Lister *lister){
     lister_begin_new_item_set(app, lister);
