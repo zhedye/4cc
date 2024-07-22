@@ -37,7 +37,7 @@ keys_global =
     //{ "command_lister",                           "X", "Alt"},
     //{ "command_lister",                           "Space", "Alt"},
     //{ "command_lister",                           "Space", "Command"},
-    { "vim_command_mode",                           "X", "Alt"},
+    { "edye_command_lister",                           "X", "Alt"},
     //{ "vim_command_mode",                           "Space", "Alt"},
     //{ "vim_command_mode",                           "Space", "Command"},
     

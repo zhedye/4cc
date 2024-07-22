@@ -610,21 +610,22 @@ CUSTOM_DOC("Combine/join lines togther like in vim.")
 	if(N > 1){ history_group_end(history_group); }
 }
 
-// i probably want a circular buffer, o well start with just adding to the end.
-i32 recent_command_ids[32];
-i32 recent_command_id_count = 0;
-                                    
+// NOTE(edye): recent commands.
+i32 recent_commands_indices[command_one_past_last_id];
+Custom_Command_Function *recent_commands[command_one_past_last_id];
+i32 recent_commands_count = 0;
+
 function void
 edye__fill_command_lister(Arena *arena, Lister *lister, i32 *command_ids, i32 command_id_count, Command_Lister_Status_Rule *status_rule){
     if(command_ids == 0){ command_id_count = command_one_past_last_id; }
                                                                                                     
     { // recent commands 
-        for(i32 i=recent_id_count; i >= 0; i--){
+        for(i32 i=recent_commands_count-1; i >= 0; i--){
             
-            i32 id = recent_commands_ids[i];
+            i32 id = recent_commands_indices[i];
             Custom_Command_Function *proc = fcoder_metacmd_table[id].proc;
             
-            Command_Trigger_List triggers = map_get_triggers_recusive(arena, status_rule->mapping, status_rule->map_id, proc);
+            Command_Trigger_List triggers = map_get_triggers_recursive(arena, status_rule->mapping, status_rule->map_id, proc);
             
             List_String_Const_u8 list = {};
             if(triggers.first == 0){
@@ -650,8 +651,8 @@ edye__fill_command_lister(Arena *arena, Lister *lister, i32 *command_ids, i32 co
 		j = clamp(0, j, command_one_past_last_id);
         
         b32 is_recent_command = false;
-        for(i32 i=recent_id_count; i >= 0; i--){
-            if(j == recent_commands_ids[i]) {
+        for(i32 i=recent_commands_count-1; i >= 0; i--){
+            if(j == recent_commands_indices[i]) {
                 is_recent_command = true;
                 break;
             }
@@ -690,10 +691,11 @@ edye_get_command_from_user(Application_Links *app, i32 *command_ids, i32 command
 	lister_set_query(lister, string_u8_litexpr("Command:"));
 	edye__fill_command_lister(scratch, lister, command_ids, command_id_count, status_rule);
     
-    {
+    { // bottom lister
         vim_reset_bottom_text();
         string_append(&vim_bot_text, string_u8_litexpr(":"));
     }
+    
 	Lister_Result l_result = vim_run_lister(app, lister);
     
 	return (l_result.canceled ? 0 : (Custom_Command_Function *)l_result.user_data);
@@ -717,6 +719,46 @@ CUSTOM_DOC("Command Mode from byp")
 	Custom_Command_Function *func = edye_get_command_from_user(app, 0, 0, &rule);
 	if(func != 0){
 		view_enqueue_command_function(app, view, func);
+        
+        {// add to recent command arrays
+            
+            // check duplicate
+            
+            i32 duplicate_recent_commands_index = -1, duplicate_index = -1;
+            for(i32 i=0; i<recent_commands_count; i++){
+                if(recent_commands[i] == func){
+                    duplicate_recent_commands_index = i;
+                    duplicate_index = recent_commands_indices[i];
+                    break;
+                }
+            }
+            
+            if(duplicate_recent_commands_index == -1){
+                // add to recent commands
+                for(i32 i=0; i<command_one_past_last_id; i++){
+                    
+                    Custom_Command_Function *proc = fcoder_metacmd_table[i].proc;
+                    
+                    if(proc == func){
+                        recent_commands_indices[recent_commands_count] = i;
+                        recent_commands[recent_commands_count] = proc;
+                        recent_commands_count++;
+                    }
+                }
+            } else {
+                
+                for(i32 i = duplicate_recent_commands_index; i < recent_commands_count-1; i++){
+                    recent_commands_indices[i] = recent_commands_indices[i+1];
+                }
+                recent_commands_indices[recent_commands_count-1] = duplicate_index;
+                    
+                for(i32 i = duplicate_recent_commands_index; i < recent_commands_count-1; i++){
+                    recent_commands[i] = recent_commands[i+1];
+                }
+                recent_commands[recent_commands_count-1] = func;
+            }
+
+        }
 	}
 }
 
@@ -2363,19 +2405,18 @@ CUSTOM_DOC("edye startup event")
     //~ NOTE(rjf): Initialize panels
     {
         Buffer_Identifier comp = buffer_identifier(string_u8_litexpr("*compilation*"));
-        Buffer_Identifier left  = buffer_identifier(string_u8_litexpr("*calc*"));
-        Buffer_Identifier right = buffer_identifier(string_u8_litexpr("*messages*"));
+        Buffer_Identifier calc  = buffer_identifier(string_u8_litexpr("*calc*"));
+        Buffer_Identifier messages = buffer_identifier(string_u8_litexpr("*messages*"));
         Buffer_ID comp_id = buffer_identifier_to_id(app, comp);
-        Buffer_ID left_id = buffer_identifier_to_id(app, left);
-        Buffer_ID right_id = buffer_identifier_to_id(app, right);
+        Buffer_ID calc_id = buffer_identifier_to_id(app, calc);
+        Buffer_ID messages_id = buffer_identifier_to_id(app, messages);
         
         View_ID view = get_active_view(app, Access_Always);
         new_view_settings(app, view);
         
-        // NOTE(rjf): Left Panel
-        view_set_buffer(app, view, left_id, 0);
+        view_set_buffer(app, view, calc_id, 0);
         
-        // NOTE(rjf): Bottom panel
+        // NOTE(rjf): Bottom compilation panel
         View_ID compilation_view = 0;
         {
             compilation_view = open_view(app, view, ViewSplit_Bottom);
@@ -2393,11 +2434,11 @@ CUSTOM_DOC("edye startup event")
         
         view_set_active(app, view);
         
-        // NOTE(rjf): Right Panel
-        open_panel_vsplit(app);
+        // split panel below
+        open_panel_hsplit(app);
         
-        View_ID right_view = get_active_view(app, Access_Always);
-        view_set_buffer(app, right_view, right_id, 0);
+        View_ID messages_view = get_active_view(app, Access_Always);
+        view_set_buffer(app, messages_view, messages_id, 0);
         
         // NOTE(rjf): Restore Active to Left
         view_set_active(app, view);
