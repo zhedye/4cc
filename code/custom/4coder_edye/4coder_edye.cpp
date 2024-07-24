@@ -610,10 +610,11 @@ CUSTOM_DOC("Combine/join lines togther like in vim.")
 	if(N > 1){ history_group_end(history_group); }
 }
 
-// NOTE(edye): recent commands.
-i32 recent_commands_indices[command_one_past_last_id];
-Custom_Command_Function *recent_commands[command_one_past_last_id];
-i32 recent_commands_count = 0;
+// NOTE(edye): recent commands, stored in array from oldest to newest.
+Custom_Command_Function *recent_commands[command_one_past_last_id]; // function pointer to the command
+i32 recent_commands_id[command_one_past_last_id]; // index in fcoder_metacmd_table array
+
+i32 recent_commands_count = 0; // how many commands have we used this session?
 
 function void
 edye__fill_command_lister(Arena *arena, Lister *lister, i32 *command_ids, i32 command_id_count, Command_Lister_Status_Rule *status_rule){
@@ -622,7 +623,7 @@ edye__fill_command_lister(Arena *arena, Lister *lister, i32 *command_ids, i32 co
     { // recent commands 
         for(i32 i=recent_commands_count-1; i >= 0; i--){
             
-            i32 id = recent_commands_indices[i];
+            i32 id = recent_commands_id[i];
             Custom_Command_Function *proc = fcoder_metacmd_table[id].proc;
             
             Command_Trigger_List triggers = map_get_triggers_recursive(arena, status_rule->mapping, status_rule->map_id, proc);
@@ -652,7 +653,7 @@ edye__fill_command_lister(Arena *arena, Lister *lister, i32 *command_ids, i32 co
         
         b32 is_recent_command = false;
         for(i32 i=recent_commands_count-1; i >= 0; i--){
-            if(j == recent_commands_indices[i]) {
+            if(j == recent_commands_id[i]) {
                 is_recent_command = true;
                 break;
             }
@@ -723,36 +724,34 @@ CUSTOM_DOC("Command Mode from byp")
         {// add to recent command arrays
             
             // check duplicate
-            
-            i32 duplicate_recent_commands_index = -1, duplicate_index = -1;
+            i32 existing_command_position = -1, existing_command_id = -1;
             for(i32 i=0; i<recent_commands_count; i++){
                 if(recent_commands[i] == func){
-                    duplicate_recent_commands_index = i;
-                    duplicate_index = recent_commands_indices[i];
+                    existing_command_position = i;
+                    existing_command_id = recent_commands_id[i];
                     break;
                 }
             }
             
-            if(duplicate_recent_commands_index == -1){
+            if(existing_command_position == -1){
                 // add to recent commands
                 for(i32 i=0; i<command_one_past_last_id; i++){
                     
                     Custom_Command_Function *proc = fcoder_metacmd_table[i].proc;
                     
                     if(proc == func){
-                        recent_commands_indices[recent_commands_count] = i;
+                        recent_commands_id[recent_commands_count] = i;
                         recent_commands[recent_commands_count] = proc;
                         recent_commands_count++;
                     }
                 }
             } else {
-                
-                for(i32 i = duplicate_recent_commands_index; i < recent_commands_count-1; i++){
-                    recent_commands_indices[i] = recent_commands_indices[i+1];
+                for(i32 i = existing_command_position; i < recent_commands_count-1; i++){
+                    recent_commands_id[i] = recent_commands_id[i+1];
                 }
-                recent_commands_indices[recent_commands_count-1] = duplicate_index;
+                recent_commands_id[recent_commands_count-1] = existing_command_id;
                     
-                for(i32 i = duplicate_recent_commands_index; i < recent_commands_count-1; i++){
+                for(i32 i = existing_command_position; i < recent_commands_count-1; i++){
                     recent_commands[i] = recent_commands[i+1];
                 }
                 recent_commands[recent_commands_count-1] = func;
