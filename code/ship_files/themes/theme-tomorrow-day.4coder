@@ -1,0 +1,127 @@
+// based on doom one theme: https://github.com/doomemacs/themes/blob/master/themes/doom-tomorrow-day-theme.el
+
+bg  = 0xFFffffff;
+bgalt  = 0xFFf2f2f2;
+base0  = 0xFFf2f2f2;
+base1  = 0xFFe4e4e4;
+base2  = 0xFFdedede;
+base3  = 0xFFd6d4d4;
+base4  = 0xFFC0bfbf;
+base5  = 0xFFa3a1a1;
+base6  = 0xFF8a8787;
+base7  = 0xFF696769;
+base8  = 0xFF000000;
+fg  = 0xFF4d4d4c;
+fgalt  = 0xFF2d2d2c;
+grey  = 0xFF8e908c;
+red  = 0xFFc82829;
+orange  = 0xFFf5871f;
+orange_transparent     = 0x55f5871f;
+orange_extra_transparent = 0x22f5871f;
+yellow  = 0xFFeab700;
+yellow_transparent     = 0x88eab700;
+yellow_extra_transparent = 0x22eab700;
+green  = 0xFF718c00;
+blue  = 0xFF4271ae;
+darkblue  = 0xFF22518e;
+teal  = 0xFF3e999f;
+magenta  = 0xFFc678dd;
+violet  = 0xFF8959a8;
+cyan  = 0xFF8abeb7;
+darkcyan  =  0xFF4a8e87;
+
+white      = 0xFFFFFFFF;
+black      = 0xFF000000;
+black_transparent = 0x44000000;
+
+defcolor_bar = bgalt;
+defcolor_bar_active = magenta;
+defcolor_base = fg; // text color of the modeline bar
+defcolor_pop1 = blue; // Query bar, lister text color
+defcolor_pop2 = yellow; // command hotkey color
+
+defcolor_back = bg; // background 
+
+// command lister
+defcolor_margin = base4;
+defcolor_margin_hover = base4;
+defcolor_margin_active = base5;
+defcolor_list_item = {defcolor_margin, defcolor_back};
+defcolor_list_item_hover = {defcolor_margin_hover, defcolor_margin};
+defcolor_list_item_active = {defcolor_margin_active, defcolor_margin_active};
+defcolor_cursor = green; // yellow_extra_transparent;
+//defcolor_at_cursor = defcolor_back;
+defcolor_at_cursor             = 0xffffffff;
+defcolor_highlight_cursor_line = bgalt;
+defcolor_mark = grey;
+defcolor_highlight = blue;
+defcolor_at_highlight = defcolor_back;
+defcolor_text_default = fg;
+defcolor_comment = base6;
+defcolor_comment_pop = {green, yellow}; // comment NOTE, TODO
+defcolor_keyword = green; // if, "string", return, ...
+defcolor_str_constant = defcolor_keyword;
+defcolor_char_constant = defcolor_str_constant;
+defcolor_int_constant = defcolor_str_constant;
+defcolor_float_constant = defcolor_str_constant;
+defcolor_bool_constant = defcolor_str_constant;
+defcolor_include = defcolor_str_constant;
+defcolor_preproc = blue;
+defcolor_special_character = red;
+defcolor_ghost_character = base5;
+
+defcolor_paste = cyan;
+defcolor_undo = violet;
+
+defcolor_highlight_junk = orange_extra_transparent; // error line highlighting
+defcolor_highlight_white = base4;
+
+// nested code blocks background and text colors
+defcolor_back_cycle = {bg, bg, bg, bg, bgalt, base2, base3}; // arbitrary pattern
+defcolor_text_cycle = {fg, fg, fgalt, fgalt};
+
+defcolor_line_numbers_back = bgalt;
+defcolor_line_numbers_text = fgalt;
+
+/// BYP Colors
+defcolor_function                   =  0xFFBDA3F9;
+defcolor_type                       =  0xFFB84AFD;
+defcolor_primitive                  =  0xFFB84AFD;
+defcolor_macro                      =  0xFF579EA8;
+defcolor_control                    =  defcolor_preproc;
+defcolor_struct                     =  defcolor_keyword;
+defcolor_non_text                   =  0xFFDAAEFE;
+//defcolor_struct                   =  0xFF70A7F7;
+
+/// Vim Colors
+defcolor_vim_filebar_pop            =  0xFF8A4CDB;
+defcolor_vim_chord_text             =  defcolor_text_default;
+defcolor_vim_chord_unresolved       =  defcolor_mark;
+defcolor_vim_chord_error            =  defcolor_special_character;
+
+// NOTE(edye): see comments in 4coder_fluery.cpp
+fleury_color_syntax_crap           = magenta; // ; {} () 
+fleury_color_operators             = fg;
+fleury_color_inactive_pane_overlay = black_transparent;
+fleury_color_inactive_pane_background = base0;
+fleury_color_file_progress_bar     = darkviolet_transparent;
+fleury_color_brace_highlight       = { blue };
+fleury_color_brace_line            = { grey_transparent }; // vertical scope indentation lines
+fleury_color_brace_annotation      = { violet_transparent }; // annotate code at start of scope at the bottom of scope
+fleury_color_index_product_type    = yellow; // structs, classes
+fleury_color_index_sum_type        = yellow; // unions
+fleury_color_index_function        = magenta; //function names
+fleury_color_index_macro           = blue; // macros: #define, ...
+fleury_color_index_constant        = green; // constants and enum
+fleury_color_index_comment_tag     = violet; // @example_comment_tag
+fleury_color_index_decl            = yellow; // declarations: max_u8, ...
+fleury_color_cursor_macro          = orange; // cursor when macro is being recorded
+fleury_color_cursor_power_mode     = base8;
+fleury_color_cursor_inactive       = orange_transparent;
+fleury_color_plot_cycle            = { blue, green, orange, red, magenta, cyan, violet, yellow, teal }; // colors for plotting
+fleury_color_token_highlight       = yellow_transparent; // underline string cursor is at
+fleury_color_token_minor_highlight = yellow_transparent; // other occurances of the string at the cursor
+fleury_color_error_annotation      = bright_red;
+fleury_color_lego_grab             = orange_transparent;
+fleury_color_lego_splat            = orange_transparent;
+fleury_color_comment_user_name     = yellow;
