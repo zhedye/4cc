@@ -71,13 +71,14 @@ defcolor_bool_constant = defcolor_str_constant;
 defcolor_include = defcolor_str_constant;
 defcolor_preproc = blue;
 defcolor_special_character = red;
-defcolor_ghost_character = base5;
+
+//defcolor_ghost_character = base5; // byp?
 
 defcolor_paste = cyan;
 defcolor_undo = violet;
 
 defcolor_highlight_junk = orange_extra_transparent; // error line highlighting
-defcolor_highlight_white = base4;
+defcolor_highlight_white = base2;
 
 // nested code blocks background and text colors
 defcolor_back_cycle = {bg, bg, bg, bg, bgalt, base2, base3}; // arbitrary pattern
@@ -116,11 +117,11 @@ fleury_color_index_sum_type        = violet; // unions
 fleury_color_index_function        = blue; //function names
 fleury_color_index_macro           = blue; // macros: #define, ...
 fleury_color_index_constant        = green; // constants and enum
-fleury_color_index_comment_tag     = cyan; // @example_comment_tag
+fleury_color_index_comment_tag     = dark_cyan; // @example_comment_tag
 fleury_color_index_decl            = red; // declarations: max_u8, ...
-fleury_color_cursor_macro          = blue; // cursor when macro is being recorded
+fleury_color_cursor_macro          = magenta; // cursor when macro is being recorded
 fleury_color_cursor_power_mode     = base8;
-fleury_color_cursor_inactive       = blue;
+fleury_color_cursor_inactive       = base6;
 fleury_color_plot_cycle            = { blue, green, orange, red, magenta, cyan, violet, yellow, teal }; // colors for plotting
 fleury_color_token_highlight       = green_transparent; // underline string cursor is at
 fleury_color_token_minor_highlight = green_transparent; // other occurances of the string at the cursor
