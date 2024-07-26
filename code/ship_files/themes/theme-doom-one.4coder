@@ -2,8 +2,8 @@
 // NOTE color format is hexadecimal, alpha rgb.
 bg         = 0xFF23272e;
 fg         = 0xFFbbc2cf;
-bgalt      = 0xFF21242b;
-fgalt      = 0xFF5B6268;
+bg_alt      = 0xFF21242b;
+fg_alt      = 0xFF5B6268;
 
 // These should represent a spectrum from bg to fg, where base0 is a starker
 // bg and base8 is a starker fg. For example, if bg is light grey and fg is
@@ -45,7 +45,7 @@ white      = 0xFFFFFFFF;
 black      = 0xFF000000;
 black_transparent = 0x44000000;
 
-defcolor_bar = bgalt;
+defcolor_bar = bg_alt;
 defcolor_bar_active = magenta;
 defcolor_base = fg; // text color of the modeline bar
 defcolor_pop1 = blue; // Query bar, lister text color
@@ -63,15 +63,15 @@ defcolor_list_item_active = {defcolor_margin_active, defcolor_margin_active};
 defcolor_cursor = green; // yellow_extra_transparent;
 //defcolor_at_cursor = defcolor_back;
 defcolor_at_cursor             = 0xffffffff;
-defcolor_highlight_cursor_line = bgalt;
+defcolor_highlight_cursor_line = bg_alt;
 defcolor_mark = grey;
 defcolor_highlight = blue;
 defcolor_at_highlight = defcolor_back;
 defcolor_text_default = fg;
 defcolor_comment = base6;
 defcolor_comment_pop = {green, yellow}; // comment NOTE, TODO
-defcolor_keyword = green; // if, "string", return, ...
-defcolor_str_constant = defcolor_keyword;
+defcolor_keyword = blue; // if, "string", return, ...
+defcolor_str_constant = green;
 defcolor_char_constant = defcolor_str_constant;
 defcolor_int_constant = defcolor_str_constant;
 defcolor_float_constant = defcolor_str_constant;
@@ -88,11 +88,11 @@ defcolor_highlight_junk = orange_extra_transparent; // error line highlighting
 defcolor_highlight_white = base4;
 
 // nested code blocks background and text colors
-defcolor_back_cycle = {bg, bg, bg, bg, bgalt, base2, base3}; // arbitrary pattern
-defcolor_text_cycle = {fg, fg, fgalt, fgalt};
+defcolor_back_cycle = {bg, bg, bg, bg, bg_alt, base2, base3}; // arbitrary pattern
+defcolor_text_cycle = {fg, fg, fg_alt, fg_alt};
 
-defcolor_line_numbers_back = bgalt;
-defcolor_line_numbers_text = fgalt;
+defcolor_line_numbers_back = bg_alt;
+defcolor_line_numbers_text = fg_alt;
 
 /// BYP Colors
 defcolor_function                   =  0xFFBDA3F9;
