@@ -1,0 +1,180 @@
+// based on doom latern: https://github.com/doomemacs/themes/blob/master/themes/doom-lantern-theme.el
+bg                                      = 0xFF261b17;
+bg_transparent                          = 0x88261b17;
+bg_extra_transparent                    = 0x33261b17;
+fg                                      = 0xFFe4cbb3;
+fg_transparent                          = 0x88e4cbb3;
+fg_extra_transparent                    = 0x33e4cbb3;
+bg_alt                                  = 0xFF291812;
+bg_alt_transparent                      = 0x88291812;
+bg_alt_extra_transparent                = 0x33291812;
+fg_alt                                  = 0xFF5B6268;
+fg_alt_transparent                      = 0x885B6268;
+fg_alt_extra_transparent                = 0x335B6268;
+base0                                   = 0xFF1b110e;
+base0_transparent                       = 0x881b110e;
+base0_extra_transparent                 = 0x331b110e;
+base1                                   = 0xFF1E1310;
+base1_transparent                       = 0x881E1310;
+base1_extra_transparent                 = 0x331E1310;
+base2                                   = 0xFF2D1F1A;
+base2_transparent                       = 0x882D1F1A;
+base2_extra_transparent                 = 0x332D1F1A;
+base3                                   = 0xFF2D1E19;
+base3_transparent                       = 0x882D1E19;
+base3_extra_transparent                 = 0x332D1E19;
+base4                                   = 0xFF3F2F2A;
+base4_transparent                       = 0x883F2F2A;
+base4_extra_transparent                 = 0x333F2F2A;
+base5                                   = 0xFF554541;
+base5_transparent                       = 0x88554541;
+base5_extra_transparent                 = 0x33554541;
+base6                                   = 0xFF694949;
+base6_transparent                       = 0x88694949;
+base6_extra_transparent                 = 0x33694949;
+base7                                   = 0xFF987070;
+base7_transparent                       = 0x88987070;
+base7_extra_transparent                 = 0x33987070;
+base8                                   = 0xFFC18E76;
+base8_transparent                       = 0x88C18E76;
+base8_extra_transparent                 = 0x33C18E76;
+grey                                    = 0xFF3F2F2A;
+grey_transparent                        = 0x883F2F2A;
+grey_extra_transparent                  = 0x333F2F2A;
+brown                                   = 0xFF532f28;
+brown_transparent                       = 0x88532f28;
+brown_extra_transparent                 = 0x33532f28;
+dark_brown                              = 0xFF291812;
+dark_brown_transparent                  = 0x88291812;
+dark_brown_extra_transparent            = 0x33291812;
+ochre                                   = 0xFFaa6a1f;
+ochre_transparent                       = 0x88aa6a1f;
+ochre_extra_transparent                 = 0x33aa6a1f;
+red                                     = 0xFFcc241d;
+red_transparent                         = 0x88cc241d;
+red_extra_transparent                   = 0x33cc241d;
+orange                                  = 0xFFe35b15;
+orange_transparent                      = 0x88e35b15;
+orange_extra_transparent                = 0x33e35b15;
+green                                   = 0xFF98971a;
+green_transparent                       = 0x8898971a;
+green_extra_transparent                 = 0x3398971a;
+teal                                    = 0xFF4db5bd;
+teal_transparent                        = 0x884db5bd;
+teal_extra_transparent                  = 0x334db5bd;
+yellow                                  = 0xFFd79921;
+yellow_transparent                      = 0x88d79921;
+yellow_extra_transparent                = 0x33d79921;
+blue                                    = 0xFF66a4a4;
+blue_transparent                        = 0x8866a4a4;
+blue_extra_transparent                  = 0x3366a4a4;
+dark_blue                               = 0xFF4395a3;
+dark_blue_transparent                   = 0x884395a3;
+dark_blue_extra_transparent             = 0x334395a3;
+magenta                                 = 0xFFd3869b;
+magenta_transparent                     = 0x88d3869b;
+magenta_extra_transparent               = 0x33d3869b;
+violet                                  = 0xFF805b87;
+violet_transparent                      = 0x88805b87;
+violet_extra_transparent                = 0x33805b87;
+cyan                                    = 0xFF46D9FF;
+cyan_transparent                        = 0x8846D9FF;
+cyan_extra_transparent                  = 0x3346D9FF;
+dark_cyan                               = 0xFF5699AF;
+dark_cyan_transparent                   = 0x885699AF;
+dark_cyan_extra_transparent             = 0x335699AF;
+
+transparent                             = 0x00000000;
+
+defcolor_bar = base1;
+// defcolor_bar_active = blue;
+defcolor_base = fg; // text color of the modeline bar
+defcolor_pop1 = blue; // Query bar, lister text color
+defcolor_pop2 = green; // command hotkey color
+
+defcolor_back = bg; // background 
+
+// command lister
+defcolor_margin = base4;
+defcolor_margin_hover = base4;
+defcolor_margin_active = base5;
+defcolor_list_item = {defcolor_margin, defcolor_back};
+defcolor_list_item_hover = {defcolor_margin_hover, defcolor_margin};
+defcolor_list_item_active = {defcolor_margin_active, defcolor_margin_active};
+defcolor_cursor = green; // yellow_extra_transparent;
+//defcolor_at_cursor = defcolor_back;
+defcolor_at_cursor             = base4;
+defcolor_highlight_cursor_line = dark_brown;
+defcolor_mark = grey;
+defcolor_highlight = ochre;
+defcolor_at_highlight = defcolor_back;
+defcolor_text_default = fg;
+defcolor_comment = base8;
+defcolor_comment_pop = {yellow, orange}; // comment NOTE, TODO
+defcolor_keyword = blue; // if, "string", return, ...
+defcolor_str_constant = green;
+defcolor_char_constant = violet;
+defcolor_int_constant = yellow;
+defcolor_float_constant = defcolor_int_constant;
+defcolor_bool_constant = defcolor_char_constant;
+defcolor_include = defcolor_char_constant;
+defcolor_preproc = ochre;
+defcolor_special_character = red;
+
+//defcolor_ghost_character = base5; // byp?
+
+defcolor_paste = cyan;
+defcolor_undo = violet;
+
+defcolor_highlight_junk = orange_extra_transparent; // error line highlighting
+defcolor_highlight_white = base2;
+
+// nested code blocks background and text colors
+defcolor_back_cycle = {bg, bg, bg, bg, bg_alt, base2, base3}; // arbitrary pattern
+defcolor_text_cycle = {fg, fg, fg_alt, fg_alt};
+
+defcolor_line_numbers_back = bg_alt;
+defcolor_line_numbers_text = fg_alt;
+
+/// BYP Colors
+defcolor_function                   =  0xFFBDA3F9;
+defcolor_type                       =  0xFFB84AFD;
+defcolor_primitive                  =  0xFFB84AFD;
+defcolor_macro                      =  0xFF579EA8;
+defcolor_control                    =  defcolor_preproc;
+defcolor_struct                     =  defcolor_keyword;
+defcolor_non_text                   =  0xFFDAAEFE;
+//defcolor_struct                   =  0xFF70A7F7;
+
+/// Vim Colors
+defcolor_vim_filebar_pop            =  0xFF8A4CDB;
+defcolor_vim_chord_text             =  defcolor_text_default;
+defcolor_vim_chord_unresolved       =  defcolor_mark;
+defcolor_vim_chord_error            =  defcolor_special_character;
+
+// NOTE(edye): see comments in 4coder_fluery.cpp
+fleury_color_syntax_crap           = orange; // ; {} () 
+fleury_color_operators             = blue;
+fleury_color_inactive_pane_overlay = base0_extra_transparent;
+fleury_color_inactive_pane_background = bg;
+fleury_color_file_progress_bar     = base8_extra_transparent;
+fleury_color_brace_highlight       = { yellow };
+fleury_color_brace_line            = { base8_transparent }; // vertical scope indentation lines
+fleury_color_brace_annotation      = { green_transparent }; // annotate code at start of scope at the bottom of scope
+fleury_color_index_product_type    = yellow; // structs, classes
+fleury_color_index_sum_type        = yellow; // unions
+fleury_color_index_function        = ochre; //function names
+fleury_color_index_macro           = cyan; // macros: #define, ...
+fleury_color_index_constant        = green; // constants and enum
+fleury_color_index_comment_tag     = orange; // @example_comment_tag
+fleury_color_index_decl            = violet; // declarations: max_u8, ...
+fleury_color_cursor_macro          = magenta; // cursor when macro is being recorded
+fleury_color_cursor_power_mode     = base8;
+fleury_color_cursor_inactive       = base6;
+fleury_color_plot_cycle            = { blue, green, orange, red, magenta, cyan, violet, yellow, teal }; // colors for plotting
+fleury_color_token_highlight       = yellow_transparent; // underline string cursor is at
+fleury_color_token_minor_highlight = ochre_transparent; // other occurances of the string at the cursor
+fleury_color_error_annotation      = red;
+fleury_color_lego_grab             = orange_transparent;
+fleury_color_lego_splat            = orange_transparent;
+fleury_color_comment_user_name     = violet;

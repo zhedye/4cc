@@ -1,11 +1,11 @@
 // based on doom one theme: https://github.com/doomemacs/themes/blob/master/themes/doom-sourcerer-theme.el
 
-bg                                      = 0xFF171717;
-bg_transparent                          = 0x88171717;
-bg_extra_transparent                    = 0x33171717;
-bg_alt                                  = 0xFF222222;
-bg_alt_transparent                      = 0x88222222;
-bg_alt_extra_transparent                = 0x33222222;
+bg                                      = 0xFF222222;
+bg_transparent                          = 0x88222222;
+bg_extra_transparent                    = 0x33222222;
+bg_alt                                  = 0xFF171717;
+bg_alt_transparent                      = 0x88171717;
+bg_alt_extra_transparent                = 0x33171717;
 base0                                   = 0xFF1d2127;
 base0_transparent                       = 0x881d2127;
 base0_extra_transparent                 = 0x331d2127;
@@ -81,7 +81,7 @@ dark_cyan_extra_transparent             = 0x33528b8b;
 
 transparent                             = 0x00000000;
 
-defcolor_bar = base0;
+defcolor_bar = bg_alt;
 // defcolor_bar_active = blue; // i dont think this is in use
 defcolor_base = fg; // text color of the modeline bar
 defcolor_pop1 = blue; // Query bar, lister text color
@@ -99,13 +99,13 @@ defcolor_list_item_active = {defcolor_margin_active, defcolor_margin_active};
 defcolor_cursor = yellow_transparent;
 //defcolor_at_cursor = defcolor_back;
 // defcolor_at_cursor             = green;
-defcolor_highlight_cursor_line = base5_transparent;
+defcolor_highlight_cursor_line = base3_extra_transparent;
 defcolor_mark = grey;
 defcolor_highlight = blue;
 defcolor_at_highlight = defcolor_back;
 defcolor_text_default = fg;
-defcolor_comment = dark_cyan;
-defcolor_comment_pop = {green, magenta}; // comment NOTE, TODO
+defcolor_comment = grey;
+defcolor_comment_pop = {green_br, orange}; // comment NOTE, TODO
 defcolor_keyword = blue; // if, return, ...
 defcolor_str_constant = green;
 defcolor_char_constant = teal;
@@ -151,7 +151,7 @@ defcolor_vim_chord_error            =  defcolor_special_character;
 fleury_color_syntax_crap           = magenta; // ; {} () 
 fleury_color_operators             = fg;
 
-// NOTE(edye): i want to be able to see all panes
+// NOTE(edye): i want to be able to see all panes clearly
 // fleury_color_inactive_pane_overlay = base0_extra_transparent; 
 // fleury_color_inactive_pane_background = base0_transparent;
 
@@ -175,4 +175,4 @@ fleury_color_token_minor_highlight = green_transparent; // other occurances of t
 fleury_color_error_annotation      = red;
 fleury_color_lego_grab             = orange_transparent;
 fleury_color_lego_splat            = orange_transparent;
-fleury_color_comment_user_name     = violet;
+fleury_color_comment_user_name     = yellow;
