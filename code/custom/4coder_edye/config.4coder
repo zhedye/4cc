@@ -61,7 +61,7 @@ indent_width = 4;
 default_tab_width = 4;
 
 // Theme
-default_theme_name = "theme-tomorrow-day"; // "theme-doom-one";
+default_theme_name = "theme-sourcerer"; // "theme-tomorrow-day"; // "theme-doom-one";
 highlight_line_at_cursor = true;
 
 // Font

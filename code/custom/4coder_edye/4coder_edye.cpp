@@ -2276,7 +2276,6 @@ void custom_layer_init(Application_Links *app)
         vim_text_object_vtable[VIM_TEXT_OBJECT_COUNT + BYP_OBJECT_camel0] = {'_', (Vim_Text_Object_Func *)byp_object_camel};
         vim_text_object_vtable[VIM_TEXT_OBJECT_COUNT + BYP_OBJECT_camel1] = {'-', (Vim_Text_Object_Func *)byp_object_camel};
         vim_init(app);
-            
 
 
         //t $          ($  , $                             , $                     );

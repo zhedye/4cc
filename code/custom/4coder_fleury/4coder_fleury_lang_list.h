@@ -50,7 +50,9 @@ F4_RegisterLanguages(void) // TODO where is this being called?
         {
             // TODO(rjf): Maybe find a config-driven way to specify these? "mc" was sort of
             // introduced ad-hoc...
-            S8Lit("md"), S8Lit("mc"), S8Lit("metacode"), S8Lit("meta"), S8Lit("metadesk"),
+            // NOTE(edye): md is markdown extension,
+            // S8Lit("md"),
+            S8Lit("mc"), S8Lit("metacode"), S8Lit("meta"), S8Lit("metadesk"),
         };
         for(int i = 0; i < ArrayCount(extensions); i += 1)
         {
