@@ -1,0 +1,196 @@
+// based on doom one theme: https://github.com/doomemacs/themes/blob/master/themes/doom-1337-theme.el
+
+bg                                      = 0xFF191919;
+bg_transparent                          = 0x88191919;
+bg_extra_transparent                    = 0x33191919;
+bg_alt                                  = 0xFF252526;
+bg_alt_transparent                      = 0x88252526;
+bg_alt_extra_transparent                = 0x33252526;
+base0                                   = 0xFF171F24;
+base0_transparent                       = 0x88171F24;
+base0_extra_transparent                 = 0x33171F24;
+base1                                   = 0xFF1C1C1C;
+base1_transparent                       = 0x881C1C1C;
+base1_extra_transparent                 = 0x331C1C1C;
+base2                                   = 0xFF121212;
+base2_transparent                       = 0x88121212;
+base2_extra_transparent                 = 0x33121212;
+base3                                   = 0xFF3D3D3D;
+base3_transparent                       = 0x883D3D3D;
+base3_extra_transparent                 = 0x333D3D3D;
+base4                                   = 0xFF4b474c;
+base4_transparent                       = 0x884b474c;
+base4_extra_transparent                 = 0x334b474c;
+base5                                   = 0xFF515151;
+base5_transparent                       = 0x88515151;
+base5_extra_transparent                 = 0x33515151;
+base6                                   = 0xFF6D6D6D;
+base6_transparent                       = 0x886D6D6D;
+base6_extra_transparent                 = 0x336D6D6D;
+base7                                   = 0xFF777778;
+base7_transparent                       = 0x88777778;
+base7_extra_transparent                 = 0x33777778;
+base8                                   = 0xFFf4f4f4;
+base8_transparent                       = 0x88f4f4f4;
+base8_extra_transparent                 = 0x33f4f4f4;
+fg                                      = 0xFFd4d4d4;
+fg_transparent                          = 0x88d4d4d4;
+fg_extra_transparent                    = 0x33d4d4d4;
+fg_alt                                  = 0xFFAEAFAD;
+fg_alt_transparent                      = 0x88AEAFAD;
+fg_alt_extra_transparent                = 0x33AEAFAD;
+grey                                    = 0xFF777778;
+grey_transparent                        = 0x88777778;
+grey_extra_transparent                  = 0x33777778;
+white                                   = 0xFFFFFFFF;
+white_transparent                       = 0x88FFFFFF;
+white_extra_transparent                 = 0x33FFFFFF;
+red                                     = 0xFFFF5E5E;
+red_transparent                         = 0x88FF5E5E;
+red_extra_transparent                   = 0x33FF5E5E;
+orange                                  = 0xFFFC9354;
+orange_transparent                      = 0x88FC9354;
+orange_extra_transparent                = 0x33FC9354;
+green                                   = 0xFF468800;
+green_transparent                       = 0x88468800;
+green_extra_transparent                 = 0x33468800;
+light_green                             = 0xFFB5CEA8;
+light_green_transparent                 = 0x88B5CEA8;
+light_green_extra_transparent           = 0x33B5CEA8;
+teal                                    = 0xFF35CDAF;
+teal_transparent                        = 0x8835CDAF;
+teal_extra_transparent                  = 0x3335CDAF;
+yellow                                  = 0xFFE9FDAC;
+yellow_transparent                      = 0x88E9FDAC;
+yellow_extra_transparent                = 0x33E9FDAC;
+light_yellow                            = 0xFFFBE3BF;
+light_yellow_transparent                = 0x88FBE3BF;
+light_yellow_extra_transparent          = 0x33FBE3BF;
+blue                                    = 0xFF8CDAFF;
+blue_transparent                        = 0x888CDAFF;
+blue_extra_transparent                  = 0x338CDAFF;
+dark_blue                               = 0xFF6699CC;
+dark_blue_transparent                   = 0x886699CC;
+dark_blue_extra_transparent             = 0x336699CC;
+magenta                                 = 0xFFC586C0;
+magenta_transparent                     = 0x88C586C0;
+magenta_extra_transparent               = 0x33C586C0;
+violet                                  = 0xFFBB80B3;
+violet_transparent                      = 0x88BB80B3;
+violet_extra_transparent                = 0x33BB80B3;
+dark_violet                             = 0xFF68217A;
+dark_violet_transparent                 = 0x8868217A;
+dark_violet_extra_transparent           = 0x3368217A;
+cyan                                    = 0xFF85DDFF;
+cyan_transparent                        = 0x8885DDFF;
+cyan_extra_transparent                  = 0x3385DDFF;
+dark_cyan                               = 0xFF207FA1;
+dark_cyan_transparent                   = 0x88207FA1;
+dark_cyan_extra_transparent             = 0x33207FA1;
+bottomline_blue                         = 0xFF2467D0;
+bottomline_blue_transparent             = 0x882467D0;
+bottomline_blue_extra_transparent       = 0x332467D0;
+vcmodified_blue                         = 0xFF007B9F;
+vcmodified_blue_transparent             = 0x88007B9F;
+vcmodified_blue_extra_transparent       = 0x33007B9F;
+vcdeleted_red                           = 0xFF9D0012;
+vcdeleted_red_transparent               = 0x889D0012;
+vcdeleted_red_extra_transparent         = 0x339D0012;
+
+transparent                             = 0x00000000;
+
+defcolor_bar = base2;
+// defcolor_bar_active = blue; // i dont think this is in use
+defcolor_base = fg; // text color of the modeline bar
+defcolor_pop1 = blue; // Query bar, lister text color
+defcolor_pop2 = red; // command hotkey color, also used to indicate dirty buffer
+
+defcolor_back = bg; // background 
+
+// command lister
+defcolor_margin = base4;
+defcolor_margin_hover = base4;
+defcolor_margin_active = base5;
+defcolor_list_item = {defcolor_margin, defcolor_back};
+defcolor_list_item_hover = {defcolor_margin_hover, defcolor_margin};
+defcolor_list_item_active = {defcolor_margin_active, defcolor_margin_active};
+defcolor_cursor = yellow_transparent;
+//defcolor_at_cursor = defcolor_back;
+// defcolor_at_cursor             = green;
+defcolor_highlight_cursor_line = white_extra_transparent;
+defcolor_mark = grey;
+defcolor_highlight = blue;
+defcolor_at_highlight = defcolor_back;
+defcolor_text_default = fg;
+defcolor_comment = base6;
+defcolor_comment_pop = {yellow, orange}; // comment NOTE, TODO
+defcolor_keyword = red; // if, return, ...
+defcolor_str_constant = light_yellow;
+defcolor_char_constant = orange;
+defcolor_int_constant = orange;
+defcolor_float_constant = defcolor_int_constant;
+defcolor_bool_constant = defcolor_char_constant;
+defcolor_include = defcolor_char_constant;
+defcolor_preproc = blue;
+defcolor_special_character = red;
+
+//defcolor_ghost_character = base5; // byp?
+
+defcolor_paste = cyan;
+defcolor_undo = violet;
+
+defcolor_highlight_junk = orange_extra_transparent; // error line highlighting
+defcolor_highlight_white = base2;
+
+// nested code blocks background and text colors
+defcolor_back_cycle = {bg, bg, bg, bg, base0, base1, base2}; // arbitrary pattern
+defcolor_text_cycle = {fg, fg, fg_alt, fg_alt};
+
+defcolor_line_numbers_back = bg_alt;
+defcolor_line_numbers_text = fg_alt;
+
+/// BYP Colors
+defcolor_function                   =  0xFFBDA3F9;
+defcolor_type                       =  0xFFB84AFD;
+defcolor_primitive                  =  0xFFB84AFD;
+defcolor_macro                      =  0xFF579EA8;
+defcolor_control                    =  defcolor_preproc;
+defcolor_struct                     =  defcolor_keyword;
+defcolor_non_text                   =  0xFFDAAEFE;
+//defcolor_struct                   =  0xFF70A7F7;
+
+/// Vim Colors
+defcolor_vim_filebar_pop            =  0xFF8A4CDB;
+defcolor_vim_chord_text             =  defcolor_text_default;
+defcolor_vim_chord_unresolved       =  defcolor_mark;
+defcolor_vim_chord_error            =  defcolor_special_character;
+
+// NOTE(edye): see comments in 4coder_fluery.cpp
+fleury_color_syntax_crap           = magenta; // ; {} () 
+fleury_color_operators             = red;
+
+// NOTE(edye): i want to be able to see all panes clearly
+// fleury_color_inactive_pane_overlay = base0_extra_transparent; 
+// fleury_color_inactive_pane_background = base0_transparent;
+
+fleury_color_file_progress_bar     = base5_transparent;
+fleury_color_brace_highlight       = { blue };
+fleury_color_brace_line            = { green_transparent }; // vertical scope indentation lines
+fleury_color_brace_annotation      = { cyan_transparent }; // annotate code at start of scope at the bottom of scope
+fleury_color_index_product_type    = yellow; // structs, classes
+fleury_color_index_sum_type        = yellow; // unions
+fleury_color_index_function        = blue; //function names
+fleury_color_index_macro           = blue; // macros: #define, ...
+fleury_color_index_constant        = orange; // constants and enum
+fleury_color_index_comment_tag     = cyan; // @example_comment_tag
+fleury_color_index_decl            = yellow; // declarations: max_u8, ...
+fleury_color_cursor_macro          = magenta; // cursor when macro is being recorded
+fleury_color_cursor_power_mode     = base8;
+fleury_color_cursor_inactive       = base6;
+fleury_color_plot_cycle            = { blue, green, orange, red, magenta, cyan, violet, yellow, teal }; // colors for plotting
+fleury_color_token_highlight       = dark_blue; // underline string cursor is at
+fleury_color_token_minor_highlight = dark_blue_transparent; // other occurances of the string at the cursor
+fleury_color_error_annotation      = red;
+fleury_color_lego_grab             = orange_transparent;
+fleury_color_lego_splat            = orange_transparent;
+fleury_color_comment_user_name     = yellow;
