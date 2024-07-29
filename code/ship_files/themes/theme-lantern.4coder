@@ -89,8 +89,8 @@ transparent                             = 0x00000000;
 defcolor_bar = base1;
 // defcolor_bar_active = blue;
 defcolor_base = fg; // text color of the modeline bar
-defcolor_pop1 = blue; // Query bar, lister text color
-defcolor_pop2 = green; // command hotkey color
+defcolor_pop1 = green; // Query bar, lister text color
+defcolor_pop2 = yellow; // command hotkey color
 
 defcolor_back = bg; // background 
 
