@@ -2250,7 +2250,130 @@ F4_SetDefaultBindings(Mapping *mapping)
     
 }
 
-//~ NOTE(rjf): @f4_custom_layer_initialization
+internal F4_LANGUAGE_INDEXFILE(edye_org_IndexFile)
+{
+    for(;!ctx->done;)
+    {
+        Token *name = 0;
+        if(F4_Index_RequireTokenKind(ctx, TokenBaseKind_Identifier, &name, F4_Index_TokenSkipFlag_SkipWhitespace))
+        {
+            if(F4_Index_RequireToken(ctx, S8Lit(":"), F4_Index_TokenSkipFlag_SkipWhitespace))
+            {
+                F4_Index_MakeNote(ctx, Ii64(name), F4_Index_NoteKind_Constant, 0);
+            }
+        }
+        else if(F4_Index_RequireTokenKind(ctx, TokenBaseKind_Comment, &name, F4_Index_TokenSkipFlag_SkipWhitespace))
+        {
+            F4_Index_ParseComment(ctx, name);
+        }
+        else
+        {
+            F4_Index_ParseCtx_Inc(ctx, F4_Index_TokenSkipFlag_SkipWhitespace);
+        }
+    }
+}
+
+internal b32
+edye_org_CharIsSymbol(u8 c)
+{
+    return (c == '*');
+}
+
+internal F4_LANGUAGE_POSCONTEXT(edye_org_PosContext)
+{
+    return 0;
+}
+
+internal F4_LANGUAGE_HIGHLIGHT(edye_org_Highlight)
+{
+    Range_i64 visible_range = text_layout_get_visible_range(app, text_layout_id);
+    i64 first_index = token_index_from_pos(array, visible_range.first);
+    Token_Iterator_Array it = token_iterator_index(0, array, first_index);
+    
+    for(;;)
+    {
+        Token *token = token_it_read(&it);
+        if(!token || token->pos >= visible_range.one_past_last)
+        {
+            break;
+        }
+        if(token->sub_kind == F4_MD_TokenSubKind_Tag)
+        {
+            paint_text_color(app, text_layout_id, Ii64(token), F4_ARGBFromID(color_table, fleury_color_index_comment_tag, 0));
+        }
+        if(!token_it_inc_all(&it))
+        {
+            break;
+        }
+    }
+}
+
+function void
+edye_register_languages(void){
+    // NOTE(rjf): C/C++
+    {
+        String_Const_u8 extensions[] =
+        {
+            S8Lit("cpp"), S8Lit("cc"), S8Lit("c"), S8Lit("cxx"),
+            S8Lit("C"), S8Lit("h"), S8Lit("hpp"),
+        };
+        for(int i = 0; i < ArrayCount(extensions); i += 1)
+        {
+            F4_RegisterLanguage(extensions[i],
+                                F4_CPP_IndexFile,
+                                lex_full_input_cpp_init,
+                                lex_full_input_cpp_breaks,
+                                F4_CPP_PosContext,
+                                F4_CPP_Highlight,
+                                Lex_State_Cpp);
+        }
+    }
+    
+    // NOTE(rjf): Jai
+    {
+        F4_RegisterLanguage(S8Lit("jai"),
+                            F4_Jai_IndexFile,
+                            lex_full_input_jai_init,
+                            lex_full_input_jai_breaks,
+                            F4_Jai_PosContext,
+                            F4_Jai_Highlight,
+                            Lex_State_Jai);
+    }
+    
+    // NOTE(rjf): Metadesk
+    /*
+    {
+        String_Const_u8 extensions[] =
+        {
+            // TODO(rjf): Maybe find a config-driven way to specify these? "mc" was sort of
+            // introduced ad-hoc...
+            // NOTE(edye): md is markdown extension,
+            // S8Lit("md"),
+            S8Lit("mc"), S8Lit("metacode"), S8Lit("meta"), S8Lit("metadesk"),
+        };
+        for(int i = 0; i < ArrayCount(extensions); i += 1)
+        {
+            F4_RegisterLanguage(extensions[i],
+                                F4_MD_IndexFile,
+                                lex_full_input_cpp_init,
+                                lex_full_input_cpp_breaks,
+                                F4_MD_PosContext,
+                                F4_MD_Highlight,
+                                Lex_State_Cpp);
+        }
+    }*/
+    
+    // NOTE(edye): org mode
+    {
+        F4_RegisterLanguage(S8Lit("org"),
+                            edye_org_IndexFile,
+                            lex_full_input_cpp_init,
+                            lex_full_input_cpp_breaks,
+                            edye_org_PosContext,
+                            edye_org_Highlight,
+                            Lex_State_Cpp);
+    }
+}
 
 void custom_layer_init(Application_Links *app)
 {
@@ -2316,7 +2439,7 @@ void custom_layer_init(Application_Links *app)
     
     // NOTE(rjf): Register languages.
     {
-        F4_RegisterLanguages();
+        edye_register_languages();
     }
 }
 
@@ -2337,7 +2460,7 @@ IsFileReadable(String_Const_u8 path)
 }
 
 
-//~ NOTE(edye): @edye_startup called hen 4coder's core is ready for the custom layer to start up
+//~ NOTE(edye): @edye_startup called then 4coder's core is ready for the custom layer to start up
 CUSTOM_COMMAND_SIG(edye_startup)
 CUSTOM_DOC("edye startup event")
 {
@@ -2542,27 +2665,3 @@ CUSTOM_DOC("edye startup event")
         clear_all_layouts(app);
     }
 }
-
-/*
-void
-custom_layer_init(Application_Links *app){
-    Thread_Context *tctx = get_thread_context(app);
-    
-    // NOTE(allen): setup for default framework
-    default_framework_init(app);
-    
-    // NOTE(allen): default hooks and command maps
-    set_all_default_hooks(app);
-    mapping_init(tctx, &framework_mapping);
-    String_ID global_map_id = vars_save_string_lit("keys_global");
-    String_ID file_map_id = vars_save_string_lit("keys_file");
-    String_ID code_map_id = vars_save_string_lit("keys_code");
-#if OS_MAC
-    setup_mac_mapping(&framework_mapping, global_map_id, file_map_id, code_map_id);
-#else
-    setup_default_mapping(&framework_mapping, global_map_id, file_map_id, code_map_id);
-#endif
-	setup_essential_mapping(&framework_mapping, global_map_id, file_map_id, code_map_id);
-}
-*/
-

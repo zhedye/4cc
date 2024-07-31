@@ -12,7 +12,7 @@
 
 // NOTE(rjf): @f4_register_languages Register languages.
 function void
-F4_RegisterLanguages(void) // TODO where is this being called?
+F4_RegisterLanguages(void)
 {
     // NOTE(rjf): C/C++
     {

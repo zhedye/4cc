@@ -3,14 +3,13 @@ keys_global =
 {
     // NOTE(rjf): Meta
     { "exit_4coder" ,                             "F4",     "Alt"                      },
-    { "exit_4coder" ,                             "Q",      "Command"                  },
     { "keyboard_macro_start_recording" ,          "U",      "Control"                  },
     { "keyboard_macro_finish_recording",          "U",      "Control", "Shift"         },
     { "keyboard_macro_replay",                    "U",      "Alt"                      },
     { "change_active_panel",                      "Comma",  "Control"                  },
     { "change_active_panel_backwards",            "Comma",  "Control", "Shift"         },
     { "project_go_to_root_directory",             "H",      "Control"                  },
-    { "f4_toggle_compilation_expand",      	   "Insert"                            },
+    { "f4_toggle_compilation_expand",      	   "Insert"                             },
     { "change_to_build_panel",                    "Period", "Alt"                      },
     { "close_build_panel",                        "Comma",  "Alt"                      },
     { "f4_switch_syntax_option",                  "Tick",   "Control"                  },
@@ -34,12 +33,7 @@ keys_global =
     // NOTE(rjf): Commands
     { "execute_any_cli",                          "Z",      "Alt"                      },
     { "execute_previous_cli",                     "Z",      "Alt",     "Shift"         },
-    //{ "command_lister",                           "X", "Alt"},
-    //{ "command_lister",                           "Space", "Alt"},
-    //{ "command_lister",                           "Space", "Command"},
-    { "edye_command_lister",                           "X", "Alt"},
-    //{ "vim_command_mode",                           "Space", "Alt"},
-    //{ "vim_command_mode",                           "Space", "Command"},
+    { "edye_command_lister",                      "X",      "Alt"},
     
     // NOTE(rjf): Project
     { "build_in_build_panel",                     "M",      "Alt"                      },
@@ -69,8 +63,11 @@ keys_global =
     { "f4_search_for_definition__current_file", "J", "Control", "Shift" },
     { "jump_to_last_point", "J", "Alt" },
     
-    // { "load_theme_current_buffer", "A", "Alt" },
+    // theme
+    { "load_theme_current_buffer", "A", "Alt" },
     
+    // NOTE(edye): Mac
+    { "exit_4coder","Q", "Command" },
 };
 
 keys_file =
@@ -163,16 +160,15 @@ keys_file =
     { "kill_buffer",                 "K", "Control", "Shift" },
     { "reopen",                      "O", "Alt", "Shift" },
     { "save",                        "S", "Control" },
-    { "save",                        "S", "Command" },
     { "save_all_dirty_buffers",      "S", "Control", "Shift" },
     { "redo",                        "Y", "Control" },
     { "redo",                        "Z", "Control", "Shift" },
     { "undo",                        "Z", "Control" },
-    { "view_buffer_other_panel",     "1", "Control" },
+    { "view_buffer_other_panel",     "3", "Control" },
     
     // NOTE(rjf): Meta
     { "swap_panels",                 "2", "Control" },
-    { "quick_swap_buffer",           "3", "Control" },
+    { "quick_swap_buffer",           "1", "Control" },
     { "if_read_only_goto_position",  "Return" },
     { "if_read_only_goto_position_same_panel", "Return", "Shift" },
     { "view_jump_list_with_lister",  "Period", "Control", "Shift" },
@@ -189,6 +185,37 @@ keys_file =
     // NOTE(rjf): Helpers
     { "f4_write_zero_struct",  "0", "Control" },
     { "f4_toggle_enclosure_side",  "Semicolon", "Alt" },
+    
+    // NOTE(edye): mac
+    { "kill_buffer",                 "K", "Command", "Shift" },
+    { "reopen",                      "O", "Command", "Shift" },
+    { "save",                        "S", "Command" },
+    { "save_all_dirty_buffers",      "S", "Command", "Shift" },
+    { "redo",                        "Y", "Command" },
+    { "redo",                        "Z", "Command", "Shift" },
+    { "undo",                        "Z", "Command" },
+    { "view_buffer_other_panel",     "3", "Command" },
+    
+    { "swap_panels",                 "2", "Command" },
+    { "quick_swap_buffer",           "1", "Command" },
+    { "view_jump_list_with_lister",  "Period", "Command", "Shift" },
+    
+    { "f4_search",                   "F", "Command" },
+    { "f4_reverse_search",           "R", "Command" },
+    { "list_all_locations",          "F", "Command", "Shift" },
+    // { "list_all_substring_locations_case_insensitive", "F", "Command" },
+    { "goto_line",                   "G", "Command" },
+    { "list_all_locations_of_selection",  "G", "Command", "Shift" },
+    { "search_identifier",           "T", "Command" },
+    { "list_all_locations_of_identifier", "T", "Command", "Shift" },
+    
+    { "replace_in_range",            "A", "Command" },
+    
+    { "copy",                        "C", "Command" },
+    { "paste_and_indent",            "V", "Command" },
+    { "paste_next_and_indent",       "V", "Command", "Shift" },
+    { "cut",                         "X", "Command" },
+    
 };
 
 keys_code =
