@@ -868,7 +868,7 @@ edye_render_buffer(Application_Links *app, View_ID view_id, Face_ID face_id,
     {
         F4_SyntaxHighlight(app, text_layout_id, &token_array);
         
-        // NOTE(allen): Scan for TODOs and NOTEs
+        // NOTE(edye): Scan for TODOs, NOTEs, DONEs
         b32 use_comment_keywords = def_get_config_b32(vars_save_string_lit("use_comment_keywords"));
         if(use_comment_keywords)
         {
@@ -876,6 +876,8 @@ edye_render_buffer(Application_Links *app, View_ID view_id, Face_ID face_id,
             {
                 {str8_lit("NOTE"), finalize_color(defcolor_comment_pop, 0)},
                 {str8_lit("TODO"), finalize_color(defcolor_comment_pop, 1)},
+                {str8_lit("DONE"), finalize_color(defcolor_comment_pop, 2)},
+                
                 {def_get_config_string(scratch, vars_save_string_lit("user_name")), finalize_color(fleury_color_comment_user_name, 0)},
             };
             draw_comment_highlights(app, buffer, text_layout_id,
@@ -2273,10 +2275,275 @@ internal F4_LANGUAGE_INDEXFILE(edye_org_IndexFile)
     }
 }
 
+internal F4_LANGUAGE_LEXINIT(edye_org_LexInit)
+{
+    F4_MD_LexerState *state = (F4_MD_LexerState *)state_ptr;
+    state->string = contents;
+    state->at = contents.str;
+    state->one_past_last = contents.str + contents.size;
+}
+
+
 internal b32
 edye_org_CharIsSymbol(u8 c)
 {
     return (c == '*');
+}
+
+internal F4_LANGUAGE_LEXFULLINPUT(edye_org_LexFullInput)
+{
+    b32 result = false;
+    F4_MD_LexerState state_ = *(F4_MD_LexerState *)state_ptr;
+    F4_MD_LexerState *state = &state_;
+    //u64 emit_counter = 0;
+    i64 strmax = (i64)state->string.size;
+    for(i64 i = (i64)(state->at - state->string.str);
+        i < strmax && state->at + i < state->one_past_last;)
+    {
+        i64 start_i = i;
+        u8 chr = state->string.str[i];
+        
+        // NOTE(rjf): Comments
+        if(i+1 < strmax &&
+           state->string.str[i] == '/' &&
+           state->string.str[i+1] == '/')
+        {
+            Token token = { i, 1, TokenBaseKind_Comment, 0 };
+            token.size += 1;
+            for(i64 j = i+2; j < strmax && state->string.str[j] != '\n'; j += 1, token.size += 1);
+            token_list_push(arena, list, &token);
+            i += token.size;
+        }
+        /*
+        // NOTE(rjf): Comments
+        else if(i+1 < strmax &&
+                state->string.str[i] == '/' &&
+                state->string.str[i+1] == '*')
+        {
+            Token token = { i, 1, TokenBaseKind_Comment, 0 };
+            token.size += 1;
+            for(i64 j = i+2; j+1 < strmax && !(state->string.str[j] == '*' && state->string.str[j+1] == '/'); j += 1, token.size += 1);
+            token.size += 2;
+            token_list_push(arena, list, &token);
+            i += token.size;
+        }
+        
+        // NOTE(rjf): Identifier
+        else if(character_is_alpha(chr))
+        {
+            Token token = { i, 1, TokenBaseKind_Identifier, 0 };
+            for(i64 j = i+1; j < (i64)state->string.size && 
+                (character_is_alpha_numeric(state->string.str[j]) ||
+                 state->string.str[j] == '_');
+                j += 1, token.size += 1);
+            token_list_push(arena, list, &token);
+            i += token.size;
+        }
+        
+        // NOTE(rjf): Whitespace
+        else if(character_is_whitespace(chr))
+        {
+            Token token = { i, 1, TokenBaseKind_Whitespace, 0 };
+            for(i64 j = i+1; j < (i64)state->string.size && 
+                character_is_whitespace(state->string.str[j]);
+                j += 1, token.size += 1);
+            token_list_push(arena, list, &token);
+            i += token.size;
+        }
+        
+        // NOTE(rjf): Numeric Literal
+        else if(chr >= '0' && chr <= '9')
+        {
+            Token token = { i, 1, TokenBaseKind_LiteralFloat, 0 };
+            for(i64 j = i+1; j < (i64)state->string.size && 
+                (character_is_alpha_numeric(state->string.str[j]) ||
+                 state->string.str[j] == '_' ||
+                 state->string.str[j] == '.');
+                j += 1, token.size += 1);
+            token_list_push(arena, list, &token);
+            i += token.size;
+        }
+        
+        // NOTE(rjf): Single-Line String Literal
+        else if(chr == '"')
+        {
+            Token token = { i, 1, TokenBaseKind_LiteralString, 0 };
+            for(i64 j = i+1; j < (i64)state->string.size && state->string.str[j] != '"';
+                j += 1, token.size += 1);
+            token.size += 1;
+            token_list_push(arena, list, &token);
+            i += token.size;
+        }
+        
+        // NOTE(rjf): Single-Line String Literal Marker (Bundle-Of-Tokens)
+        else if(chr == '`')
+        {
+            Token token = { i, 1, TokenBaseKind_LiteralString, 0 };
+            token_list_push(arena, list, &token);
+            i += token.size;
+        }
+        
+        // NOTE(rjf): Single-Line Char Literal
+        else if(chr == '\'')
+        {
+            Token token = { i, 1, TokenBaseKind_LiteralString, 0 };
+            for(i64 j = i+1; j < (i64)state->string.size && state->string.str[j] != '\'';
+                j += 1, token.size += 1);
+            token.size += 1;
+            token_list_push(arena, list, &token);
+            i += token.size;
+        }
+        
+        // NOTE(rjf): Multi-line String Literal
+        else if(i+2 < strmax &&
+                state->string.str[i]   == '"' &&
+                state->string.str[i+1] == '"' &&
+                state->string.str[i+2] == '"')
+        {
+            Token token = { i, 1, TokenBaseKind_LiteralString, 0 };
+            for(i64 j = i+1; j+2 < (i64)state->string.size &&
+                !(state->string.str[j]   == '"' &&
+                  state->string.str[j+1] == '"' &&
+                  state->string.str[j+2] == '"');
+                j += 1, token.size += 1);
+            token.size += 3;
+            token_list_push(arena, list, &token);
+            i += token.size;
+        }
+        
+        // NOTE(rjf): Multi-Line String Literal Marker (Bundle-Of-Tokens)
+        else if(i+2 < strmax &&
+                state->string.str[i]   == '`' &&
+                state->string.str[i+1] == '`' &&
+                state->string.str[i+2] == '`')
+        {
+            Token token = { i, 3, TokenBaseKind_LiteralString, 0 };
+            token_list_push(arena, list, &token);
+            i += token.size;
+        }
+        
+        // NOTE(rjf): Multi-line Char Literal
+        else if(i+2 < strmax &&
+                state->string.str[i]   == '\'' &&
+                state->string.str[i+1] == '\'' &&
+                state->string.str[i+2] == '\'')
+        {
+            Token token = { i, 1, TokenBaseKind_LiteralString, 0 };
+            for(i64 j = i+1; j+2 < (i64)state->string.size &&
+                !(state->string.str[j]   == '\'' &&
+                  state->string.str[j+1] == '\'' &&
+                  state->string.str[j+2] == '\'');
+                j += 1, token.size += 1);
+            token.size += 3;
+            token_list_push(arena, list, &token);
+            i += token.size;
+        }
+        
+        // NOTE(rjf): Tags
+        else if(chr == '@')
+        {
+            Token token = { i, 1, TokenBaseKind_Identifier, 0 };
+            token.sub_kind = F4_MD_TokenSubKind_Tag;
+            for(i64 j = i+1; j < (i64)state->string.size && 
+                (character_is_alpha_numeric(state->string.str[j]) ||
+                 state->string.str[j] == '_');
+                j += 1, token.size += 1);
+            token_list_push(arena, list, &token);
+            i += token.size;
+        }
+        
+        // NOTE(rjf): Scope-Open
+        else if(chr == '{')
+        {
+            Token token = { i, 1, TokenBaseKind_ScopeOpen, 0 };
+            token_list_push(arena, list, &token);
+            i += token.size;
+        }
+        
+        // NOTE(rjf): Scope-Close
+        else if(chr == '}')
+        {
+            Token token = { i, 1, TokenBaseKind_ScopeClose, 0 };
+            token_list_push(arena, list, &token);
+            i += token.size;
+        }
+        
+        // NOTE(rjf): Paren-Open
+        else if(chr == '(' || chr == '[')
+        {
+            Token token = { i, 1, TokenBaseKind_ParentheticalOpen, 0 };
+            token_list_push(arena, list, &token);
+            i += token.size;
+        }
+        
+        // NOTE(rjf): Scope-Close
+        else if(chr == ')' || chr == ']')
+        {
+            Token token = { i, 1, TokenBaseKind_ParentheticalClose, 0 };
+            token_list_push(arena, list, &token);
+            i += token.size;
+        }
+        
+        // NOTE(rjf): Statement closes
+        else if(chr == ',' || chr == ';' || (chr == '-' && i+1 < strmax && state->string.str[i+1] == '>'))
+        {
+            Token token = { i, 1, TokenBaseKind_StatementClose, 0 };
+            token_list_push(arena, list, &token);
+            i += token.size;
+        }
+        
+        // NOTE(rjf): Operators
+        else if(F4_MD_CharIsSymbol(chr))
+        {
+            Token token = { i, 1, TokenBaseKind_Operator, 0 };
+            token_list_push(arena, list, &token);
+            i += token.size;
+        }
+        */
+        
+        // NOTE(rjf): Catch-All
+        else
+        {
+            Token token = {i, 1, TokenBaseKind_LexError, 0 };
+            token_list_push(arena, list, &token);
+            i += token.size;
+        }
+        
+        if(state->at >= state->one_past_last)
+        {
+            goto eof;
+        }
+        else if(start_i == i)
+        {
+            i += 1;
+            state->at = state->string.str + i;
+        }
+        else
+        {
+            state->at = state->string.str + i;
+            
+            // NOTE(edye): i guess prevents long ass files from being checked
+            /*
+            emit_counter += 1;
+            if(emit_counter >= max)
+            {
+                goto end;
+            }
+            */
+        }
+    }
+    
+    // NOTE(rjf): Add EOF
+    eof:;
+    {
+        result = true;
+        Token token = { (i64)state->string.size, 1, TokenBaseKind_EOF, 0 };
+        token_list_push(arena, list, &token);
+    }
+    
+    end:;
+    *(F4_MD_LexerState *)state_ptr = *state;
+    return result;
 }
 
 internal F4_LANGUAGE_POSCONTEXT(edye_org_PosContext)
@@ -2367,8 +2634,13 @@ edye_register_languages(void){
     {
         F4_RegisterLanguage(S8Lit("org"),
                             edye_org_IndexFile,
-                            lex_full_input_cpp_init,
-                            lex_full_input_cpp_breaks,
+                            edye_org_LexInit,
+                            //lex_full_input_cpp_init,
+                            
+                            //lex_full_input_cpp_breaks,
+                            //F4_Language_LexFullInput_NoBreaks, // throws an exception
+                            edye_org_LexFullInput,
+                            
                             edye_org_PosContext,
                             edye_org_Highlight,
                             Lex_State_Cpp);

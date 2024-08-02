@@ -39,8 +39,18 @@ commands = {
         .save_dirty_files = true,
         .cursor_at_end = false,
     },
+    .build_custom_x64 = {
+        .win = "echo build custom: x64 & build-custom.bat",
+        .linux = "echo build custom: x64 && build-custom-linux.sh",
+        .mac = "echo build custom: x64 && build-custom-mac.sh",
+        .out = "*compilation*",
+        .footer_panel = true,
+        .save_dirty_files = true,
+        .cursor_at_end = false,
+    },
 };
 
 fkey_command = {
     .F1 = "build_x64",
+    .F2 = "build_custom_x64",
 };
