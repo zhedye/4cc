@@ -2635,7 +2635,8 @@ edye_register_languages(void){
         }
     }*/
     
-    // NOTE(edye): org mode
+    // TODO(edye): org mode, can't seem to plug in a simple lexer
+    /*
     {
         F4_RegisterLanguage(S8Lit("org"),
                             edye_org_IndexFile,
@@ -2650,6 +2651,7 @@ edye_register_languages(void){
                             edye_org_Highlight,
                             Lex_State_Cpp);
     }
+    */
 }
 
 void custom_layer_init(Application_Links *app)
