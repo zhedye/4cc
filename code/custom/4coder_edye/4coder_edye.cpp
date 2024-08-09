@@ -2801,7 +2801,8 @@ CUSTOM_DOC("edye startup event")
         }
     }
     
-    
+  
+  /*
     //~ NOTE(rjf): Initialize panels
     {
         Buffer_Identifier comp = buffer_identifier(string_u8_litexpr("*compilation*"));
@@ -2844,6 +2845,7 @@ CUSTOM_DOC("edye startup event")
         view_set_active(app, view);
         
     }
+*/
 
     //~ NOTE(rjf): Auto-Load Project.
     {
