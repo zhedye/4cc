@@ -57,8 +57,8 @@ automatically_load_project = true;
 
 // Indentation
 indent_with_tabs = false;
-indent_width = 4;
-default_tab_width = 4;
+indent_width = 2;
+default_tab_width = 2;
 
 // Theme
 default_theme_name = "theme-lantern"; // "theme-sourcerer"; // "theme-tomorrow-day"; // "theme-doom-one";
