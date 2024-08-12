@@ -2290,12 +2290,12 @@ edye_org_CharIsSymbol(u8 c)
     return (c == '*');
 }
 
-internal F4_LANGUAGE_LEXFULLINPUT(edye_org_LexFullInput)
+internal b32 edye_org_LexFullInput(Arena *arena, Token_List *list, void *state_ptr, u64 max)
 {
     b32 result = false;
     F4_MD_LexerState state_ = *(F4_MD_LexerState *)state_ptr;
     F4_MD_LexerState *state = &state_;
-    //u64 emit_counter = 0;
+    u64 emit_counter = 0;
     i64 strmax = (i64)state->string.size;
     for(i64 i = (i64)(state->at - state->string.str);
         i < strmax && state->at + i < state->one_past_last;)
@@ -2304,6 +2304,7 @@ internal F4_LANGUAGE_LEXFULLINPUT(edye_org_LexFullInput)
         u8 chr = state->string.str[i];
         
         // NOTE(rjf): Comments
+        /*
         if(i+1 < strmax &&
            state->string.str[i] == '/' &&
            state->string.str[i+1] == '/')
@@ -2314,7 +2315,7 @@ internal F4_LANGUAGE_LEXFULLINPUT(edye_org_LexFullInput)
             token_list_push(arena, list, &token);
             i += token.size;
         }
-        /*
+        
         // NOTE(rjf): Comments
         else if(i+1 < strmax &&
                 state->string.str[i] == '/' &&
@@ -2327,9 +2328,10 @@ internal F4_LANGUAGE_LEXFULLINPUT(edye_org_LexFullInput)
             token_list_push(arena, list, &token);
             i += token.size;
         }
+*/
         
         // NOTE(rjf): Identifier
-        else if(character_is_alpha(chr))
+        if(character_is_alpha(chr))
         {
             Token token = { i, 1, TokenBaseKind_Identifier, 0 };
             for(i64 j = i+1; j < (i64)state->string.size && 
@@ -2364,6 +2366,7 @@ internal F4_LANGUAGE_LEXFULLINPUT(edye_org_LexFullInput)
             i += token.size;
         }
         
+        /*
         // NOTE(rjf): Single-Line String Literal
         else if(chr == '"')
         {
@@ -2438,6 +2441,7 @@ internal F4_LANGUAGE_LEXFULLINPUT(edye_org_LexFullInput)
             token_list_push(arena, list, &token);
             i += token.size;
         }
+*/
         
         // NOTE(rjf): Tags
         else if(chr == '@')
@@ -2452,6 +2456,7 @@ internal F4_LANGUAGE_LEXFULLINPUT(edye_org_LexFullInput)
             i += token.size;
         }
         
+        /*
         // NOTE(rjf): Scope-Open
         else if(chr == '{')
         {
@@ -2491,15 +2496,15 @@ internal F4_LANGUAGE_LEXFULLINPUT(edye_org_LexFullInput)
             token_list_push(arena, list, &token);
             i += token.size;
         }
+*/
         
         // NOTE(rjf): Operators
-        else if(F4_MD_CharIsSymbol(chr))
+        else if(edye_org_CharIsSymbol(chr))
         {
             Token token = { i, 1, TokenBaseKind_Operator, 0 };
             token_list_push(arena, list, &token);
             i += token.size;
         }
-        */
         
         // NOTE(rjf): Catch-All
         else
@@ -2511,7 +2516,8 @@ internal F4_LANGUAGE_LEXFULLINPUT(edye_org_LexFullInput)
         
         if(state->at >= state->one_past_last)
         {
-            goto eof;
+            // goto eof;
+            break;
         }
         else if(start_i == i)
         {
@@ -2523,13 +2529,12 @@ internal F4_LANGUAGE_LEXFULLINPUT(edye_org_LexFullInput)
             state->at = state->string.str + i;
             
             // NOTE(edye): i guess prevents long ass files from being checked
-            /*
             emit_counter += 1;
             if(emit_counter >= max)
             {
-                goto end;
+                break;
+                //goto eof;
             }
-            */
         }
     }
     
@@ -2796,7 +2801,8 @@ CUSTOM_DOC("edye startup event")
         }
     }
     
-    
+  
+  /*
     //~ NOTE(rjf): Initialize panels
     {
         Buffer_Identifier comp = buffer_identifier(string_u8_litexpr("*compilation*"));
@@ -2839,6 +2845,7 @@ CUSTOM_DOC("edye startup event")
         view_set_active(app, view);
         
     }
+*/
 
     //~ NOTE(rjf): Auto-Load Project.
     {
