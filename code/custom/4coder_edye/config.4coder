@@ -41,7 +41,7 @@ lister_roundness = 10;
 
 // Code Wrapping
 treat_as_code = ".cpp.c.hpp.h.cc.cs.java.rs.m.mm.glsl.vert.frag.ds.4coder.jai.sh.bat"; // TODO .md.org.clj.lisp
-enable_virtual_whitespace = false;
+enable_virtual_whitespace = true;
 virtual_whitespace_regular_indent = 1;
 enable_code_wrapping = false;
 
