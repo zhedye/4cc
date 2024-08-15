@@ -134,7 +134,7 @@ defcolor_back_cycle = {bg, bg, bg, bg, bg_alt, base2, base3}; // arbitrary patte
 defcolor_text_cycle = {fg, fg, fg_alt, fg_alt};
 
 defcolor_line_numbers_back = bg_alt;
-defcolor_line_numbers_text = fg_alt;
+defcolor_line_numbers_text = base7_transparent;
 
 /// BYP Colors
 defcolor_function                   =  0xFFBDA3F9;
