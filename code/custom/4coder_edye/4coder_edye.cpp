@@ -523,17 +523,17 @@ CUSTOM_DOC("Switch the keybindings to mode 3.")
 function Implicit_Map_Result
 F4_ImplicitMap(Application_Links *app, String_ID lang, String_ID mode, Input_Event *event)
 {
-  Implicit_Map_Result result = {};
-  
-  View_ID view = get_this_ctx_view(app, Access_Always);
-  
+    Implicit_Map_Result result = {};
+    
+    View_ID view = get_this_ctx_view(app, Access_Always);
+    
 	Command_Map_ID orig_id = default_get_map_id(app, view);
-  Command_Map_ID map_id = orig_id;
+    Command_Map_ID map_id = orig_id;
 	if(GlobalKeybindingMode == KeyBindingMode_1)
 	{
 		for(int PairIndex = 0;
-        PairIndex < ArrayCount(GlobalCommandMapReroute);
-        ++PairIndex)
+            PairIndex < ArrayCount(GlobalCommandMapReroute);
+            ++PairIndex)
 		{
 			if(GlobalCommandMapReroute[PairIndex].From == map_id)
 			{
@@ -542,18 +542,18 @@ F4_ImplicitMap(Application_Links *app, String_ID lang, String_ID mode, Input_Eve
 			}
 		}
 	}
-  
+    
 	Command_Binding binding = map_get_binding_recursive(&framework_mapping, map_id, event);
 	if(!binding.custom)
 	{
 		binding = map_get_binding_recursive(&framework_mapping, orig_id, event);
 	}
-  
-  // TODO(allen): map_id <-> map name?
-  result.map = 0;
-  result.command = binding.custom;
-  
-  return(result);
+    
+    // TODO(allen): map_id <-> map name?
+    result.map = 0;
+    result.command = binding.custom;
+    
+    return(result);
 }
 
 function b32
@@ -562,7 +562,7 @@ combine_line_inner(Application_Links *app, View_ID view, Buffer_ID buffer, i64 l
 	i64 pos = get_line_end_pos(app, buffer, line_num);
 	Range_i64 range = {};
 	range.min = pos;
-  
+    
 	i64 new_pos = pos + 1;
 	String_Const_u8 delimiter = string_u8_litexpr(" ");
 	if(!line_is_valid_and_blank(app, buffer, line_num+1)){
@@ -576,31 +576,31 @@ combine_line_inner(Application_Links *app, View_ID view, Buffer_ID buffer, i64 l
 	i64 end_pos = get_line_side_pos_from_pos(app, buffer, pos, Side_Max);
 	view_set_cursor_and_preferred_x(app, view, seek_pos(end_pos));
 	move_right(app);
-  
+    
 	range.max = new_pos;
-  
+    
 	buffer_replace_range(app, buffer, range, delimiter);
-  
+    
 	return false;
 }
 
 CUSTOM_COMMAND_SIG(combine_line)
 CUSTOM_DOC("Combine/join lines togther like in vim.")
 {
-  View_ID view = get_active_view(app, Access_ReadWriteVisible);
+    View_ID view = get_active_view(app, Access_ReadWriteVisible);
 	Buffer_ID buffer = view_get_buffer(app, view, Access_ReadWriteVisible);
 	if(buffer == 0){ return; }
 	i64 pos = view_get_cursor_pos(app, view);
 	i64 line = buffer_compute_cursor(app, buffer, seek_pos(pos)).line;
-  
-  Range_i64 range = get_view_range(app, view);
-  i64 line_min = get_line_number_from_pos(app, buffer, range.min);
-  i64 line_max = get_line_number_from_pos(app, buffer, range.max);
-  i32 N = Max(1, i32(line_max-line_min));
-  view_set_cursor_and_preferred_x(app, view, seek_pos(range.min));
-  view_set_mark(app, view, seek_pos(range.max));
-  line = line_min;
-  
+    
+    Range_i64 range = get_view_range(app, view);
+    i64 line_min = get_line_number_from_pos(app, buffer, range.min);
+    i64 line_max = get_line_number_from_pos(app, buffer, range.max);
+    i32 N = Max(1, i32(line_max-line_min));
+    view_set_cursor_and_preferred_x(app, view, seek_pos(range.min));
+    view_set_mark(app, view, seek_pos(range.max));
+    line = line_min;
+    
 	History_Group history_group = history_group_begin(app, buffer);
 	for(i32 i=0; i < N; i++){
 		if(combine_line_inner(app, view, buffer, line)){
@@ -618,52 +618,52 @@ i32 recent_commands_count = 0; // how many commands have we used this session?
 
 function void
 edye__fill_command_lister(Arena *arena, Lister *lister, i32 *command_ids, i32 command_id_count, Command_Lister_Status_Rule *status_rule){
-  if(command_ids == 0){ command_id_count = command_one_past_last_id; }
-  
-  { // recent commands 
-    for(i32 i=recent_commands_count-1; i >= 0; i--){
-      
-      i32 id = recent_commands_id[i];
-      Custom_Command_Function *proc = fcoder_metacmd_table[id].proc;
-      
-      Command_Trigger_List triggers = map_get_triggers_recursive(arena, status_rule->mapping, status_rule->map_id, proc);
-      
-      List_String_Const_u8 list = {};
-      if(triggers.first == 0){
-        string_list_push(arena, &list, string_u8_litexpr(""));
-      }
-      for(Command_Trigger *node=triggers.first; node; node=node->next){
-        command_trigger_stringize(arena, &list, node);
-        if(node->next){
-          string_list_push(arena, &list, string_u8_litexpr(" "));
+    if(command_ids == 0){ command_id_count = command_one_past_last_id; }
+    
+    { // recent commands 
+        for(i32 i=recent_commands_count-1; i >= 0; i--){
+            
+            i32 id = recent_commands_id[i];
+            Custom_Command_Function *proc = fcoder_metacmd_table[id].proc;
+            
+            Command_Trigger_List triggers = map_get_triggers_recursive(arena, status_rule->mapping, status_rule->map_id, proc);
+            
+            List_String_Const_u8 list = {};
+            if(triggers.first == 0){
+                string_list_push(arena, &list, string_u8_litexpr(""));
+            }
+            for(Command_Trigger *node=triggers.first; node; node=node->next){
+                command_trigger_stringize(arena, &list, node);
+                if(node->next){
+                    string_list_push(arena, &list, string_u8_litexpr(" "));
+                }
+            }
+            
+            String_Const_u8 key_bind = string_list_flatten(arena, list);
+            String_Const_u8 description = SCu8(fcoder_metacmd_table[id].description);
+            String_Const_u8 status = push_stringf(arena, "%.*s\n%.*s", string_expand(key_bind), string_expand(description));
+            
+            lister_add_item(lister, SCu8(fcoder_metacmd_table[id].name), status, (void*)proc, 0);
         }
-      }
-      
-      String_Const_u8 key_bind = string_list_flatten(arena, list);
-      String_Const_u8 description = SCu8(fcoder_metacmd_table[id].description);
-      String_Const_u8 status = push_stringf(arena, "%.*s\n%.*s", string_expand(key_bind), string_expand(description));
-      
-      lister_add_item(lister, SCu8(fcoder_metacmd_table[id].name), status, (void*)proc, 0);
     }
-  }
-  
+    
 	for(i32 i=0; i<command_id_count; i++){
 		i32 j = (command_ids ? command_ids[i] : i);
 		j = clamp(0, j, command_one_past_last_id);
-    
-    b32 is_recent_command = false;
-    for(i32 i=recent_commands_count-1; i >= 0; i--){
-      if(j == recent_commands_id[i]) {
-        is_recent_command = true;
-        break;
-      }
-    }
-    if(is_recent_command) continue;
-    
+        
+        b32 is_recent_command = false;
+        for(i32 i=recent_commands_count-1; i >= 0; i--){
+            if(j == recent_commands_id[i]) {
+                is_recent_command = true;
+                break;
+            }
+        }
+        if(is_recent_command) continue;
+        
 		Custom_Command_Function *proc = fcoder_metacmd_table[j].proc;
-    
+        
 		Command_Trigger_List triggers = map_get_triggers_recursive(arena, status_rule->mapping, status_rule->map_id, proc);
-    
+        
 		List_String_Const_u8 list = {};
 		if(triggers.first == 0){
 			string_list_push(arena, &list, string_u8_litexpr(""));
@@ -674,31 +674,31 @@ edye__fill_command_lister(Arena *arena, Lister *lister, i32 *command_ids, i32 co
 				string_list_push(arena, &list, string_u8_litexpr(" "));
 			}
 		}
-    
+        
 		String_Const_u8 key_bind = string_list_flatten(arena, list);
 		String_Const_u8 description = SCu8(fcoder_metacmd_table[j].description);
 		String_Const_u8 status = push_stringf(arena, "%.*s\n%.*s", string_expand(key_bind), string_expand(description));
-    
+        
 		lister_add_item(lister, SCu8(fcoder_metacmd_table[j].name), status, (void*)proc, 0);
 	}
 }
 
 function Custom_Command_Function*
 edye_get_command_from_user(Application_Links *app, i32 *command_ids, i32 command_id_count, Command_Lister_Status_Rule *status_rule){
-  
+    
 	Scratch_Block scratch(app);
 	Lister_Block lister(app, scratch);
 	vim_lister_set_default_handlers(lister);
 	lister_set_query(lister, string_u8_litexpr("Command:"));
 	edye__fill_command_lister(scratch, lister, command_ids, command_id_count, status_rule);
-  
-  { // bottom lister
-    vim_reset_bottom_text();
-    string_append(&vim_bot_text, string_u8_litexpr(":"));
-  }
-  
+    
+    { // bottom lister
+        vim_reset_bottom_text();
+        string_append(&vim_bot_text, string_u8_litexpr(":"));
+    }
+    
 	Lister_Result l_result = vim_run_lister(app, lister);
-  
+    
 	return (l_result.canceled ? 0 : (Custom_Command_Function *)l_result.user_data);
 }
 
@@ -716,103 +716,103 @@ CUSTOM_DOC("Command Mode from byp")
 	}else{
 		rule = command_lister_status_descriptions();
 	}
-  
+    
 	Custom_Command_Function *func = edye_get_command_from_user(app, 0, 0, &rule);
 	if(func != 0){
 		view_enqueue_command_function(app, view, func);
-    
-    {// add to recent command arrays
-      
-      // check duplicate
-      i32 existing_command_position = -1, existing_command_id = -1;
-      for(i32 i=0; i<recent_commands_count; i++){
-        if(recent_commands[i] == func){
-          existing_command_position = i;
-          existing_command_id = recent_commands_id[i];
-          break;
-        }
-      }
-      
-      if(existing_command_position == -1){
-        // add to recent commands
-        for(i32 i=0; i<command_one_past_last_id; i++){
-          
-          Custom_Command_Function *proc = fcoder_metacmd_table[i].proc;
-          
-          if(proc == func){
-            recent_commands_id[recent_commands_count] = i;
-            recent_commands[recent_commands_count] = proc;
-            recent_commands_count++;
-          }
-        }
-      } else {
-        for(i32 i = existing_command_position; i < recent_commands_count-1; i++){
-          recent_commands_id[i] = recent_commands_id[i+1];
-        }
-        recent_commands_id[recent_commands_count-1] = existing_command_id;
         
-        for(i32 i = existing_command_position; i < recent_commands_count-1; i++){
-          recent_commands[i] = recent_commands[i+1];
+        {// add to recent command arrays
+            
+            // check duplicate
+            i32 existing_command_position = -1, existing_command_id = -1;
+            for(i32 i=0; i<recent_commands_count; i++){
+                if(recent_commands[i] == func){
+                    existing_command_position = i;
+                    existing_command_id = recent_commands_id[i];
+                    break;
+                }
+            }
+            
+            if(existing_command_position == -1){
+                // add to recent commands
+                for(i32 i=0; i<command_one_past_last_id; i++){
+                    
+                    Custom_Command_Function *proc = fcoder_metacmd_table[i].proc;
+                    
+                    if(proc == func){
+                        recent_commands_id[recent_commands_count] = i;
+                        recent_commands[recent_commands_count] = proc;
+                        recent_commands_count++;
+                    }
+                }
+            } else {
+                for(i32 i = existing_command_position; i < recent_commands_count-1; i++){
+                    recent_commands_id[i] = recent_commands_id[i+1];
+                }
+                recent_commands_id[recent_commands_count-1] = existing_command_id;
+                
+                for(i32 i = existing_command_position; i < recent_commands_count-1; i++){
+                    recent_commands[i] = recent_commands[i+1];
+                }
+                recent_commands[recent_commands_count-1] = func;
+            }
+            
         }
-        recent_commands[recent_commands_count-1] = func;
-      }
-      
-    }
 	}
 }
 
 
 function Rect_f32
 edye_buffer_region(Application_Links *app, View_ID view_id, Rect_f32 region){
-  
+    
 	Buffer_ID buffer = view_get_buffer(app, view_id, Access_Always);
 	Face_ID face_id = get_face_id(app, 0);
 	Face_Metrics metrics = get_face_metrics(app, face_id);
 	f32 line_height = metrics.line_height;
 	f32 digit_advance = metrics.decimal_digit_advance;
-  
-  // NOTE(allen): margins
-  region = rect_inner(region, 3.f);
-  
-  // NOTE(allen): file bar
-  b64 showing_file_bar = false;
-  if (view_get_setting(app, view_id, ViewSetting_ShowFileBar, &showing_file_bar) &&
-      showing_file_bar){
-    Rect_f32_Pair pair = layout_file_bar_on_top(region, line_height);
-    region = pair.max;
-  }
-  
-  // NOTE(allen): query bars
-  {
-    Query_Bar *space[32];
-    Query_Bar_Ptr_Array query_bars = {};
-    query_bars.ptrs = space;
-    if (get_active_query_bars(app, view_id, ArrayCount(space), &query_bars)){
-      Rect_f32_Pair pair = layout_query_bar_on_top(region, line_height, query_bars.count);
-      region = pair.max;
+    
+    // NOTE(allen): margins
+    region = rect_inner(region, 3.f);
+    
+    // NOTE(allen): file bar
+    b64 showing_file_bar = false;
+    if (view_get_setting(app, view_id, ViewSetting_ShowFileBar, &showing_file_bar) &&
+        showing_file_bar){
+        Rect_f32_Pair pair = layout_file_bar_on_top(region, line_height);
+        region = pair.max;
     }
-  }
-  
-  // NOTE(allen): FPS hud
-  if (show_fps_hud){
-    Rect_f32_Pair pair = layout_fps_hud_on_bottom(region, line_height);
-    region = pair.min;
-  }
-  
-  // NOTE(allen): line numbers
-  b32 show_line_number_margins = def_get_config_b32(vars_save_string_lit("show_line_number_margins"));
-  if (show_line_number_margins){
-    Rect_f32_Pair pair = layout_line_number_margin(app, buffer, region, digit_advance);
-    region = pair.max;
-  }
-  
-  // NOTE(edye): byp vim lister at the bottom of the screen
+    
+    // NOTE(allen): query bars
+    {
+        Query_Bar *space[32];
+        Query_Bar_Ptr_Array query_bars = {};
+        query_bars.ptrs = space;
+        if (get_active_query_bars(app, view_id, ArrayCount(space), &query_bars)){
+            Rect_f32_Pair pair = layout_query_bar_on_top(region, line_height, query_bars.count);
+            region = pair.max;
+        }
+    }
+    
+    // NOTE(allen): FPS hud
+    if (show_fps_hud){
+        Rect_f32_Pair pair = layout_fps_hud_on_bottom(region, line_height);
+        region = pair.min;
+    }
+    
+    // NOTE(allen): line numbers
+    b32 show_line_number_margins = def_get_config_b32(vars_save_string_lit("show_line_number_margins"));
+    if (show_line_number_margins){
+        Rect_f32_Pair pair = layout_line_number_margin(app, buffer, region, digit_advance);
+        region = pair.max;
+    }
+    
+    // NOTE(edye): byp vim lister at the bottom of the screen
 	Rect_f32 global_rect = global_get_screen_rectangle(app);
 	f32 filebar_y = global_rect.y1 - 2.f*line_height - vim_cur_filebar_offset+1;
 	if(vim_cur_filebar_offset > 0 && region.y1 >= filebar_y){
 		region.y1 = filebar_y;
 	}
-  
+    
 	return(region);
 }
 
@@ -837,7 +837,7 @@ hex_color_preview(Application_Links *app, Buffer_ID buffer_id, Text_Layout_ID te
 		Range_i64 hex_range = Ii64_size(i+visible_range.min, 10);
 		u32 c = u32(string_to_integer(SCu8(text+i+2, 8), 16));
 		f32 avg = (((c >> 16) & 0xFF) + ((c >> 8) & 0xFF) + (c & 0xFF))/3.f;
-    
+        
 		u32 contrast = 0xFF000000 | (i32(avg > 110.f)-1);
 		paint_text_color(app, text_layout_id, hex_range, contrast);
 		Rect_f32 rect_left  = text_layout_character_on_screen(app, text_layout_id, hex_range.min);
@@ -855,1875 +855,1196 @@ edye_render_buffer(Application_Links *app, View_ID view_id, Face_ID face_id,
                    Buffer_ID buffer, Text_Layout_ID text_layout_id,
                    Rect_f32 rect, Frame_Info frame_info)
 {
-  Scratch_Block scratch(app);
-  ProfileScope(app, "[Fleury] Render Buffer");
-  
-  View_ID active_view = get_active_view(app, Access_Always);
-  b32 is_active_view = (active_view == view_id);
-  Rect_f32 prev_clip = draw_set_clip(app, rect);
-  
-  // NOTE(allen): Token colorizing
-  Token_Array token_array = get_token_array_from_buffer(app, buffer);
-  if(token_array.tokens != 0)
-  {
-    F4_SyntaxHighlight(app, text_layout_id, &token_array);
+    Scratch_Block scratch(app);
+    ProfileScope(app, "[Fleury] Render Buffer");
     
-    // NOTE(edye): Scan for TODOs, NOTEs, DONEs
-    b32 use_comment_keywords = def_get_config_b32(vars_save_string_lit("use_comment_keywords"));
-    if(use_comment_keywords)
+    View_ID active_view = get_active_view(app, Access_Always);
+    b32 is_active_view = (active_view == view_id);
+    Rect_f32 prev_clip = draw_set_clip(app, rect);
+    
+    // NOTE(allen): Token colorizing
+    Token_Array token_array = get_token_array_from_buffer(app, buffer);
+    if(token_array.tokens != 0)
     {
-      Comment_Highlight_Pair pairs[] =
-      {
-        {str8_lit("NOTE"), finalize_color(defcolor_comment_pop, 0)},
-        {str8_lit("TODO"), finalize_color(defcolor_comment_pop, 1)},
-        {str8_lit("DONE"), finalize_color(defcolor_comment_pop, 2)},
+        F4_SyntaxHighlight(app, text_layout_id, &token_array);
         
-        {def_get_config_string(scratch, vars_save_string_lit("user_name")), finalize_color(fleury_color_comment_user_name, 0)},
-      };
-      draw_comment_highlights(app, buffer, text_layout_id,
-                              &token_array, pairs, ArrayCount(pairs));
-    }
-  }
-  else
-  {
-    Range_i64 visible_range = text_layout_get_visible_range(app, text_layout_id);
-    paint_text_color_fcolor(app, text_layout_id, visible_range, fcolor_id(defcolor_text_default));
-  }
-  
-  i64 cursor_pos = view_correct_cursor(app, view_id);
-  view_correct_mark(app, view_id);
-  
-  // NOTE(allen): Scope highlight
-  b32 use_scope_highlight = def_get_config_b32(vars_save_string_lit("use_scope_highlight"));
-  if (use_scope_highlight){
-    Color_Array colors = finalize_color_array(defcolor_back_cycle);
-    draw_scope_highlight(app, buffer, text_layout_id, cursor_pos, colors.vals, colors.count);
-  }
-  
-  // NOTE(rjf): Brace highlight
-  {
-    Color_Array colors = finalize_color_array(fleury_color_brace_highlight);
-    if(colors.count >= 1 && F4_ARGBIsValid(colors.vals[0]))
-    {
-      F4_Brace_RenderHighlight(app, buffer, text_layout_id, cursor_pos,
-                               colors.vals, colors.count);
-    }
-  }
-  
-  // NOTE(allen): Line highlight
-  {
-    b32 highlight_line_at_cursor = def_get_config_b32(vars_save_string_lit("highlight_line_at_cursor"));
-    String_Const_u8 name = string_u8_litexpr("*compilation*");
-    Buffer_ID compilation_buffer = get_buffer_by_name(app, name, Access_Always);
-    if(highlight_line_at_cursor && (is_active_view || buffer == compilation_buffer))
-    {
-      i64 line_number = get_line_number_from_pos(app, buffer, cursor_pos);
-      draw_line_highlight(app, text_layout_id, line_number,
-                          fcolor_id(defcolor_highlight_cursor_line));
-    }
-  }
-  
-  // NOTE(rjf): Error/Search Highlight
-  {
-    b32 use_error_highlight = def_get_config_b32(vars_save_string_lit("use_error_highlight"));
-    b32 use_jump_highlight = def_get_config_b32(vars_save_string_lit("use_jump_highlight"));
-    if (use_error_highlight || use_jump_highlight){
-      // NOTE(allen): Error highlight
-      String_Const_u8 name = string_u8_litexpr("*compilation*");
-      Buffer_ID compilation_buffer = get_buffer_by_name(app, name, Access_Always);
-      if (use_error_highlight){
-        draw_jump_highlights(app, buffer, text_layout_id, compilation_buffer,
-                             fcolor_id(defcolor_highlight_junk));
-      }
-      
-      // NOTE(allen): Search highlight
-      if (use_jump_highlight){
-        Buffer_ID jump_buffer = get_locked_jump_buffer(app);
-        if (jump_buffer != compilation_buffer){
-          draw_jump_highlights(app, buffer, text_layout_id, jump_buffer,
-                               fcolor_id(defcolor_highlight_white));
-        }
-      }
-    }
-  }
-  
-  // NOTE(rjf): Error annotations
-  {
-    String_Const_u8 name = string_u8_litexpr("*compilation*");
-    Buffer_ID compilation_buffer = get_buffer_by_name(app, name, Access_Always);
-    F4_RenderErrorAnnotations(app, buffer, text_layout_id, compilation_buffer);
-  }
-  
-  // NOTE(jack): Token Occurance Highlight
-  if (!def_get_config_b32(vars_save_string_lit("f4_disable_cursor_token_occurance"))) 
-  {
-    ProfileScope(app, "[Fleury] Token Occurance Highlight");
-    
-    // NOTE(jack): Get the active cursor's token string
-    Buffer_ID active_cursor_buffer = view_get_buffer(app, active_view, Access_Always);
-    i64 active_cursor_pos = view_get_cursor_pos(app, active_view);
-    Token_Array active_cursor_buffer_tokens = get_token_array_from_buffer(app, active_cursor_buffer);
-    Token_Iterator_Array active_cursor_it = token_iterator_pos(0, &active_cursor_buffer_tokens, active_cursor_pos);
-    Token *active_cursor_token = token_it_read(&active_cursor_it);
-    
-    String_Const_u8 active_cursor_string = string_u8_litexpr("");
-    if(active_cursor_token)
-    {
-      active_cursor_string = push_buffer_range(app, scratch, active_cursor_buffer, Ii64(active_cursor_token));
-      
-      // Loop the visible tokens
-      Range_i64 visible_range = text_layout_get_visible_range(app, text_layout_id);
-      i64 first_index = token_index_from_pos(&token_array, visible_range.first);
-      Token_Iterator_Array it = token_iterator_index(0, &token_array, first_index);
-      for (;;)
-      {
-        Token *token = token_it_read(&it);
-        if(!token || token->pos >= visible_range.one_past_last)
+        // NOTE(edye): Scan for TODOs, NOTEs, DONEs
+        b32 use_comment_keywords = def_get_config_b32(vars_save_string_lit("use_comment_keywords"));
+        if(use_comment_keywords)
         {
-          break;
+            Comment_Highlight_Pair pairs[] =
+            {
+                {str8_lit("NOTE"), finalize_color(defcolor_comment_pop, 0)},
+                {str8_lit("TODO"), finalize_color(defcolor_comment_pop, 1)},
+                {str8_lit("DONE"), finalize_color(defcolor_comment_pop, 2)},
+                
+                {def_get_config_string(scratch, vars_save_string_lit("user_name")), finalize_color(fleury_color_comment_user_name, 0)},
+            };
+            draw_comment_highlights(app, buffer, text_layout_id,
+                                    &token_array, pairs, ArrayCount(pairs));
         }
-        
-        if (token->kind == TokenBaseKind_Identifier)
+    }
+    else
+    {
+        Range_i64 visible_range = text_layout_get_visible_range(app, text_layout_id);
+        paint_text_color_fcolor(app, text_layout_id, visible_range, fcolor_id(defcolor_text_default));
+    }
+    
+    i64 cursor_pos = view_correct_cursor(app, view_id);
+    view_correct_mark(app, view_id);
+    
+    // NOTE(allen): Scope highlight
+    b32 use_scope_highlight = def_get_config_b32(vars_save_string_lit("use_scope_highlight"));
+    if (use_scope_highlight){
+        Color_Array colors = finalize_color_array(defcolor_back_cycle);
+        draw_scope_highlight(app, buffer, text_layout_id, cursor_pos, colors.vals, colors.count);
+    }
+    
+    // NOTE(rjf): Brace highlight
+    {
+        Color_Array colors = finalize_color_array(fleury_color_brace_highlight);
+        if(colors.count >= 1 && F4_ARGBIsValid(colors.vals[0]))
         {
-          Range_i64 token_range = Ii64(token);
-          String_Const_u8 token_string = push_buffer_range(app, scratch, buffer, token_range);
-          
-          // NOTE(jack) If this is the buffers cursor token, highlight it with an Underline
-          if (range_contains(token_range, view_get_cursor_pos(app, view_id)))
-          {
-            F4_RenderRangeHighlight(app, view_id, text_layout_id,
-                                    token_range, F4_RangeHighlightKind_Underline,
-                                    fcolor_resolve(fcolor_id(fleury_color_token_highlight)));
-          }
-          // NOTE(jack): If the token matches the active buffer token. highlight it with a Minor Underline
-          else if(active_cursor_token->kind == TokenBaseKind_Identifier && 
-                  string_match(token_string, active_cursor_string))
-          {
-            F4_RenderRangeHighlight(app, view_id, text_layout_id,
-                                    token_range, F4_RangeHighlightKind_MinorUnderline,
-                                    fcolor_resolve(fcolor_id(fleury_color_token_minor_highlight)));
+            F4_Brace_RenderHighlight(app, buffer, text_layout_id, cursor_pos,
+                                     colors.vals, colors.count);
+        }
+    }
+    
+    // NOTE(allen): Line highlight
+    {
+        b32 highlight_line_at_cursor = def_get_config_b32(vars_save_string_lit("highlight_line_at_cursor"));
+        String_Const_u8 name = string_u8_litexpr("*compilation*");
+        Buffer_ID compilation_buffer = get_buffer_by_name(app, name, Access_Always);
+        if(highlight_line_at_cursor && (is_active_view || buffer == compilation_buffer))
+        {
+            i64 line_number = get_line_number_from_pos(app, buffer, cursor_pos);
+            draw_line_highlight(app, text_layout_id, line_number,
+                                fcolor_id(defcolor_highlight_cursor_line));
+        }
+    }
+    
+    // NOTE(rjf): Error/Search Highlight
+    {
+        b32 use_error_highlight = def_get_config_b32(vars_save_string_lit("use_error_highlight"));
+        b32 use_jump_highlight = def_get_config_b32(vars_save_string_lit("use_jump_highlight"));
+        if (use_error_highlight || use_jump_highlight){
+            // NOTE(allen): Error highlight
+            String_Const_u8 name = string_u8_litexpr("*compilation*");
+            Buffer_ID compilation_buffer = get_buffer_by_name(app, name, Access_Always);
+            if (use_error_highlight){
+                draw_jump_highlights(app, buffer, text_layout_id, compilation_buffer,
+                                     fcolor_id(defcolor_highlight_junk));
+            }
             
-          } 
+            // NOTE(allen): Search highlight
+            if (use_jump_highlight){
+                Buffer_ID jump_buffer = get_locked_jump_buffer(app);
+                if (jump_buffer != compilation_buffer){
+                    draw_jump_highlights(app, buffer, text_layout_id, jump_buffer,
+                                         fcolor_id(defcolor_highlight_white));
+                }
+            }
         }
+    }
+    
+    // NOTE(rjf): Error annotations
+    {
+        String_Const_u8 name = string_u8_litexpr("*compilation*");
+        Buffer_ID compilation_buffer = get_buffer_by_name(app, name, Access_Always);
+        F4_RenderErrorAnnotations(app, buffer, text_layout_id, compilation_buffer);
+    }
+    
+    // NOTE(jack): Token Occurance Highlight
+    if (!def_get_config_b32(vars_save_string_lit("f4_disable_cursor_token_occurance"))) 
+    {
+        ProfileScope(app, "[Fleury] Token Occurance Highlight");
         
-        if(!token_it_inc_non_whitespace(&it))
+        // NOTE(jack): Get the active cursor's token string
+        Buffer_ID active_cursor_buffer = view_get_buffer(app, active_view, Access_Always);
+        i64 active_cursor_pos = view_get_cursor_pos(app, active_view);
+        Token_Array active_cursor_buffer_tokens = get_token_array_from_buffer(app, active_cursor_buffer);
+        Token_Iterator_Array active_cursor_it = token_iterator_pos(0, &active_cursor_buffer_tokens, active_cursor_pos);
+        Token *active_cursor_token = token_it_read(&active_cursor_it);
+        
+        String_Const_u8 active_cursor_string = string_u8_litexpr("");
+        if(active_cursor_token)
         {
-          break;
+            active_cursor_string = push_buffer_range(app, scratch, active_cursor_buffer, Ii64(active_cursor_token));
+            
+            // Loop the visible tokens
+            Range_i64 visible_range = text_layout_get_visible_range(app, text_layout_id);
+            i64 first_index = token_index_from_pos(&token_array, visible_range.first);
+            Token_Iterator_Array it = token_iterator_index(0, &token_array, first_index);
+            for (;;)
+            {
+                Token *token = token_it_read(&it);
+                if(!token || token->pos >= visible_range.one_past_last)
+                {
+                    break;
+                }
+                
+                if (token->kind == TokenBaseKind_Identifier)
+                {
+                    Range_i64 token_range = Ii64(token);
+                    String_Const_u8 token_string = push_buffer_range(app, scratch, buffer, token_range);
+                    
+                    // NOTE(jack) If this is the buffers cursor token, highlight it with an Underline
+                    if (range_contains(token_range, view_get_cursor_pos(app, view_id)))
+                    {
+                        F4_RenderRangeHighlight(app, view_id, text_layout_id,
+                                                token_range, F4_RangeHighlightKind_Underline,
+                                                fcolor_resolve(fcolor_id(fleury_color_token_highlight)));
+                    }
+                    // NOTE(jack): If the token matches the active buffer token. highlight it with a Minor Underline
+                    else if(active_cursor_token->kind == TokenBaseKind_Identifier && 
+                            string_match(token_string, active_cursor_string))
+                    {
+                        F4_RenderRangeHighlight(app, view_id, text_layout_id,
+                                                token_range, F4_RangeHighlightKind_MinorUnderline,
+                                                fcolor_resolve(fcolor_id(fleury_color_token_minor_highlight)));
+                        
+                    } 
+                }
+                
+                if(!token_it_inc_non_whitespace(&it))
+                {
+                    break;
+                }
+            }
         }
-      }
     }
-  }
-  // NOTE(jack): if "f4_disable_cursor_token_occurance" is set, just highlight the cusror 
-  else
-  {
-    ProfileScope(app, "[Fleury] Token Highlight");
-    
-    Token_Iterator_Array it = token_iterator_pos(0, &token_array, cursor_pos);
-    Token *token = token_it_read(&it);
-    if(token && token->kind == TokenBaseKind_Identifier)
+    // NOTE(jack): if "f4_disable_cursor_token_occurance" is set, just highlight the cusror 
+    else
     {
-      F4_RenderRangeHighlight(app, view_id, text_layout_id,
-                              Ii64(token->pos, token->pos + token->size),
-                              F4_RangeHighlightKind_Underline,
-                              fcolor_resolve(fcolor_id(fleury_color_token_highlight)));
-    }
-  }
-  
-  // NOTE(rjf): Flashes
-  {
-    F4_RenderFlashes(app, view_id, text_layout_id);
-  }
-  
-  hex_color_preview(app, buffer, text_layout_id);
-  
-  // NOTE(allen): Color parens
-  if(def_get_config_b32(vars_save_string_lit("use_paren_helper")))
-  {
-    Color_Array colors = finalize_color_array(defcolor_text_cycle);
-    draw_paren_highlight(app, buffer, text_layout_id, cursor_pos, colors.vals, colors.count);
-  }
-  
-  // NOTE(rjf): Divider Comments
-  {
-    F4_RenderDividerComments(app, buffer, view_id, text_layout_id);
-  }
-  
-  // NOTE(rjf): Cursor Mark Range
-  if(is_active_view && fcoder_mode == FCoderMode_Original)
-  {
-    F4_HighlightCursorMarkRange(app, view_id);
-  }
-  
-  // NOTE(allen): Cursor shape
-  Face_Metrics metrics = get_face_metrics(app, face_id);
-  u64 cursor_roundness_100 = def_get_config_u64(app, vars_save_string_lit("cursor_roundness"));
-  f32 cursor_roundness = metrics.normal_advance*cursor_roundness_100*0.01f;
-  f32 mark_thickness = (f32)def_get_config_u64(app, vars_save_string_lit("mark_thickness"));
-  
-  // NOTE(rjf): Cursor
-  switch (fcoder_mode)
-  {
-    case FCoderMode_Original:
-    {
-      F4_Cursor_RenderEmacsStyle(app, view_id, is_active_view, buffer, text_layout_id, cursor_roundness, mark_thickness, frame_info);
-    }break;
-    
-    case FCoderMode_NotepadLike:
-    {
-      F4_Cursor_RenderNotepadStyle(app, view_id, is_active_view, buffer, text_layout_id, cursor_roundness,
-                                   mark_thickness, frame_info);
-      break;
-    }
-  }
-  
-  // NOTE(rjf): Brace annotations
-  {
-    F4_Brace_RenderCloseBraceAnnotation(app, buffer, text_layout_id, cursor_pos);
-  }
-  
-  // NOTE(rjf): Brace lines
-  {
-    F4_Brace_RenderLines(app, buffer, view_id, text_layout_id, cursor_pos);
-  }
-  
-  // NOTE(allen): put the actual text on the actual screen
-  draw_text_layout_default(app, text_layout_id);
-  
-  // NOTE(rjf): Interpret buffer as calc code, if it's the calc buffer.
-  {
-    Buffer_ID calc_buffer_id = get_buffer_by_name(app, string_u8_litexpr("*calc*"), AccessFlag_Read);
-    if(calc_buffer_id == buffer)
-    {
-      F4_CLC_RenderBuffer(app, buffer, view_id, text_layout_id, frame_info);
-    }
-  }
-  
-  // NOTE(rjf): Draw calc comments.
-  {
-    F4_CLC_RenderComments(app, buffer, view_id, text_layout_id, frame_info);
-  }
-  
-  draw_set_clip(app, prev_clip);
-  
-  // NOTE(rjf): Draw tooltips and stuff.
-  if(active_view == view_id)
-  {
-    // NOTE(rjf): Position context helper
-    {
-      F4_PosContext_Render(app, view_id, buffer, text_layout_id, cursor_pos);
-    }
-    
-    // NOTE(rjf): Draw tooltip list.
-    {
-      Mouse_State mouse = get_mouse_state(app);
-      
-      Rect_f32 view_rect = view_get_screen_rect(app, view_id);
-      
-      Face_ID tooltip_face_id = global_small_code_face;
-      Face_Metrics tooltip_face_metrics = get_face_metrics(app, tooltip_face_id);
-      
-      Rect_f32 tooltip_rect =
-      {
-        (f32)mouse.x + 16,
-        (f32)mouse.y + 16,
-        (f32)mouse.x + 16,
-        (f32)mouse.y + 16 + tooltip_face_metrics.line_height + 8,
-      };
-      
-      for(int i = 0; i < global_tooltip_count; ++i)
-      {
-        String_Const_u8 string = global_tooltips[i].string;
-        tooltip_rect.x1 = tooltip_rect.x0;
-        tooltip_rect.x1 += get_string_advance(app, tooltip_face_id, string) + 4;
+        ProfileScope(app, "[Fleury] Token Highlight");
         
-        if(tooltip_rect.x1 > view_rect.x1)
+        Token_Iterator_Array it = token_iterator_pos(0, &token_array, cursor_pos);
+        Token *token = token_it_read(&it);
+        if(token && token->kind == TokenBaseKind_Identifier)
         {
-          f32 difference = tooltip_rect.x1 - view_rect.x1;
-          tooltip_rect.x1 = (float)(int)(tooltip_rect.x1 - difference);
-          tooltip_rect.x0 = (float)(int)(tooltip_rect.x0 - difference);
+            F4_RenderRangeHighlight(app, view_id, text_layout_id,
+                                    Ii64(token->pos, token->pos + token->size),
+                                    F4_RangeHighlightKind_Underline,
+                                    fcolor_resolve(fcolor_id(fleury_color_token_highlight)));
+        }
+    }
+    
+    // NOTE(rjf): Flashes
+    {
+        F4_RenderFlashes(app, view_id, text_layout_id);
+    }
+    
+    hex_color_preview(app, buffer, text_layout_id);
+    
+    // NOTE(allen): Color parens
+    if(def_get_config_b32(vars_save_string_lit("use_paren_helper")))
+    {
+        Color_Array colors = finalize_color_array(defcolor_text_cycle);
+        draw_paren_highlight(app, buffer, text_layout_id, cursor_pos, colors.vals, colors.count);
+    }
+    
+    // NOTE(rjf): Divider Comments
+    {
+        F4_RenderDividerComments(app, buffer, view_id, text_layout_id);
+    }
+    
+    // NOTE(rjf): Cursor Mark Range
+    if(is_active_view && fcoder_mode == FCoderMode_Original)
+    {
+        F4_HighlightCursorMarkRange(app, view_id);
+    }
+    
+    // NOTE(allen): Cursor shape
+    Face_Metrics metrics = get_face_metrics(app, face_id);
+    u64 cursor_roundness_100 = def_get_config_u64(app, vars_save_string_lit("cursor_roundness"));
+    f32 cursor_roundness = metrics.normal_advance*cursor_roundness_100*0.01f;
+    f32 mark_thickness = (f32)def_get_config_u64(app, vars_save_string_lit("mark_thickness"));
+    
+    // NOTE(rjf): Cursor
+    switch (fcoder_mode)
+    {
+        case FCoderMode_Original:
+        {
+            F4_Cursor_RenderEmacsStyle(app, view_id, is_active_view, buffer, text_layout_id, cursor_roundness, mark_thickness, frame_info);
+        }break;
+        
+        case FCoderMode_NotepadLike:
+        {
+            F4_Cursor_RenderNotepadStyle(app, view_id, is_active_view, buffer, text_layout_id, cursor_roundness,
+                                         mark_thickness, frame_info);
+            break;
+        }
+    }
+    
+    // NOTE(rjf): Brace annotations
+    {
+        F4_Brace_RenderCloseBraceAnnotation(app, buffer, text_layout_id, cursor_pos);
+    }
+    
+    // NOTE(rjf): Brace lines
+    {
+        F4_Brace_RenderLines(app, buffer, view_id, text_layout_id, cursor_pos);
+    }
+    
+    // NOTE(allen): put the actual text on the actual screen
+    draw_text_layout_default(app, text_layout_id);
+    
+    // NOTE(rjf): Interpret buffer as calc code, if it's the calc buffer.
+    {
+        Buffer_ID calc_buffer_id = get_buffer_by_name(app, string_u8_litexpr("*calc*"), AccessFlag_Read);
+        if(calc_buffer_id == buffer)
+        {
+            F4_CLC_RenderBuffer(app, buffer, view_id, text_layout_id, frame_info);
+        }
+    }
+    
+    // NOTE(rjf): Draw calc comments.
+    {
+        F4_CLC_RenderComments(app, buffer, view_id, text_layout_id, frame_info);
+    }
+    
+    draw_set_clip(app, prev_clip);
+    
+    // NOTE(rjf): Draw tooltips and stuff.
+    if(active_view == view_id)
+    {
+        // NOTE(rjf): Position context helper
+        {
+            F4_PosContext_Render(app, view_id, buffer, text_layout_id, cursor_pos);
         }
         
-        F4_DrawTooltipRect(app, tooltip_rect);
-        
-        draw_string(app, tooltip_face_id, string,
-                    V2f32(tooltip_rect.x0 + 4,
-                          tooltip_rect.y0 + 4),
-                    global_tooltips[i].color);
-      }
+        // NOTE(rjf): Draw tooltip list.
+        {
+            Mouse_State mouse = get_mouse_state(app);
+            
+            Rect_f32 view_rect = view_get_screen_rect(app, view_id);
+            
+            Face_ID tooltip_face_id = global_small_code_face;
+            Face_Metrics tooltip_face_metrics = get_face_metrics(app, tooltip_face_id);
+            
+            Rect_f32 tooltip_rect =
+            {
+                (f32)mouse.x + 16,
+                (f32)mouse.y + 16,
+                (f32)mouse.x + 16,
+                (f32)mouse.y + 16 + tooltip_face_metrics.line_height + 8,
+            };
+            
+            for(int i = 0; i < global_tooltip_count; ++i)
+            {
+                String_Const_u8 string = global_tooltips[i].string;
+                tooltip_rect.x1 = tooltip_rect.x0;
+                tooltip_rect.x1 += get_string_advance(app, tooltip_face_id, string) + 4;
+                
+                if(tooltip_rect.x1 > view_rect.x1)
+                {
+                    f32 difference = tooltip_rect.x1 - view_rect.x1;
+                    tooltip_rect.x1 = (float)(int)(tooltip_rect.x1 - difference);
+                    tooltip_rect.x0 = (float)(int)(tooltip_rect.x0 - difference);
+                }
+                
+                F4_DrawTooltipRect(app, tooltip_rect);
+                
+                draw_string(app, tooltip_face_id, string,
+                            V2f32(tooltip_rect.x0 + 4,
+                                  tooltip_rect.y0 + 4),
+                            global_tooltips[i].color);
+            }
+        }
     }
-  }
-  
-  // NOTE(rjf): Draw inactive rectangle
-  if(is_active_view == 0)
-  {
-    Rect_f32 view_rect = view_get_screen_rect(app, view_id);
-    ARGB_Color color = fcolor_resolve(fcolor_id(fleury_color_inactive_pane_overlay));
-    if(F4_ARGBIsValid(color))
+    
+    // NOTE(rjf): Draw inactive rectangle
+    if(is_active_view == 0)
     {
-      draw_rectangle(app, view_rect, 0.f, color);
+        Rect_f32 view_rect = view_get_screen_rect(app, view_id);
+        ARGB_Color color = fcolor_resolve(fcolor_id(fleury_color_inactive_pane_overlay));
+        if(F4_ARGBIsValid(color))
+        {
+            draw_rectangle(app, view_rect, 0.f, color);
+        }
     }
-  }
-  
-  // NOTE(rjf): Render code peek.
-  {
-    if(!view_get_is_passive(app, view_id) &&
-       !is_active_view)
+    
+    // NOTE(rjf): Render code peek.
     {
-      F4_CodePeek_Render(app, view_id, face_id, buffer, frame_info);
+        if(!view_get_is_passive(app, view_id) &&
+           !is_active_view)
+        {
+            F4_CodePeek_Render(app, view_id, face_id, buffer, frame_info);
+        }
     }
-  }
-  
-  // NOTE(rjf): Draw power mode.
-  {
-    F4_PowerMode_RenderBuffer(app, view_id, face_id, frame_info);
-  }
-  
+    
+    // NOTE(rjf): Draw power mode.
+    {
+        F4_PowerMode_RenderBuffer(app, view_id, face_id, frame_info);
+    }
+    
 }
 
 // based on F4_Render
 function void
 edye_render(Application_Links *app, Frame_Info frame_info, View_ID view_id)
 {
-  F4_RecentFiles_RefreshView(app, view_id);
-  
-  ProfileScope(app, "[Fleury] Render");
-  Scratch_Block scratch(app);
-  
-  View_ID active_view = get_active_view(app, Access_Always);
-  b32 is_active_view = (active_view == view_id);
-  
+    F4_RecentFiles_RefreshView(app, view_id);
+    
+    ProfileScope(app, "[Fleury] Render");
+    Scratch_Block scratch(app);
+    
+    View_ID active_view = get_active_view(app, Access_Always);
+    b32 is_active_view = (active_view == view_id);
+    
 	Face_ID face_id = get_face_id(app, 0);
 	Face_Metrics face_metrics = get_face_metrics(app, face_id);
 	f32 line_height = face_metrics.line_height;
-	f32 digit_advance = face_metrics.decimal_digit_advance;
-  
-  f32 margin_size = (f32)def_get_config_u64(app, vars_save_string_lit("f4_margin_size"));
-  Rect_f32 view_rect = view_get_screen_rect(app, view_id);
-  Rect_f32 region = rect_inner(view_rect, margin_size);
-  
-  // TODO(edye): this is setting the drawing region so the lister can be drawn at the bottom of the screen
-  Rect_f32 global_rect = global_get_screen_rectangle(app);
+	// f32 digit_advance = face_metrics.decimal_digit_advance;
+    
+    f32 margin_size = (f32)def_get_config_u64(app, vars_save_string_lit("f4_margin_size"));
+    Rect_f32 view_rect = view_get_screen_rect(app, view_id);
+    Rect_f32 region = rect_inner(view_rect, margin_size);
+    
+    // TODO(edye): this is setting the drawing region so the lister can be drawn at the bottom of the screen
+    Rect_f32 global_rect = global_get_screen_rectangle(app);
 	f32 filebar_y = global_rect.y1 - 2.f*line_height - vim_cur_filebar_offset+1;
 	if(vim_cur_filebar_offset > 0 && region.y1 >= filebar_y){ region.y1 = filebar_y; }
-  
-  Buffer_ID buffer = view_get_buffer(app, view_id, Access_Always);
-  String_Const_u8 buffer_name = push_buffer_base_name(app, scratch, buffer);
-  
-  // TODO(edye)  what is this draw_set_clip?
-  Rect_f32 prev_clip = draw_set_clip(app, region);
-  
-  //~ NOTE(rjf): Draw background.
-  {
-    ARGB_Color color = fcolor_resolve(fcolor_id(defcolor_back));
-    if(string_match(buffer_name, string_u8_litexpr("*compilation*")))
+    
+    Buffer_ID buffer = view_get_buffer(app, view_id, Access_Always);
+    String_Const_u8 buffer_name = push_buffer_base_name(app, scratch, buffer);
+    
+    // TODO(edye)  what is this draw_set_clip?
+    Rect_f32 prev_clip = draw_set_clip(app, region);
+    
+    //~ NOTE(rjf): Draw background.
     {
-      color = color_blend(color, 0.5f, 0xff000000);
+        ARGB_Color color = fcolor_resolve(fcolor_id(defcolor_back));
+        if(string_match(buffer_name, string_u8_litexpr("*compilation*")))
+        {
+            color = color_blend(color, 0.5f, 0xff000000);
+        }
+        // NOTE(rjf): Inactive background color.
+        else if(is_active_view == 0)
+        {
+            ARGB_Color inactive_bg_color = fcolor_resolve(fcolor_id(fleury_color_inactive_pane_background));
+            if(F4_ARGBIsValid(inactive_bg_color))
+            {
+                color = inactive_bg_color;
+            }
+        }
+        draw_rectangle(app, region, 0.f, color);
+        draw_margin(app, view_rect, region, color);
     }
-    // NOTE(rjf): Inactive background color.
-    else if(is_active_view == 0)
+    
+    //~ NOTE(rjf): Draw margin.
     {
-      ARGB_Color inactive_bg_color = fcolor_resolve(fcolor_id(fleury_color_inactive_pane_background));
-      if(F4_ARGBIsValid(inactive_bg_color))
-      {
-        color = inactive_bg_color;
-      }
+        ARGB_Color color = fcolor_resolve(fcolor_id(defcolor_margin));
+        if(def_get_config_b32(vars_save_string_lit("f4_margin_use_mode_color")) &&
+           is_active_view)
+        {
+            color = F4_GetColor(app, ColorCtx_Cursor(power_mode.enabled ? ColorFlag_PowerMode : 0,
+                                                     GlobalKeybindingMode));
+        }
+        draw_margin(app, view_rect, region, color);
     }
-    draw_rectangle(app, region, 0.f, color);
-    draw_margin(app, view_rect, region, color);
-  }
-  
-  //~ NOTE(rjf): Draw margin.
-  {
-    ARGB_Color color = fcolor_resolve(fcolor_id(defcolor_margin));
-    if(def_get_config_b32(vars_save_string_lit("f4_margin_use_mode_color")) &&
-       is_active_view)
+    
+    // NOTE(allen): file bar
+    b64 showing_file_bar = false;
+    if(view_get_setting(app, view_id, ViewSetting_ShowFileBar, &showing_file_bar) && showing_file_bar)
     {
-      color = F4_GetColor(app, ColorCtx_Cursor(power_mode.enabled ? ColorFlag_PowerMode : 0,
-                                               GlobalKeybindingMode));
-    }
-    draw_margin(app, view_rect, region, color);
-  }
-  
-  // NOTE(allen): file bar
-  b64 showing_file_bar = false;
-  if(view_get_setting(app, view_id, ViewSetting_ShowFileBar, &showing_file_bar) && showing_file_bar)
-  {
-    Rect_f32_Pair pair = layout_file_bar_on_top(region, line_height);
-    F4_DrawFileBar(app, view_id, buffer, face_id, pair.min);
-    region = pair.max;
-  }
-  
-  Buffer_Scroll scroll = view_get_buffer_scroll(app, view_id);
-  Buffer_Point_Delta_Result delta = delta_apply(app, view_id, frame_info.animation_dt, scroll);
-  
-  if(!block_match_struct(&scroll.position, &delta.point))
-  {
-    block_copy_struct(&scroll.position, &delta.point);
-    view_set_buffer_scroll(app, view_id, scroll, SetBufferScroll_NoCursorChange);
-  }
-  
-  if(delta.still_animating)
-  {
-    animate_in_n_milliseconds(app, 0);
-  }
-  
-  // NOTE(allen): query bars
-  {
-    Query_Bar *space[32];
-    Query_Bar_Ptr_Array query_bars = {};
-    query_bars.ptrs = space;
-    if (get_active_query_bars(app, view_id, ArrayCount(space), &query_bars))
-    {
-      for (i32 i = 0; i < query_bars.count; i += 1)
-      {
-        Rect_f32_Pair pair = layout_query_bar_on_top(region, line_height, 1);
-        draw_query_bar(app, query_bars.ptrs[i], face_id, pair.min);
+        Rect_f32_Pair pair = layout_file_bar_on_top(region, line_height);
+        F4_DrawFileBar(app, view_id, buffer, face_id, pair.min);
         region = pair.max;
-      }
     }
-  }
-  
-  // NOTE(allen): FPS hud
-  if(show_fps_hud)
-  {
-    Rect_f32_Pair pair = layout_fps_hud_on_bottom(region, line_height);
-    draw_fps_hud(app, frame_info, face_id, pair.max);
-    region = pair.min;
-    animate_in_n_milliseconds(app, 1000);
-  }
-  
-  // NOTE(allen): layout line numbers
-  Rect_f32 line_number_rect = {};
-  if(def_get_config_b32(vars_save_string_lit("show_line_number_margins")))
-  {
-    Rect_f32_Pair pair = layout_line_number_margin(app, buffer, region, digit_advance);
-    line_number_rect = pair.min;
-    line_number_rect.x1 += 4;
-    region = pair.max;
-  }
-  
-  // NOTE(allen): begin buffer render
-  Buffer_Point buffer_point = scroll.position;
-  if(is_active_view)
-  {
-    buffer_point.pixel_shift.y += F4_PowerMode_ScreenShake()*1.f;
-  }
-  Text_Layout_ID text_layout_id = text_layout_create(app, buffer, region, buffer_point);
-  
-  // NOTE(allen): draw line numbers
-  if(def_get_config_b32(vars_save_string_lit("show_line_number_margins")))
-  {
-    //draw_line_number_margin(app, view_id, buffer, face_id, text_layout_id, line_number_rect);
-    draw_line_number_margin(app, view_id, buffer, global_small_code_face, text_layout_id, line_number_rect);
-  }
-  
-  // NOTE(allen): draw the buffer
-  edye_render_buffer(app, view_id, face_id, buffer, text_layout_id, region, frame_info);
-  
-  /*
-// I don't use this.
-    // NOTE(rjf): Render command server
-#if OS_WINDOWS
-    CS_render_caller(app, frame_info, view_id);
-#endif
-*/
-  
-  text_layout_free(app, text_layout_id);
-  draw_set_clip(app, prev_clip);
+    
+    Buffer_Scroll scroll = view_get_buffer_scroll(app, view_id);
+    Buffer_Point_Delta_Result delta = delta_apply(app, view_id, frame_info.animation_dt, scroll);
+    
+    if(!block_match_struct(&scroll.position, &delta.point))
+    {
+        block_copy_struct(&scroll.position, &delta.point);
+        view_set_buffer_scroll(app, view_id, scroll, SetBufferScroll_NoCursorChange);
+    }
+    
+    if(delta.still_animating)
+    {
+        animate_in_n_milliseconds(app, 0);
+    }
+    
+    // NOTE(allen): query bars
+    {
+        Query_Bar *space[32];
+        Query_Bar_Ptr_Array query_bars = {};
+        query_bars.ptrs = space;
+        if (get_active_query_bars(app, view_id, ArrayCount(space), &query_bars))
+        {
+            for (i32 i = 0; i < query_bars.count; i += 1)
+            {
+                Rect_f32_Pair pair = layout_query_bar_on_top(region, line_height, 1);
+                draw_query_bar(app, query_bars.ptrs[i], face_id, pair.min);
+                region = pair.max;
+            }
+        }
+    }
+    
+    // NOTE(allen): FPS hud
+    if(show_fps_hud)
+    {
+        Rect_f32_Pair pair = layout_fps_hud_on_bottom(region, line_height);
+        draw_fps_hud(app, frame_info, face_id, pair.max);
+        region = pair.min;
+        animate_in_n_milliseconds(app, 1000);
+    }
+    
+    // NOTE(allen): layout line numbers
+    Rect_f32 line_number_rect = {};
+    if(def_get_config_b32(vars_save_string_lit("show_line_number_margins")))
+    {
+        Face_Metrics small_code_face_metrics = get_face_metrics(app, global_small_code_face);
+        // f32 line_height = face_metrics.line_height;
+        f32 digit_advance = face_metrics.decimal_digit_advance;
+        
+        Rect_f32_Pair pair = layout_line_number_margin(app, buffer, region, digit_advance);
+        line_number_rect = pair.min;
+        
+        // shift right so that the number isn't covered by F4_HighlightCursorMarkRange
+        line_number_rect.x0 += 4;
+        //line_number_rect.x1 += 4;
+        region = pair.max;
+    }
+    
+    // NOTE(allen): begin buffer render
+    Buffer_Point buffer_point = scroll.position;
+    if(is_active_view)
+    {
+        buffer_point.pixel_shift.y += F4_PowerMode_ScreenShake()*1.f;
+    }
+    Text_Layout_ID text_layout_id = text_layout_create(app, buffer, region, buffer_point);
+    
+    // NOTE(allen): draw line numbers
+    if(def_get_config_b32(vars_save_string_lit("show_line_number_margins")))
+    {
+        //draw_line_number_margin(app, view_id, buffer, face_id, text_layout_id, line_number_rect);
+        draw_line_number_margin(app, view_id, buffer, global_small_code_face, text_layout_id, line_number_rect);
+    }
+    
+    // NOTE(allen): draw the buffer
+    edye_render_buffer(app, view_id, face_id, buffer, text_layout_id, region, frame_info);
+    
+    /*
+  // I don't use this.
+      // NOTE(rjf): Render command server
+  #if OS_WINDOWS
+      CS_render_caller(app, frame_info, view_id);
+  #endif
+  */
+    
+    text_layout_free(app, text_layout_id);
+    draw_set_clip(app, prev_clip);
 }
 
 function void
 edye_tick(Application_Links *app, Frame_Info frame_info)
 {
-  linalloc_clear(&global_frame_arena);
-  global_tooltip_count = 0;
-  
-  vim_animate_filebar(app, frame_info);
+    linalloc_clear(&global_frame_arena);
+    global_tooltip_count = 0;
+    
+    vim_animate_filebar(app, frame_info);
 	// vim_animate_cursor(app, frame_info);
-  
-  F4_TickColors(app, frame_info);
-  F4_Index_Tick(app);
-  F4_CLC_Tick(frame_info);
-  F4_PowerMode_Tick(app, frame_info);
-  F4_UpdateFlashes(app, frame_info);
-  
-  // NOTE(rjf): Default tick stuff from the 4th dimension:
-  default_tick(app, frame_info);
-}
-
-
-#if 0
-
-function void
-byp_tick(Application_Links *app, Frame_Info frame_info){
-	code_index_update_tick(app);
-	if(tick_all_fade_ranges(app, frame_info.animation_dt)){
-		animate_in_n_milliseconds(app, 0);
-	}
-  
-	vim_animate_filebar(app, frame_info);
-	vim_animate_cursor(app, frame_info);
-	fold_tick(app, frame_info);
-	byp_tick_colors(app, frame_info);
-  
-	vim_cursor_blink++;
-  
-	b32 enable_virtual_whitespace = def_get_config_b32(vars_save_string_lit("enable_virtual_whitespace"));
-	if(enable_virtual_whitespace != def_enable_virtual_whitespace){
-		def_enable_virtual_whitespace = enable_virtual_whitespace;
-		clear_all_layouts(app);
-	}
-}
-
-function void
-F4_Tick(Application_Links *app, Frame_Info frame_info)
-{
-  linalloc_clear(&global_frame_arena);
-  global_tooltip_count = 0;
-  
-  F4_TickColors(app, frame_info);
-  F4_Index_Tick(app);
-  F4_CLC_Tick(frame_info);
-  F4_PowerMode_Tick(app, frame_info);
-  F4_UpdateFlashes(app, frame_info);
-  
-  // NOTE(rjf): Default tick stuff from the 4th dimension:
-  default_tick(app, frame_info);
-}
-
-// [0,1]
-#ifndef VIM_USE_BOTTOM_LISTER
-#define VIM_USE_BOTTOM_LISTER 1
-#endif
-
-// n,m : 0 < n <= m
-#ifndef VIM_LISTER_RANGE
-#define VIM_LISTER_RANGE 1,3
-#endif
-
-// (0.f, 1.f]
-#ifndef VIM_LISTER_MAX_RATIO
-#define VIM_LISTER_MAX_RATIO 0.55f
-#endif
-
-function f32 vim_lister_get_block_height(f32 line_height){ return 1.5f*line_height; }
-
-function void
-vim_lister_render(Application_Links *app, Frame_Info frame_info, View_ID view){
-	Scratch_Block scratch(app);
-	
-	Lister *lister = view_get_lister(app, view);
-	if(lister == 0){ return; }
-	
-	// Set up region for drawing
-	Rect_f32 region = global_get_screen_rectangle(app);
-	Rect_f32 prev_clip = draw_set_clip(app, region);
-	
-	Face_ID face_id = get_face_id(app, 0);
-	Face_Metrics metrics = get_face_metrics(app, face_id);
-	f32 line_height = metrics.line_height;
-	f32 max_advance = metrics.max_advance;
-	f32 block_height = vim_lister_get_block_height(line_height);
-	f32 max_lister_height = rect_height(region)*VIM_LISTER_MAX_RATIO - 2.f*line_height;
-	
-	u64 max_name_size = 0;
-	Range_i32 lister_range = Ii32(VIM_LISTER_RANGE);
-	const i32 N = Min(lister_range.max*i32(block_height/max_lister_height), lister->filtered.count);
-	foreach(i,N){
-		if(lister->filtered.node_ptrs[i]->string.size > max_name_size){
-			max_name_size = lister->filtered.node_ptrs[i]->string.size;
-		}
-	}
-	
-	i32 col_num = i32(rect_width(region)/((max_name_size+7)*max_advance));
-	//i32 col_num = i32(rect_width(region)/((max_name_size)*max_advance));
-	col_num = clamp(lister_range.min, col_num, lister_range.max);
-	
-	i32 max_row_num = 1 + (lister->filtered.count-1)/col_num;
-	i32 row_num = (lister->filtered.count == 0 ? 0 : Min(i32(max_lister_height/block_height), max_row_num));
-  
-	lister->visible_count = Min(col_num*row_num, lister->filtered.count);
-	
-	// TODO(BYP) check exactly why row_num+2. Had to update when changing block_height
-	region = rect_split_top_bottom_neg(region, (row_num+2)*block_height).b;
-	region = rect_split_top_bottom_neg(region, 2.f*line_height).a;
-	vim_nxt_filebar_offset = row_num*block_height + 0.1f;
-	// non-zero so when lister displays no results, it still displays the cursor
-	
-	// Render the view
-	Render_Caller_Function *render_caller = (Render_Caller_Function *)get_custom_hook(app, HookID_RenderCaller);
-	render_caller(app, frame_info, view);
-	draw_set_clip(app, region);
-	
-	Mouse_State mouse = get_mouse_state(app);
-	Vec2_f32 m_p = V2f32(mouse.p);
-	
-	// NOTE(allen): auto scroll to the item if the flag is set.
-	f32 scroll_y = lister->scroll.position.y;
-	
-	if(lister->set_vertical_focus_to_item){
-		lister->set_vertical_focus_to_item = false;
-		Range_f32 item_y = If32_size((lister->item_index/col_num)*block_height, block_height);
-		f32 view_h = rect_height(region);
-		Range_f32 view_y = If32_size(scroll_y, view_h);
-		if(view_y.min > item_y.min || item_y.max > view_y.max){
-			f32 item_center = (item_y.min + item_y.max)*0.5f;
-			f32 view_center = (view_y.min + view_y.max)*0.5f;
-			f32 margin = view_h*.3f;
-			margin = clamp_top(margin, block_height*3.f);
-			if(item_center < view_center){
-				lister->scroll.target.y = item_y.min - margin;
-			}
-			else{
-				f32 target_bot = item_y.max + margin;
-				lister->scroll.target.y = target_bot - view_h;
-			}
-		}
-	}
-	
-	// NOTE(allen): clamp scroll target and position; smooth scroll rule
-	i32 count = lister->filtered.count;
-	//Range_f32 scroll_range = If32(0.f, clamp_bot(0.f, (count/col_num)*block_height));
-	Range_f32 scroll_range = If32(0.f, clamp_bot(0.f, (count/col_num - 1)*block_height));
-	lister->scroll.target.y = clamp_range(scroll_range, lister->scroll.target.y);
-	lister->scroll.target.x = 0.f;
-	
-	Vec2_f32_Delta_Result delta = delta_apply(app, view, frame_info.animation_dt, lister->scroll);
-	lister->scroll.position = delta.p;
-	if(delta.still_animating){ animate_in_n_milliseconds(app, 0); }
-	
-	lister->scroll.position.y = clamp_range(scroll_range, lister->scroll.position.y);
-	lister->scroll.position.x = 0.f;
-	
-	scroll_y = lister->scroll.position.y;
-	i32 first_index = (i32)(col_num*scroll_y/(block_height));
-	
-	f32 x_base = region.x0;
-  
-	f32 y_base = region.y1 - vim_cur_filebar_offset; 
-	f32 block_width = rect_width(region)/col_num;
-	Rect_f32 back_rect = region;
-	back_rect.y0 = y_base;
-	back_rect.y1 = y_base + rect_height(region);
-	draw_rectangle_fcolor(app, back_rect, 0.f, fcolor_id(defcolor_back));
-	
-	Fancy_Block block = {};
-	for(i32 i=first_index; i<count; i++){
-		Lister_Node *node = lister->filtered.node_ptrs[i];
-		
-		f32 x0 = x_base + block_width*((i-first_index) % col_num);
-		f32 y0 = y_base + block_height*((i-first_index) / col_num);
-		if(y0 > region.y1){ break; }
-		Rect_f32 item_rect = Rf32(x0, y0, x0+block_width, y0+block_height);
-		Rect_f32 item_inner = rect_inner(item_rect, 3.f);
-		
-		b32 hovered = rect_contains_point(item_rect, m_p);
-		if(hovered){
-			Fancy_Line *line1 = push_fancy_line(scratch, &block, face_id);
-			u64 index = string_find_last(node->status, '\n');
-			
-			if(index < node->status.size){
-				push_fancy_string(scratch, line1, fcolor_id(defcolor_pop2), string_prefix(node->status, index));
-				Fancy_Line *line2 = push_fancy_line(scratch, &block, face_id);
-				push_fancy_string(scratch, line2, fcolor_id(defcolor_text_default), string_postfix(node->status, node->status.size-1 - index));
-			}else{
-				push_fancy_string(scratch, line1, fcolor_id(defcolor_pop2), node->status);
-			}
-		}
-		UI_Highlight_Level highlight = UIHighlight_None;
-		if(node == lister->highlighted_node){
-			highlight = UIHighlight_Active;
-		}else if(node->user_data == lister->hot_user_data){
-			highlight = hovered ? UIHighlight_Active : UIHighlight_Hover;
-		}else if(hovered){
-			highlight = UIHighlight_Hover;
-		}
-		
-		u64 lister_roundness_100 = def_get_config_u64(app, vars_save_string_lit("lister_roundness"));
-		f32 roundness = block_height*lister_roundness_100*0.01f;
-		draw_rectangle_fcolor(app, item_rect, roundness, get_item_margin_color(highlight));
-		draw_rectangle_fcolor(app, item_inner, roundness, get_item_margin_color(highlight, 1));
-		
-		Fancy_Line line = {};
-		push_fancy_string(scratch, &line, fcolor_id(defcolor_text_default), node->string);
-		push_fancy_stringf(scratch, &line, " ");
-		u64 index = string_find_last(node->status, '\n');
-		push_fancy_string(scratch, &line, fcolor_id(defcolor_pop2), string_prefix(node->status, index));
-		
-		Vec2_f32 p = item_inner.p0 + V2f32(3.f, (block_height - line_height)*0.5f);
-		draw_fancy_line(app, face_id, fcolor_zero(), &line, p);
-	}
-	f32 x_padding = metrics.normal_advance;
-	f32 x_half_padding = x_padding*0.5f;
-	draw_drop_down(app, face_id, &block, m_p, region, x_padding, x_half_padding, fcolor_id(defcolor_margin_hover), fcolor_id(defcolor_back));
-	
-	if(lister->visible_count != 0){
-		Rect_f32 rect = Rect_f32{region.x0, region.y1 - 4.f, region.x1, region.y1};
-		draw_rectangle_fcolor(app, rect, 0.f, get_item_margin_color(UIHighlight_Active));
-	}
-	
-	draw_set_clip(app, prev_clip);
-}
-
-function Lister_Result
-vim_run_lister(Application_Links *app, Lister *lister){
-	Lister_Result ret;
-	View_ID view = get_this_ctx_view(app, Access_Always);
-	vim_lister_view_id = view;
-#if VIM_USE_BOTTOM_LISTER
-	Scratch_Block scratch(app);
-	lister->filter_restore_point = begin_temp(lister->arena);
-	lister_update_filtered_list(app, lister);
-	
-	vim_use_bottom_cursor = true;
-	bool do_invalidate = true;
-	vim_show_buffer_peek = false;
-	
-	View_Context ctx = view_current_context(app, view);
-	Rect_f32 global_rect = global_get_screen_rectangle(app);
-	
-	ctx.render_caller = vim_lister_render;
-	ctx.hides_buffer = false;
-	View_Context_Block ctx_block(app, view, &ctx);
-	
-	u8 *begin, *dest;
-	begin = dest = vim_bot_text.str + vim_bot_text.size;
-	u64 base_size, after_size;
-	base_size = after_size = vim_bot_text.size;
-	
-	User_Input in = {};
-	for(;;){
-		Vec2_i32 col_row = calc_col_row(app, lister);
-		i32 col_num = col_row.x;
-		i32 visible_count = col_row.x*col_row.y;
-		block_copy(dest, lister->text_field.str, lister->text_field.size);
-		vim_bot_text.size = after_size + lister->text_field.size;
-		animate_in_n_milliseconds(app, 0);
-		
-		Lister_Activation_Code result = ListerActivation_Continue;
-		b32 handled = true;
-		
-		in = get_next_input(app, EventPropertyGroup_Any, EventProperty_Escape);
-		if(in.abort){
-			block_zero_struct(&lister->out);
-			lister->out.canceled = true;
-			vim_reset_bottom_text();
-			break;
-		}
-		
-		if(in.event.kind == InputEventKind_KeyStroke){
-			if(in.event.key.code == KeyCode_W && has_modifier(&in, KeyCode_Control) && lister->handlers.backspace){
-				in.event.key.code = KeyCode_Backspace;
-			}
-			if(in.event.key.code == KeyCode_U && has_modifier(&in, KeyCode_Control) && lister->handlers.backspace){
-				in.event.key.code = KeyCode_Backspace;
-				Input_Modifier_Set *set = get_modifiers(&in.event);
-				set->mods[set->count++] = KeyCode_Shift;
-			}
-		}
-		
-		switch(in.event.kind){
-			
-			case InputEventKind_TextInsert:{
-				vim_cursor_blink = 0;
-				if(lister->handlers.write_character != 0){
-					result = lister->handlers.write_character(app);
-				}
-			} break;
-			
-			case InputEventKind_KeyStroke:{
-				vim_cursor_blink = 0;
-				
-				switch(in.event.key.code){
-					
-					case KeyCode_Tab:{
-						i32 delta = (has_modifier(&in.event, KeyCode_Shift) ? -1 : 1);
-						if(lister->handlers.navigate != 0){
-							lister->handlers.navigate(app, view, lister, delta);
-						}else if(lister->handlers.key_stroke != 0){
-							result = lister->handlers.key_stroke(app);
-						}else{ handled = false; }
-					} break;
-					
-					case KeyCode_Return:{
-						void *user_data = 0;
-						if(in_range(0, lister->raw_item_index, lister->options.count)){
-							user_data = lister_get_user_data(lister, lister->raw_item_index);
-							block_copy(dest, lister->highlighted_node->string.str, lister->highlighted_node->string.size);
-							vim_bot_text.size = base_size + lister->highlighted_node->string.size;
-						}
-						lister_activate(app, lister, user_data, false);
-						result = ListerActivation_Finished;
-					} break;
-					
-					case KeyCode_Backspace:{
-						if(lister->handlers.backspace != 0){
-							lister->handlers.backspace(app);
-						}else if(lister->handlers.key_stroke != 0){
-							result = lister->handlers.key_stroke(app);
-						}else{ handled = false; }
-					} break;
-					
-					case KeyCode_Down:
-					case KeyCode_Up:{
-						if(lister->handlers.navigate != 0){
-							i32 delta = (in.event.key.code == KeyCode_Up ? -1 : 1);
-							lister->handlers.navigate(app, view, lister, delta*col_num);
-						}else if(lister->handlers.key_stroke != 0){
-							result = lister->handlers.key_stroke(app);
-						}else{ handled = false; }
-					} break;
-					
-					case KeyCode_Right:
-					case KeyCode_Left:{
-						i32 delta = (in.event.key.code == KeyCode_Left ? -1 : 1);
-						if(lister->handlers.navigate != 0){
-							lister->handlers.navigate(app, view, lister, delta);
-						}else if(lister->handlers.key_stroke != 0){
-							result = lister->handlers.key_stroke(app);
-						}else{ handled = false; }
-					} break;
-					
-					case KeyCode_PageDown:
-					case KeyCode_PageUp:{
-						if(lister->handlers.navigate != 0){
-							i32 delta = (in.event.key.code == KeyCode_PageUp ? -1 : 1);
-							lister->handlers.navigate(app, view, lister, delta*visible_count);
-						}else if(lister->handlers.key_stroke != 0){
-							result = lister->handlers.key_stroke(app);
-						}else{ handled = false; }
-					} break;
-					
-					default:{
-						if(lister->handlers.key_stroke != 0){
-							result = lister->handlers.key_stroke(app);
-						}else{ handled = false; }
-					} break;
-				}
-			} break;
-			
-			case InputEventKind_MouseWheel:{
-				lister->scroll.target.y += get_mouse_state(app).wheel;
-				lister_update_filtered_list(app, lister);
-			} break;
-			
-			case InputEventKind_MouseMove:{ lister_update_filtered_list(app, lister); } break;
-			
-			case InputEventKind_Core:{
-				switch(in.event.core.code){
-					case CoreCode_Animate:{ lister_update_filtered_list(app, lister); } break;
-					
-					default:{ handled = false; } break;
-				}
-			} break;
-			
-			default:{ handled = false; } break;
-		}
-		
-		// NOTE: This is a bit of a hack to make clicking the lister not change views
-		Mouse_State mouse_state = get_mouse_state(app);
-		Vec2_f32 mouse_pos = V2f32(mouse_state.p);
-		if(mouse_state.press_l){
-			void *clicked = vim_lister_user_data_at_p(app, view, lister, mouse_pos, col_num);
-			if(clicked){
-				lister_activate(app, lister, clicked, true);
-				result = ListerActivation_Finished;
-				do_invalidate = false;
-				view_enqueue_command_function(app, view, vim_change_lister_view_back);
-			}
-		}
-		
-		if(result == ListerActivation_ContinueAndRefresh){
-			lister_call_refresh_handler(app, lister);
-		}
-		else if(result == ListerActivation_Finished){ break; }
-		
-		if(handled){ continue; }
-		Fallback_Dispatch_Result disp_result = fallback_command_dispatch(app, lister->mapping, lister->map, &in);
-		if(disp_result.code == FallbackDispatch_DelayedUICall){
-			call_after_ctx_shutdown(app, view, disp_result.func);
-			break;
-		}
-		if(disp_result.code == FallbackDispatch_Unhandled){ leave_current_input_unhandled(app); }
-		else{ lister_call_refresh_handler(app, lister); }
-	}
-	
-	vim_use_bottom_cursor = false;
-	vim_nxt_filebar_offset = 0.f;
-	if(do_invalidate){ vim_lister_view_id = 0; }
-	
-	if(!in.abort){
-		String_Const_u8 command_name = string_substring(vim_bot_text.string, Ii64(base_size,vim_bot_text.size));
-		vim_register_copy(&vim_registers.command, command_name);
-		vim_update_registers(app);
-	}
-	
-	ret = lister->out;
-#else
-	ret = run_lister(app, lister);
-#endif
-	vim_lister_view_id = 0;
-	return ret;
-}
-
-
-function Lister_Result
-vim_run_lister_with_refresh_handler(Application_Links *app, Arena *arena, String_Const_u8 query, Lister_Handlers handlers){
-	Lister_Result result = {};
-	if(handlers.refresh != 0){
-		Lister_Block lister(app, arena);
-		lister_set_query(lister, query);
-		lister_set_handlers(lister, &handlers);
-		handlers.refresh(app, lister);
-		result = vim_run_lister(app, lister);
-	}
-	else{
-#define M "ERROR: No refresh handler specified for lister (query_string = \"%.*s\")\n"
-		print_message(app, push_u8_stringf(arena, M, string_expand(query)));
-#undef M
-		result.canceled = true;
-	}
-	return(result);
-}
-
-
-function void
-byp_render_buffer(Application_Links *app, View_ID view_id, Face_ID face_id, Buffer_ID buffer, Text_Layout_ID text_layout_id, Rect_f32 rect){
-	ProfileScope(app, "render buffer");
-	b32 is_active_view = view_id == get_active_view(app, Access_Always);
-	Rect_f32 prev_clip = draw_set_clip(app, rect);
-  
-	Range_i64 visible_range = text_layout_get_visible_range(app, text_layout_id);
-  
-	Face_Metrics metrics = get_face_metrics(app, face_id);
-	u64 cursor_roundness_100 = def_get_config_u64(app, vars_save_string_lit("cursor_roundness"));
-	f32 cursor_roundness = metrics.normal_advance*cursor_roundness_100*0.01f;
-	f32 mark_thickness = (f32)def_get_config_u64(app, vars_save_string_lit("mark_thickness"));
-  
-	i64 cursor_pos = view_correct_cursor(app, view_id);
-	view_correct_mark(app, view_id);
-  
-	b32 use_scope_highlight = def_get_config_b32(vars_save_string_lit("use_scope_highlight"));
-	if(use_scope_highlight){
-		Color_Array colors = finalize_color_array(defcolor_back_cycle);
-		draw_scope_highlight(app, buffer, text_layout_id, cursor_pos, colors.vals, colors.count);
-	}
-  
-	b32 highlight_line_at_cursor = def_get_config_b32(vars_save_string_lit("highlight_line_at_cursor"));
-	if(highlight_line_at_cursor && is_active_view){
-		i64 line_number = get_line_number_from_pos(app, buffer, cursor_pos);
-		draw_line_highlight(app, text_layout_id, line_number, fcolor_id(defcolor_highlight_cursor_line));
-	}
-  
-	if(is_active_view && byp_col_cursor.pos > 0){
-		byp_col_cursor = buffer_compute_cursor(app, buffer, seek_line_col(byp_col_cursor.line, byp_col_cursor.col));
     
-		i64 rel_pos = cursor_pos;
-		Rect_f32 rel_rect = text_layout_character_on_screen(app, text_layout_id, rel_pos);
+    F4_TickColors(app, frame_info);
+    F4_Index_Tick(app);
+    F4_CLC_Tick(frame_info);
+    F4_PowerMode_Tick(app, frame_info);
+    F4_UpdateFlashes(app, frame_info);
     
-		i64 line = get_line_number_from_pos(app, buffer, rel_pos);
-		Vec2_f32 col_rel = view_relative_xy_of_pos(app, view_id, line, byp_col_cursor.pos);
-		Vec2_f32 rel_point = view_relative_xy_of_pos(app, view_id, line, rel_pos);
-		Rect_f32 col_highlight_rect = {};
-		col_highlight_rect.p0 = (rel_rect.p0 - rel_point) + col_rel;
-		col_highlight_rect.p1 = (rel_rect.p1 - rel_point) + col_rel;
-		col_highlight_rect.y0 = rect.y0;
-		col_highlight_rect.y1 = rect.y1;
-    
-		draw_rectangle_fcolor(app, col_highlight_rect, 0.f, fcolor_id(defcolor_highlight_cursor_line));
-	}
-  
-	Token_Array token_array = get_token_array_from_buffer(app, buffer);
-	if(token_array.tokens == 0){
-		paint_text_color_fcolor(app, text_layout_id, visible_range, fcolor_id(defcolor_text_default));
-	}else{
-		byp_draw_token_colors(app, view_id, buffer, text_layout_id);
-		byp_draw_comments(app, buffer, text_layout_id, &token_array, rect);
-	}
-  
-	b32 use_error_highlight = def_get_config_b32(vars_save_string_lit("use_error_highlight"));
-	b32 use_jump_highlight  = def_get_config_b32(vars_save_string_lit("use_jump_highlight"));
-	if(use_error_highlight || use_jump_highlight){
-		Buffer_ID comp_buffer = get_buffer_by_name(app, string_u8_litexpr("*compilation*"), Access_Always);
-		if(use_error_highlight){
-			draw_jump_highlights(app, buffer, text_layout_id, comp_buffer, fcolor_id(defcolor_highlight_junk));
-			byp_draw_compile_errors(app, buffer, text_layout_id, comp_buffer);
-		}
-    
-		if(use_jump_highlight){
-			Buffer_ID jump_buffer = get_locked_jump_buffer(app);
-			if(jump_buffer != comp_buffer){
-				draw_jump_highlights(app, buffer, text_layout_id, jump_buffer, fcolor_id(defcolor_highlight_white));
-			}
-		}
-	}
-  
-	b32 use_paren_helper = def_get_config_b32(vars_save_string_lit("use_paren_helper"));
-	if(use_paren_helper){
-		Color_Array colors = finalize_color_array(defcolor_text_cycle);
-		draw_paren_highlight(app, buffer, text_layout_id, cursor_pos, colors.vals, colors.count);
-	}
-  
-	byp_draw_scope_brackets(app, view_id, buffer, text_layout_id, rect, cursor_pos);
-  
-	b64 show_whitespace = false;
-	view_get_setting(app, view_id, ViewSetting_ShowWhitespace, &show_whitespace);
-	if(show_whitespace){
-		if(token_array.tokens == 0){
-			draw_whitespace_highlight(app, buffer, text_layout_id, cursor_roundness);
-		}else{
-			draw_whitespace_highlight(app, text_layout_id, &token_array, cursor_roundness);
-		}
-	}
-  
-	if(byp_show_hex_colors){
-		byp_hex_color_preview(app, buffer, text_layout_id);
-	}
-  
-	if(is_active_view && vim_state.mode == VIM_Visual){
-		vim_draw_visual_mode(app, view_id, buffer, face_id, text_layout_id);
-	}
-  
-	fold_draw(app, buffer, text_layout_id);
-  
-	vim_draw_search_highlight(app, view_id, buffer, text_layout_id, cursor_roundness);
-  
-	switch(fcoder_mode){
-		case FCoderMode_Original:
-		vim_draw_cursor(app, view_id, is_active_view, buffer, text_layout_id, cursor_roundness, mark_thickness); break;
-		case FCoderMode_NotepadLike:
-		draw_notepad_style_cursor_highlight(app, view_id, buffer, text_layout_id, cursor_roundness); break;
-	}
-  
-  
-	paint_fade_ranges(app, text_layout_id, buffer);
-	draw_text_layout_default(app, text_layout_id);
-  
-	vim_draw_after_text(app, view_id, is_active_view, buffer, text_layout_id, cursor_roundness, mark_thickness);
-	if(is_active_view){
-		byp_draw_function_preview(app, buffer, If32(rect.x0, rect.x1), cursor_pos);
-	}
-  
-	draw_set_clip(app, prev_clip);
+    // NOTE(rjf): Default tick stuff from the 4th dimension:
+    default_tick(app, frame_info);
 }
-
-function void
-byp_render_caller(Application_Links *app, Frame_Info frame_info, View_ID view_id){
-	ProfileScope(app, "default render caller");
-  
-	Buffer_ID buffer = view_get_buffer(app, view_id, Access_Always);
-  
-	Face_ID face_id = get_face_id(app, 0);
-	Face_Metrics face_metrics = get_face_metrics(app, face_id);
-	f32 line_height = face_metrics.line_height;
-	f32 digit_advance = face_metrics.decimal_digit_advance;
-  
-	Rect_f32 region = view_get_screen_rect(app, view_id);
-	Rect_f32 prev_clip = draw_set_clip(app, region);
-  
-	Rect_f32 global_rect = global_get_screen_rectangle(app);
-	f32 filebar_y = global_rect.y1 - 2.f*line_height - vim_cur_filebar_offset;
-	if(region.y1 >= filebar_y){ region.y1 = filebar_y; }
-  
-	draw_rectangle_fcolor(app, region, 0.f, fcolor_id(defcolor_back));
-  
-	region = vim_draw_query_bars(app, region, view_id, face_id);
-  
-	{
-		Rect_f32_Pair pair = layout_file_bar_on_bot(region, line_height);
-		pair.b = rect_split_top_bottom(pair.b, line_height).a;
-		vim_draw_filebar(app, view_id, buffer, frame_info, face_id, pair.b);
-		region = pair.a;
-	}
-  
-	Rect_f32_Pair scrollbar_pair = byp_layout_scrollbars(region, digit_advance);
-	i64 show_scrollbar = false;
-	view_get_setting(app, view_id, ViewSetting_ShowScrollbar, &show_scrollbar);
-	show_scrollbar &= byp_show_scrollbars;
-	if(show_scrollbar){
-		region = scrollbar_pair.a;
-	}
-	draw_set_clip(app, region);
-  
-	// Draw borders
-	if(region.x0 > global_rect.x0){
-		Rect_f32_Pair border_pair = rect_split_left_right(region, 2.f);
-		draw_rectangle_fcolor(app, border_pair.a, 0.f, fcolor_id(defcolor_margin));
-		region = border_pair.b;
-	}
-	if(region.x1 < global_rect.x1){
-		Rect_f32_Pair border_pair = rect_split_left_right_neg(region, 2.f);
-		draw_rectangle_fcolor(app, border_pair.b, 0.f, fcolor_id(defcolor_margin));
-		region = border_pair.a;
-	}
-	region.y0 += 3.f;
-  
-  
-	if(show_fps_hud){
-		Rect_f32_Pair pair = layout_fps_hud_on_bottom(region, line_height);
-		draw_fps_hud(app, frame_info, face_id, pair.max);
-		region = pair.min;
-		animate_in_n_milliseconds(app, 1000);
-	}
-  
-	// NOTE(allen): layout line numbers
-	b32 show_line_number_margins = def_get_config_b32(vars_save_string_lit("show_line_number_margins"));
-	Rect_f32_Pair pair = (show_line_number_margins ?
-                        (byp_relative_numbers ?
-                         vim_line_number_margin(app, buffer, region, digit_advance) :
-                         layout_line_number_margin(app, buffer, region, digit_advance)) :
-                        rect_split_left_right(region, 1.5f*digit_advance));
-	Rect_f32 line_number_rect = pair.min;
-	region = pair.max;
-  
-	Buffer_Scroll scroll = view_get_buffer_scroll(app, view_id);
-	Buffer_Point_Delta_Result delta = delta_apply(app, view_id, frame_info.animation_dt, scroll);
-	if(!block_match_struct(&scroll.position, &delta.point)){
-		block_copy_struct(&scroll.position, &delta.point);
-		view_set_buffer_scroll(app, view_id, scroll, SetBufferScroll_NoCursorChange);
-	}
-	if(delta.still_animating){ animate_in_n_milliseconds(app, 0); }
-	Buffer_Point buffer_point = scroll.position;
-	Text_Layout_ID text_layout_id = text_layout_create(app, buffer, region, buffer_point);
-  
-	if(show_line_number_margins){
-		if(byp_relative_numbers)
-			vim_draw_rel_line_number_margin(app, view_id, buffer, face_id, text_layout_id, line_number_rect);
-		else
-			vim_draw_line_number_margin(app, view_id, buffer, face_id, text_layout_id, line_number_rect);
-	}else{
-		draw_rectangle_fcolor(app, line_number_rect, 0.f, fcolor_id(defcolor_back));
-	}
-  
-	if(show_scrollbar){
-		byp_draw_scrollbars(app, view_id, buffer, text_layout_id, scrollbar_pair.b);
-	}
-  
-	if(byp_drop_shadow){
-		Buffer_Point shadow_point = buffer_point;
-		Face_Description desc = get_face_description(app, face_id);
-		shadow_point.pixel_shift -= Max((f32(desc.parameters.pt_size) / 8), 1.f)*V2f32(1.f, 1.f);
-		Text_Layout_ID shadow_layout_id = text_layout_create(app, buffer, region, shadow_point);
-		paint_text_color(app, shadow_layout_id, text_layout_get_visible_range(app, text_layout_id), 0xBB000000);
-		draw_text_layout_default(app, shadow_layout_id);
-		text_layout_free(app, shadow_layout_id);
-	}
-  
-	byp_render_buffer(app, view_id, face_id, buffer, text_layout_id, region);
-  
-	/// NOTE(BYP): If 4coder gets even smaller fonts (smaller than u32=0) this *might* be viable
-	if(false){
-		Buffer_Point point = {};
-		Rect_f32 prev_region = rect_split_left_right_neg(region, 190.f).b;
-		prev_region.x1 -= 10.f;
-		Face_ID prev_face = get_face_id(app, buffer);
-		buffer_set_face(app, buffer, byp_minimal_face);
-		Text_Layout_ID layout_id = text_layout_create(app, buffer, prev_region, point);
-    
-		draw_rectangle(app, rect_inner(prev_region, -10.f), 5.f, 0x44000000);
-    
-		i32 prev_mode = fcoder_mode;
-		fcoder_mode = 20; // Just don't render/update the cursor
-		byp_render_buffer(app, view_id, byp_minimal_face, buffer, layout_id, prev_region);
-		fcoder_mode = prev_mode;
-    
-		buffer_set_face(app, buffer, prev_face);
-		text_layout_free(app, layout_id);
-	}
-  
-  
-	text_layout_free(app, text_layout_id);
-	draw_set_clip(app, prev_clip);
-}
-#endif
 
 //~ NOTE(rjf): Bindings
 
 function void
 F4_SetAbsolutelyNecessaryBindings(Mapping *mapping)
 {
-  String_ID global_map_id = vars_save_string_lit("keys_global");
-  String_ID file_map_id = vars_save_string_lit("keys_file");
-  String_ID code_map_id = vars_save_string_lit("keys_code");
-  
+    String_ID global_map_id = vars_save_string_lit("keys_global");
+    String_ID file_map_id = vars_save_string_lit("keys_file");
+    String_ID code_map_id = vars_save_string_lit("keys_code");
+    
 	String_ID global_command_map_id = vars_save_string_lit("keys_global_1");
 	String_ID file_command_map_id = vars_save_string_lit("keys_file_1");
-  String_ID code_command_map_id = vars_save_string_lit("keys_code_1");
-  
+    String_ID code_command_map_id = vars_save_string_lit("keys_code_1");
+    
 	implicit_map_function = F4_ImplicitMap;
-  
+    
 	MappingScope();
-  SelectMapping(mapping);
-  
-  SelectMap(global_map_id);
-  BindCore(edye_startup, CoreCode_Startup);
-  BindCore(default_try_exit, CoreCode_TryExit);
-  Bind(exit_4coder,          KeyCode_F4, KeyCode_Alt);
-  BindMouseWheel(mouse_wheel_scroll);
-  BindMouseWheel(mouse_wheel_change_face_size, KeyCode_Control);
-  
-  SelectMap(file_map_id);
-  ParentMap(global_map_id);
-  BindTextInput(f4_write_text_input);
-  BindMouse(click_set_cursor_and_mark, MouseCode_Left);
-  BindMouseRelease(click_set_cursor, MouseCode_Left);
-  BindCore(click_set_cursor_and_mark, CoreCode_ClickActivateView);
-  BindMouseMove(click_set_cursor_if_lbutton);
-  
-  SelectMap(code_map_id);
-  ParentMap(file_map_id);
-  BindTextInput(f4_write_text_and_auto_indent);
-  BindMouse(f4_lego_click_store_token_1, MouseCode_Right);
-  BindMouse(f4_lego_click_store_token_2, MouseCode_Middle);
-  
-  SelectMap(global_command_map_id);
+    SelectMapping(mapping);
+    
+    SelectMap(global_map_id);
+    BindCore(edye_startup, CoreCode_Startup);
+    BindCore(default_try_exit, CoreCode_TryExit);
+    Bind(exit_4coder,          KeyCode_F4, KeyCode_Alt);
+    BindMouseWheel(mouse_wheel_scroll);
+    BindMouseWheel(mouse_wheel_change_face_size, KeyCode_Control);
+    
+    SelectMap(file_map_id);
+    ParentMap(global_map_id);
+    BindTextInput(f4_write_text_input);
+    BindMouse(click_set_cursor_and_mark, MouseCode_Left);
+    BindMouseRelease(click_set_cursor, MouseCode_Left);
+    BindCore(click_set_cursor_and_mark, CoreCode_ClickActivateView);
+    BindMouseMove(click_set_cursor_if_lbutton);
+    
+    SelectMap(code_map_id);
+    ParentMap(file_map_id);
+    BindTextInput(f4_write_text_and_auto_indent);
+    BindMouse(f4_lego_click_store_token_1, MouseCode_Right);
+    BindMouse(f4_lego_click_store_token_2, MouseCode_Middle);
+    
+    SelectMap(global_command_map_id);
 	ParentMap(global_map_id);
 	GlobalCommandMapReroute[0].From = global_map_id;
 	GlobalCommandMapReroute[0].To = global_command_map_id;
-  
-  SelectMap(file_command_map_id);
+    
+    SelectMap(file_command_map_id);
 	ParentMap(global_command_map_id);
 	GlobalCommandMapReroute[1].From = file_map_id;
 	GlobalCommandMapReroute[1].To = file_command_map_id;
-  
-  SelectMap(code_command_map_id);
+    
+    SelectMap(code_command_map_id);
 	ParentMap(file_command_map_id);
 	GlobalCommandMapReroute[2].From = code_map_id;
 	GlobalCommandMapReroute[2].To = code_command_map_id;
-  
+    
 }
 
 function void
 F4_SetDefaultBindings(Mapping *mapping)
 {
-  String_ID global_map_id = vars_save_string_lit("keys_global");
-  String_ID file_map_id = vars_save_string_lit("keys_file");
-  String_ID code_map_id = vars_save_string_lit("keys_code");
-  
-  MappingScope();
-  SelectMapping(mapping);
-  SelectMap(global_map_id);
-  Bind(keyboard_macro_start_recording , KeyCode_U, KeyCode_Control);
-  Bind(keyboard_macro_finish_recording, KeyCode_U, KeyCode_Control, KeyCode_Shift);
-  Bind(keyboard_macro_replay,           KeyCode_U, KeyCode_Alt);
-  Bind(change_active_panel,           KeyCode_Comma, KeyCode_Control);
-  Bind(change_active_panel_backwards, KeyCode_Comma, KeyCode_Control, KeyCode_Shift);
-  Bind(interactive_new,               KeyCode_N, KeyCode_Control);
-  Bind(interactive_open_or_new,       KeyCode_O, KeyCode_Control);
-  Bind(open_in_other,                 KeyCode_O, KeyCode_Alt);
-  Bind(interactive_kill_buffer,       KeyCode_K, KeyCode_Control);
-  Bind(interactive_switch_buffer,     KeyCode_I, KeyCode_Control);
-  Bind(project_go_to_root_directory,  KeyCode_H, KeyCode_Control);
-  Bind(save_all_dirty_buffers,        KeyCode_S, KeyCode_Control, KeyCode_Shift);
-  Bind(change_to_build_panel,         KeyCode_Period, KeyCode_Alt);
-  Bind(close_build_panel,             KeyCode_Comma, KeyCode_Alt);
-  Bind(goto_next_jump,                KeyCode_N, KeyCode_Alt);
-  Bind(goto_prev_jump,                KeyCode_N, KeyCode_Alt, KeyCode_Shift);
-  Bind(build_in_build_panel,          KeyCode_M, KeyCode_Alt);
-  Bind(goto_first_jump,               KeyCode_M, KeyCode_Alt, KeyCode_Shift);
-  Bind(toggle_filebar,                KeyCode_B, KeyCode_Alt);
-  Bind(execute_any_cli,               KeyCode_Z, KeyCode_Alt);
-  Bind(execute_previous_cli,          KeyCode_Z, KeyCode_Alt, KeyCode_Shift);
-  Bind(command_lister,                KeyCode_X, KeyCode_Alt);
-  Bind(project_command_lister,        KeyCode_X, KeyCode_Alt, KeyCode_Shift);
-  Bind(list_all_functions_current_buffer_lister, KeyCode_I, KeyCode_Control, KeyCode_Shift);
-  Bind(project_fkey_command, KeyCode_F1);
-  Bind(project_fkey_command, KeyCode_F2);
-  Bind(project_fkey_command, KeyCode_F3);
-  Bind(project_fkey_command, KeyCode_F4);
-  Bind(project_fkey_command, KeyCode_F5);
-  Bind(project_fkey_command, KeyCode_F6);
-  Bind(project_fkey_command, KeyCode_F7);
-  Bind(project_fkey_command, KeyCode_F8);
-  Bind(project_fkey_command, KeyCode_F9);
-  Bind(project_fkey_command, KeyCode_F10);
-  Bind(project_fkey_command, KeyCode_F11);
-  Bind(project_fkey_command, KeyCode_F12);
-  Bind(project_fkey_command, KeyCode_F13);
-  Bind(project_fkey_command, KeyCode_F14);
-  Bind(project_fkey_command, KeyCode_F15);
-  Bind(project_fkey_command, KeyCode_F16);
-  
-  // NOTE(rjf): Custom bindings.
-  {
-    Bind(open_panel_vsplit, KeyCode_P, KeyCode_Control);
-    Bind(open_panel_hsplit, KeyCode_Minus, KeyCode_Control);
-    Bind(close_panel, KeyCode_P, KeyCode_Control, KeyCode_Shift);
-    Bind(f4_search_for_definition__project_wide, KeyCode_J, KeyCode_Control);
-    Bind(f4_search_for_definition__current_file, KeyCode_J, KeyCode_Control, KeyCode_Shift);
-    Bind(fleury_toggle_battery_saver, KeyCode_Tick, KeyCode_Alt);
-    Bind(move_right_token_boundary, KeyCode_Right, KeyCode_Shift, KeyCode_Control);
-    Bind(move_left_token_boundary, KeyCode_Left, KeyCode_Shift, KeyCode_Control);
-  }
-  
-  SelectMap(file_map_id);
-  ParentMap(global_map_id);
-  Bind(delete_char,            KeyCode_Delete);
-  Bind(backspace_char,         KeyCode_Backspace);
-  Bind(move_up,                KeyCode_Up);
-  Bind(move_down,              KeyCode_Down);
-  Bind(move_left,              KeyCode_Left);
-  Bind(move_right,             KeyCode_Right);
-  Bind(seek_end_of_line,       KeyCode_End);
-  Bind(fleury_home,            KeyCode_Home);
-  Bind(page_up,                KeyCode_PageUp);
-  Bind(page_down,              KeyCode_PageDown);
-  Bind(goto_beginning_of_file, KeyCode_PageUp, KeyCode_Control);
-  Bind(goto_end_of_file,       KeyCode_PageDown, KeyCode_Control);
-  Bind(move_up_to_blank_line_end,        KeyCode_Up, KeyCode_Control);
-  Bind(move_down_to_blank_line_end,      KeyCode_Down, KeyCode_Control);
-  Bind(move_left_whitespace_boundary,    KeyCode_Left, KeyCode_Control);
-  Bind(move_right_whitespace_boundary,   KeyCode_Right, KeyCode_Control);
-  Bind(move_line_up,                     KeyCode_Up, KeyCode_Alt);
-  Bind(move_line_down,                   KeyCode_Down, KeyCode_Alt);
-  Bind(backspace_alpha_numeric_boundary, KeyCode_Backspace, KeyCode_Control);
-  Bind(delete_alpha_numeric_boundary,    KeyCode_Delete, KeyCode_Control);
-  Bind(snipe_backward_whitespace_or_token_boundary, KeyCode_Backspace, KeyCode_Alt);
-  Bind(snipe_forward_whitespace_or_token_boundary,  KeyCode_Delete, KeyCode_Alt);
-  Bind(set_mark,                    KeyCode_Space, KeyCode_Control);
-  Bind(replace_in_range,            KeyCode_A, KeyCode_Control);
-  Bind(copy,                        KeyCode_C, KeyCode_Control);
-  Bind(delete_range,                KeyCode_D, KeyCode_Control);
-  Bind(delete_line,                 KeyCode_D, KeyCode_Control, KeyCode_Shift);
-  Bind(center_view,                 KeyCode_E, KeyCode_Control);
-  Bind(left_adjust_view,            KeyCode_E, KeyCode_Control, KeyCode_Shift);
-  Bind(search,                      KeyCode_F, KeyCode_Control);
-  Bind(list_all_locations,          KeyCode_F, KeyCode_Control, KeyCode_Shift);
-  Bind(list_all_substring_locations_case_insensitive, KeyCode_F, KeyCode_Alt);
-  Bind(goto_line,                   KeyCode_G, KeyCode_Control);
-  Bind(list_all_locations_of_selection,  KeyCode_G, KeyCode_Control, KeyCode_Shift);
-  Bind(kill_buffer,                 KeyCode_K, KeyCode_Control, KeyCode_Shift);
-  Bind(duplicate_line,              KeyCode_L, KeyCode_Control);
-  Bind(cursor_mark_swap,            KeyCode_M, KeyCode_Control);
-  Bind(reopen,                      KeyCode_O, KeyCode_Control, KeyCode_Shift);
-  Bind(query_replace,               KeyCode_Q, KeyCode_Control);
-  Bind(query_replace_identifier,    KeyCode_Q, KeyCode_Control, KeyCode_Shift);
-  Bind(query_replace_selection,     KeyCode_Q, KeyCode_Alt);
-  Bind(reverse_search,              KeyCode_R, KeyCode_Control);
-  Bind(save,                        KeyCode_S, KeyCode_Control);
-  Bind(save_all_dirty_buffers,      KeyCode_S, KeyCode_Control, KeyCode_Shift);
-  Bind(search_identifier,           KeyCode_T, KeyCode_Control);
-  Bind(list_all_locations_of_identifier, KeyCode_T, KeyCode_Control, KeyCode_Shift);
-  Bind(paste_and_indent,            KeyCode_V, KeyCode_Control);
-  Bind(paste_next_and_indent,       KeyCode_V, KeyCode_Control, KeyCode_Shift);
-  Bind(cut,                         KeyCode_X, KeyCode_Control);
-  Bind(redo,                        KeyCode_Y, KeyCode_Control);
-  Bind(undo,                        KeyCode_Z, KeyCode_Control);
-  Bind(view_buffer_other_panel,     KeyCode_1, KeyCode_Control);
-  Bind(swap_panels,                 KeyCode_2, KeyCode_Control);
-  Bind(if_read_only_goto_position,  KeyCode_Return);
-  Bind(if_read_only_goto_position_same_panel, KeyCode_Return, KeyCode_Shift);
-  Bind(view_jump_list_with_lister,  KeyCode_Period, KeyCode_Control, KeyCode_Shift);
-  
-  // NOTE(rjf): Custom bindings.
-  {
-    Bind(fleury_write_zero_struct,  KeyCode_0, KeyCode_Control);
-    Bind(move_right_token_boundary, KeyCode_Right, KeyCode_Shift, KeyCode_Control);
-    Bind(move_left_token_boundary, KeyCode_Left, KeyCode_Shift, KeyCode_Control);
-  }
-  
-  SelectMap(code_map_id);
-  ParentMap(file_map_id);
-  BindTextInput(f4_write_text_and_auto_indent);
-  Bind(move_left_alpha_numeric_boundary,           KeyCode_Left, KeyCode_Control);
-  Bind(move_right_alpha_numeric_boundary,          KeyCode_Right, KeyCode_Control);
-  Bind(move_left_alpha_numeric_or_camel_boundary,  KeyCode_Left, KeyCode_Alt);
-  Bind(move_right_alpha_numeric_or_camel_boundary, KeyCode_Right, KeyCode_Alt);
-  Bind(comment_line_toggle,        KeyCode_Semicolon, KeyCode_Control);
-  Bind(word_complete,              KeyCode_Tab);
-  Bind(auto_indent_range,          KeyCode_Tab, KeyCode_Control);
-  Bind(auto_indent_line_at_cursor, KeyCode_Tab, KeyCode_Shift);
-  Bind(word_complete_drop_down,    KeyCode_Tab, KeyCode_Shift, KeyCode_Control);
-  Bind(write_block,                KeyCode_R, KeyCode_Alt);
-  Bind(write_todo,                 KeyCode_T, KeyCode_Alt);
-  Bind(write_note,                 KeyCode_Y, KeyCode_Alt);
-  Bind(list_all_locations_of_type_definition,               KeyCode_D, KeyCode_Alt);
-  Bind(list_all_locations_of_type_definition_of_identifier, KeyCode_T, KeyCode_Alt, KeyCode_Shift);
-  Bind(open_long_braces,           KeyCode_LeftBracket, KeyCode_Control);
-  Bind(open_long_braces_semicolon, KeyCode_LeftBracket, KeyCode_Control, KeyCode_Shift);
-  Bind(open_long_braces_break,     KeyCode_RightBracket, KeyCode_Control, KeyCode_Shift);
-  Bind(select_surrounding_scope,   KeyCode_LeftBracket, KeyCode_Alt);
-  Bind(select_surrounding_scope_maximal, KeyCode_LeftBracket, KeyCode_Alt, KeyCode_Shift);
-  Bind(select_prev_scope_absolute, KeyCode_RightBracket, KeyCode_Alt);
-  Bind(select_prev_top_most_scope, KeyCode_RightBracket, KeyCode_Alt, KeyCode_Shift);
-  Bind(select_next_scope_absolute, KeyCode_Quote, KeyCode_Alt);
-  Bind(select_next_scope_after_current, KeyCode_Quote, KeyCode_Alt, KeyCode_Shift);
-  Bind(place_in_scope,             KeyCode_ForwardSlash, KeyCode_Alt);
-  Bind(delete_current_scope,       KeyCode_Minus, KeyCode_Alt);
-  Bind(if0_off,                    KeyCode_I, KeyCode_Alt);
-  Bind(open_file_in_quotes,        KeyCode_1, KeyCode_Alt);
-  Bind(open_matching_file_cpp,     KeyCode_2, KeyCode_Alt);
-  
+    String_ID global_map_id = vars_save_string_lit("keys_global");
+    String_ID file_map_id = vars_save_string_lit("keys_file");
+    String_ID code_map_id = vars_save_string_lit("keys_code");
+    
+    MappingScope();
+    SelectMapping(mapping);
+    SelectMap(global_map_id);
+    Bind(keyboard_macro_start_recording , KeyCode_U, KeyCode_Control);
+    Bind(keyboard_macro_finish_recording, KeyCode_U, KeyCode_Control, KeyCode_Shift);
+    Bind(keyboard_macro_replay,           KeyCode_U, KeyCode_Alt);
+    Bind(change_active_panel,           KeyCode_Comma, KeyCode_Control);
+    Bind(change_active_panel_backwards, KeyCode_Comma, KeyCode_Control, KeyCode_Shift);
+    Bind(interactive_new,               KeyCode_N, KeyCode_Control);
+    Bind(interactive_open_or_new,       KeyCode_O, KeyCode_Control);
+    Bind(open_in_other,                 KeyCode_O, KeyCode_Alt);
+    Bind(interactive_kill_buffer,       KeyCode_K, KeyCode_Control);
+    Bind(interactive_switch_buffer,     KeyCode_I, KeyCode_Control);
+    Bind(project_go_to_root_directory,  KeyCode_H, KeyCode_Control);
+    Bind(save_all_dirty_buffers,        KeyCode_S, KeyCode_Control, KeyCode_Shift);
+    Bind(change_to_build_panel,         KeyCode_Period, KeyCode_Alt);
+    Bind(close_build_panel,             KeyCode_Comma, KeyCode_Alt);
+    Bind(goto_next_jump,                KeyCode_N, KeyCode_Alt);
+    Bind(goto_prev_jump,                KeyCode_N, KeyCode_Alt, KeyCode_Shift);
+    Bind(build_in_build_panel,          KeyCode_M, KeyCode_Alt);
+    Bind(goto_first_jump,               KeyCode_M, KeyCode_Alt, KeyCode_Shift);
+    Bind(toggle_filebar,                KeyCode_B, KeyCode_Alt);
+    Bind(execute_any_cli,               KeyCode_Z, KeyCode_Alt);
+    Bind(execute_previous_cli,          KeyCode_Z, KeyCode_Alt, KeyCode_Shift);
+    Bind(command_lister,                KeyCode_X, KeyCode_Alt);
+    Bind(project_command_lister,        KeyCode_X, KeyCode_Alt, KeyCode_Shift);
+    Bind(list_all_functions_current_buffer_lister, KeyCode_I, KeyCode_Control, KeyCode_Shift);
+    Bind(project_fkey_command, KeyCode_F1);
+    Bind(project_fkey_command, KeyCode_F2);
+    Bind(project_fkey_command, KeyCode_F3);
+    Bind(project_fkey_command, KeyCode_F4);
+    Bind(project_fkey_command, KeyCode_F5);
+    Bind(project_fkey_command, KeyCode_F6);
+    Bind(project_fkey_command, KeyCode_F7);
+    Bind(project_fkey_command, KeyCode_F8);
+    Bind(project_fkey_command, KeyCode_F9);
+    Bind(project_fkey_command, KeyCode_F10);
+    Bind(project_fkey_command, KeyCode_F11);
+    Bind(project_fkey_command, KeyCode_F12);
+    Bind(project_fkey_command, KeyCode_F13);
+    Bind(project_fkey_command, KeyCode_F14);
+    Bind(project_fkey_command, KeyCode_F15);
+    Bind(project_fkey_command, KeyCode_F16);
+    
+    // NOTE(rjf): Custom bindings.
+    {
+        Bind(open_panel_vsplit, KeyCode_P, KeyCode_Control);
+        Bind(open_panel_hsplit, KeyCode_Minus, KeyCode_Control);
+        Bind(close_panel, KeyCode_P, KeyCode_Control, KeyCode_Shift);
+        Bind(f4_search_for_definition__project_wide, KeyCode_J, KeyCode_Control);
+        Bind(f4_search_for_definition__current_file, KeyCode_J, KeyCode_Control, KeyCode_Shift);
+        Bind(fleury_toggle_battery_saver, KeyCode_Tick, KeyCode_Alt);
+        Bind(move_right_token_boundary, KeyCode_Right, KeyCode_Shift, KeyCode_Control);
+        Bind(move_left_token_boundary, KeyCode_Left, KeyCode_Shift, KeyCode_Control);
+    }
+    
+    SelectMap(file_map_id);
+    ParentMap(global_map_id);
+    Bind(delete_char,            KeyCode_Delete);
+    Bind(backspace_char,         KeyCode_Backspace);
+    Bind(move_up,                KeyCode_Up);
+    Bind(move_down,              KeyCode_Down);
+    Bind(move_left,              KeyCode_Left);
+    Bind(move_right,             KeyCode_Right);
+    Bind(seek_end_of_line,       KeyCode_End);
+    Bind(fleury_home,            KeyCode_Home);
+    Bind(page_up,                KeyCode_PageUp);
+    Bind(page_down,              KeyCode_PageDown);
+    Bind(goto_beginning_of_file, KeyCode_PageUp, KeyCode_Control);
+    Bind(goto_end_of_file,       KeyCode_PageDown, KeyCode_Control);
+    Bind(move_up_to_blank_line_end,        KeyCode_Up, KeyCode_Control);
+    Bind(move_down_to_blank_line_end,      KeyCode_Down, KeyCode_Control);
+    Bind(move_left_whitespace_boundary,    KeyCode_Left, KeyCode_Control);
+    Bind(move_right_whitespace_boundary,   KeyCode_Right, KeyCode_Control);
+    Bind(move_line_up,                     KeyCode_Up, KeyCode_Alt);
+    Bind(move_line_down,                   KeyCode_Down, KeyCode_Alt);
+    Bind(backspace_alpha_numeric_boundary, KeyCode_Backspace, KeyCode_Control);
+    Bind(delete_alpha_numeric_boundary,    KeyCode_Delete, KeyCode_Control);
+    Bind(snipe_backward_whitespace_or_token_boundary, KeyCode_Backspace, KeyCode_Alt);
+    Bind(snipe_forward_whitespace_or_token_boundary,  KeyCode_Delete, KeyCode_Alt);
+    Bind(set_mark,                    KeyCode_Space, KeyCode_Control);
+    Bind(replace_in_range,            KeyCode_A, KeyCode_Control);
+    Bind(copy,                        KeyCode_C, KeyCode_Control);
+    Bind(delete_range,                KeyCode_D, KeyCode_Control);
+    Bind(delete_line,                 KeyCode_D, KeyCode_Control, KeyCode_Shift);
+    Bind(center_view,                 KeyCode_E, KeyCode_Control);
+    Bind(left_adjust_view,            KeyCode_E, KeyCode_Control, KeyCode_Shift);
+    Bind(search,                      KeyCode_F, KeyCode_Control);
+    Bind(list_all_locations,          KeyCode_F, KeyCode_Control, KeyCode_Shift);
+    Bind(list_all_substring_locations_case_insensitive, KeyCode_F, KeyCode_Alt);
+    Bind(goto_line,                   KeyCode_G, KeyCode_Control);
+    Bind(list_all_locations_of_selection,  KeyCode_G, KeyCode_Control, KeyCode_Shift);
+    Bind(kill_buffer,                 KeyCode_K, KeyCode_Control, KeyCode_Shift);
+    Bind(duplicate_line,              KeyCode_L, KeyCode_Control);
+    Bind(cursor_mark_swap,            KeyCode_M, KeyCode_Control);
+    Bind(reopen,                      KeyCode_O, KeyCode_Control, KeyCode_Shift);
+    Bind(query_replace,               KeyCode_Q, KeyCode_Control);
+    Bind(query_replace_identifier,    KeyCode_Q, KeyCode_Control, KeyCode_Shift);
+    Bind(query_replace_selection,     KeyCode_Q, KeyCode_Alt);
+    Bind(reverse_search,              KeyCode_R, KeyCode_Control);
+    Bind(save,                        KeyCode_S, KeyCode_Control);
+    Bind(save_all_dirty_buffers,      KeyCode_S, KeyCode_Control, KeyCode_Shift);
+    Bind(search_identifier,           KeyCode_T, KeyCode_Control);
+    Bind(list_all_locations_of_identifier, KeyCode_T, KeyCode_Control, KeyCode_Shift);
+    Bind(paste_and_indent,            KeyCode_V, KeyCode_Control);
+    Bind(paste_next_and_indent,       KeyCode_V, KeyCode_Control, KeyCode_Shift);
+    Bind(cut,                         KeyCode_X, KeyCode_Control);
+    Bind(redo,                        KeyCode_Y, KeyCode_Control);
+    Bind(undo,                        KeyCode_Z, KeyCode_Control);
+    Bind(view_buffer_other_panel,     KeyCode_1, KeyCode_Control);
+    Bind(swap_panels,                 KeyCode_2, KeyCode_Control);
+    Bind(if_read_only_goto_position,  KeyCode_Return);
+    Bind(if_read_only_goto_position_same_panel, KeyCode_Return, KeyCode_Shift);
+    Bind(view_jump_list_with_lister,  KeyCode_Period, KeyCode_Control, KeyCode_Shift);
+    
+    // NOTE(rjf): Custom bindings.
+    {
+        Bind(fleury_write_zero_struct,  KeyCode_0, KeyCode_Control);
+        Bind(move_right_token_boundary, KeyCode_Right, KeyCode_Shift, KeyCode_Control);
+        Bind(move_left_token_boundary, KeyCode_Left, KeyCode_Shift, KeyCode_Control);
+    }
+    
+    SelectMap(code_map_id);
+    ParentMap(file_map_id);
+    BindTextInput(f4_write_text_and_auto_indent);
+    Bind(move_left_alpha_numeric_boundary,           KeyCode_Left, KeyCode_Control);
+    Bind(move_right_alpha_numeric_boundary,          KeyCode_Right, KeyCode_Control);
+    Bind(move_left_alpha_numeric_or_camel_boundary,  KeyCode_Left, KeyCode_Alt);
+    Bind(move_right_alpha_numeric_or_camel_boundary, KeyCode_Right, KeyCode_Alt);
+    Bind(comment_line_toggle,        KeyCode_Semicolon, KeyCode_Control);
+    Bind(word_complete,              KeyCode_Tab);
+    Bind(auto_indent_range,          KeyCode_Tab, KeyCode_Control);
+    Bind(auto_indent_line_at_cursor, KeyCode_Tab, KeyCode_Shift);
+    Bind(word_complete_drop_down,    KeyCode_Tab, KeyCode_Shift, KeyCode_Control);
+    Bind(write_block,                KeyCode_R, KeyCode_Alt);
+    Bind(write_todo,                 KeyCode_T, KeyCode_Alt);
+    Bind(write_note,                 KeyCode_Y, KeyCode_Alt);
+    Bind(list_all_locations_of_type_definition,               KeyCode_D, KeyCode_Alt);
+    Bind(list_all_locations_of_type_definition_of_identifier, KeyCode_T, KeyCode_Alt, KeyCode_Shift);
+    Bind(open_long_braces,           KeyCode_LeftBracket, KeyCode_Control);
+    Bind(open_long_braces_semicolon, KeyCode_LeftBracket, KeyCode_Control, KeyCode_Shift);
+    Bind(open_long_braces_break,     KeyCode_RightBracket, KeyCode_Control, KeyCode_Shift);
+    Bind(select_surrounding_scope,   KeyCode_LeftBracket, KeyCode_Alt);
+    Bind(select_surrounding_scope_maximal, KeyCode_LeftBracket, KeyCode_Alt, KeyCode_Shift);
+    Bind(select_prev_scope_absolute, KeyCode_RightBracket, KeyCode_Alt);
+    Bind(select_prev_top_most_scope, KeyCode_RightBracket, KeyCode_Alt, KeyCode_Shift);
+    Bind(select_next_scope_absolute, KeyCode_Quote, KeyCode_Alt);
+    Bind(select_next_scope_after_current, KeyCode_Quote, KeyCode_Alt, KeyCode_Shift);
+    Bind(place_in_scope,             KeyCode_ForwardSlash, KeyCode_Alt);
+    Bind(delete_current_scope,       KeyCode_Minus, KeyCode_Alt);
+    Bind(if0_off,                    KeyCode_I, KeyCode_Alt);
+    Bind(open_file_in_quotes,        KeyCode_1, KeyCode_Alt);
+    Bind(open_matching_file_cpp,     KeyCode_2, KeyCode_Alt);
+    
 }
 
 internal F4_LANGUAGE_INDEXFILE(edye_org_IndexFile)
 {
-  for(;!ctx->done;)
-  {
-    Token *name = 0;
-    if(F4_Index_RequireTokenKind(ctx, TokenBaseKind_Identifier, &name, F4_Index_TokenSkipFlag_SkipWhitespace))
+    for(;!ctx->done;)
     {
-      if(F4_Index_RequireToken(ctx, S8Lit(":"), F4_Index_TokenSkipFlag_SkipWhitespace))
-      {
-        F4_Index_MakeNote(ctx, Ii64(name), F4_Index_NoteKind_Constant, 0);
-      }
+        Token *name = 0;
+        if(F4_Index_RequireTokenKind(ctx, TokenBaseKind_Identifier, &name, F4_Index_TokenSkipFlag_SkipWhitespace))
+        {
+            if(F4_Index_RequireToken(ctx, S8Lit(":"), F4_Index_TokenSkipFlag_SkipWhitespace))
+            {
+                F4_Index_MakeNote(ctx, Ii64(name), F4_Index_NoteKind_Constant, 0);
+            }
+        }
+        else if(F4_Index_RequireTokenKind(ctx, TokenBaseKind_Comment, &name, F4_Index_TokenSkipFlag_SkipWhitespace))
+        {
+            F4_Index_ParseComment(ctx, name);
+        }
+        else
+        {
+            F4_Index_ParseCtx_Inc(ctx, F4_Index_TokenSkipFlag_SkipWhitespace);
+        }
     }
-    else if(F4_Index_RequireTokenKind(ctx, TokenBaseKind_Comment, &name, F4_Index_TokenSkipFlag_SkipWhitespace))
-    {
-      F4_Index_ParseComment(ctx, name);
-    }
-    else
-    {
-      F4_Index_ParseCtx_Inc(ctx, F4_Index_TokenSkipFlag_SkipWhitespace);
-    }
-  }
 }
 
 internal F4_LANGUAGE_LEXINIT(edye_org_LexInit)
 {
-  F4_MD_LexerState *state = (F4_MD_LexerState *)state_ptr;
-  state->string = contents;
-  state->at = contents.str;
-  state->one_past_last = contents.str + contents.size;
+    F4_MD_LexerState *state = (F4_MD_LexerState *)state_ptr;
+    state->string = contents;
+    state->at = contents.str;
+    state->one_past_last = contents.str + contents.size;
 }
 
 
 internal b32
 edye_org_CharIsSymbol(u8 c)
 {
-  return (c == '*');
+    return (c == '*');
 }
 
 internal b32 edye_org_LexFullInput(Arena *arena, Token_List *list, void *state_ptr, u64 max)
 {
-  b32 result = false;
-  F4_MD_LexerState state_ = *(F4_MD_LexerState *)state_ptr;
-  F4_MD_LexerState *state = &state_;
-  u64 emit_counter = 0;
-  i64 strmax = (i64)state->string.size;
-  for(i64 i = (i64)(state->at - state->string.str);
-      i < strmax && state->at + i < state->one_past_last;)
-  {
-    i64 start_i = i;
-    u8 chr = state->string.str[i];
-    
-    // NOTE(rjf): Comments
-    /*
-    if(i+1 < strmax &&
-       state->string.str[i] == '/' &&
-       state->string.str[i+1] == '/')
+    b32 result = false;
+    F4_MD_LexerState state_ = *(F4_MD_LexerState *)state_ptr;
+    F4_MD_LexerState *state = &state_;
+    u64 emit_counter = 0;
+    i64 strmax = (i64)state->string.size;
+    for(i64 i = (i64)(state->at - state->string.str);
+        i < strmax && state->at + i < state->one_past_last;)
     {
-        Token token = { i, 1, TokenBaseKind_Comment, 0 };
-        token.size += 1;
-        for(i64 j = i+2; j < strmax && state->string.str[j] != '\n'; j += 1, token.size += 1);
+        i64 start_i = i;
+        u8 chr = state->string.str[i];
+        
+        // NOTE(rjf): Comments
+        /*
+        if(i+1 < strmax &&
+           state->string.str[i] == '/' &&
+           state->string.str[i+1] == '/')
+        {
+            Token token = { i, 1, TokenBaseKind_Comment, 0 };
+            token.size += 1;
+            for(i64 j = i+2; j < strmax && state->string.str[j] != '\n'; j += 1, token.size += 1);
+            token_list_push(arena, list, &token);
+            i += token.size;
+        }
+        
+        // NOTE(rjf): Comments
+        else if(i+1 < strmax &&
+                state->string.str[i] == '/' &&
+                state->string.str[i+1] == '*')
+        {
+            Token token = { i, 1, TokenBaseKind_Comment, 0 };
+            token.size += 1;
+            for(i64 j = i+2; j+1 < strmax && !(state->string.str[j] == '*' && state->string.str[j+1] == '/'); j += 1, token.size += 1);
+            token.size += 2;
+            token_list_push(arena, list, &token);
+            i += token.size;
+        }
+    */
+        
+        // NOTE(rjf): Identifier
+        if(character_is_alpha(chr))
+        {
+            Token token = { i, 1, TokenBaseKind_Identifier, 0 };
+            for(i64 j = i+1; j < (i64)state->string.size && 
+                (character_is_alpha_numeric(state->string.str[j]) ||
+                 state->string.str[j] == '_');
+                j += 1, token.size += 1);
+            token_list_push(arena, list, &token);
+            i += token.size;
+        }
+        
+        // NOTE(rjf): Whitespace
+        else if(character_is_whitespace(chr))
+        {
+            Token token = { i, 1, TokenBaseKind_Whitespace, 0 };
+            for(i64 j = i+1; j < (i64)state->string.size && 
+                character_is_whitespace(state->string.str[j]);
+                j += 1, token.size += 1);
+            token_list_push(arena, list, &token);
+            i += token.size;
+        }
+        
+        // NOTE(rjf): Numeric Literal
+        else if(chr >= '0' && chr <= '9')
+        {
+            Token token = { i, 1, TokenBaseKind_LiteralFloat, 0 };
+            for(i64 j = i+1; j < (i64)state->string.size && 
+                (character_is_alpha_numeric(state->string.str[j]) ||
+                 state->string.str[j] == '_' ||
+                 state->string.str[j] == '.');
+                j += 1, token.size += 1);
+            token_list_push(arena, list, &token);
+            i += token.size;
+        }
+        
+        /*
+        // NOTE(rjf): Single-Line String Literal
+        else if(chr == '"')
+        {
+            Token token = { i, 1, TokenBaseKind_LiteralString, 0 };
+            for(i64 j = i+1; j < (i64)state->string.size && state->string.str[j] != '"';
+                j += 1, token.size += 1);
+            token.size += 1;
+            token_list_push(arena, list, &token);
+            i += token.size;
+        }
+        
+        // NOTE(rjf): Single-Line String Literal Marker (Bundle-Of-Tokens)
+        else if(chr == '`')
+        {
+            Token token = { i, 1, TokenBaseKind_LiteralString, 0 };
+            token_list_push(arena, list, &token);
+            i += token.size;
+        }
+        
+        // NOTE(rjf): Single-Line Char Literal
+        else if(chr == '\'')
+        {
+            Token token = { i, 1, TokenBaseKind_LiteralString, 0 };
+            for(i64 j = i+1; j < (i64)state->string.size && state->string.str[j] != '\'';
+                j += 1, token.size += 1);
+            token.size += 1;
+            token_list_push(arena, list, &token);
+            i += token.size;
+        }
+        
+        // NOTE(rjf): Multi-line String Literal
+        else if(i+2 < strmax &&
+                state->string.str[i]   == '"' &&
+                state->string.str[i+1] == '"' &&
+                state->string.str[i+2] == '"')
+        {
+            Token token = { i, 1, TokenBaseKind_LiteralString, 0 };
+            for(i64 j = i+1; j+2 < (i64)state->string.size &&
+                !(state->string.str[j]   == '"' &&
+                  state->string.str[j+1] == '"' &&
+                  state->string.str[j+2] == '"');
+                j += 1, token.size += 1);
+            token.size += 3;
+            token_list_push(arena, list, &token);
+            i += token.size;
+        }
+        
+        // NOTE(rjf): Multi-Line String Literal Marker (Bundle-Of-Tokens)
+        else if(i+2 < strmax &&
+                state->string.str[i]   == '`' &&
+                state->string.str[i+1] == '`' &&
+                state->string.str[i+2] == '`')
+        {
+            Token token = { i, 3, TokenBaseKind_LiteralString, 0 };
+            token_list_push(arena, list, &token);
+            i += token.size;
+        }
+        
+        // NOTE(rjf): Multi-line Char Literal
+        else if(i+2 < strmax &&
+                state->string.str[i]   == '\'' &&
+                state->string.str[i+1] == '\'' &&
+                state->string.str[i+2] == '\'')
+        {
+            Token token = { i, 1, TokenBaseKind_LiteralString, 0 };
+            for(i64 j = i+1; j+2 < (i64)state->string.size &&
+                !(state->string.str[j]   == '\'' &&
+                  state->string.str[j+1] == '\'' &&
+                  state->string.str[j+2] == '\'');
+                j += 1, token.size += 1);
+            token.size += 3;
+            token_list_push(arena, list, &token);
+            i += token.size;
+        }
+    */
+        
+        // NOTE(rjf): Tags
+        else if(chr == '@')
+        {
+            Token token = { i, 1, TokenBaseKind_Identifier, 0 };
+            token.sub_kind = F4_MD_TokenSubKind_Tag;
+            for(i64 j = i+1; j < (i64)state->string.size && 
+                (character_is_alpha_numeric(state->string.str[j]) ||
+                 state->string.str[j] == '_');
+                j += 1, token.size += 1);
+            token_list_push(arena, list, &token);
+            i += token.size;
+        }
+        
+        /*
+        // NOTE(rjf): Scope-Open
+        else if(chr == '{')
+        {
+            Token token = { i, 1, TokenBaseKind_ScopeOpen, 0 };
+            token_list_push(arena, list, &token);
+            i += token.size;
+        }
+        
+        // NOTE(rjf): Scope-Close
+        else if(chr == '}')
+        {
+            Token token = { i, 1, TokenBaseKind_ScopeClose, 0 };
+            token_list_push(arena, list, &token);
+            i += token.size;
+        }
+        
+        // NOTE(rjf): Paren-Open
+        else if(chr == '(' || chr == '[')
+        {
+            Token token = { i, 1, TokenBaseKind_ParentheticalOpen, 0 };
+            token_list_push(arena, list, &token);
+            i += token.size;
+        }
+        
+        // NOTE(rjf): Scope-Close
+        else if(chr == ')' || chr == ']')
+        {
+            Token token = { i, 1, TokenBaseKind_ParentheticalClose, 0 };
+            token_list_push(arena, list, &token);
+            i += token.size;
+        }
+        
+        // NOTE(rjf): Statement closes
+        else if(chr == ',' || chr == ';' || (chr == '-' && i+1 < strmax && state->string.str[i+1] == '>'))
+        {
+            Token token = { i, 1, TokenBaseKind_StatementClose, 0 };
+            token_list_push(arena, list, &token);
+            i += token.size;
+        }
+    */
+        
+        // NOTE(rjf): Operators
+        else if(edye_org_CharIsSymbol(chr))
+        {
+            Token token = { i, 1, TokenBaseKind_Operator, 0 };
+            token_list_push(arena, list, &token);
+            i += token.size;
+        }
+        
+        // NOTE(rjf): Catch-All
+        else
+        {
+            Token token = {i, 1, TokenBaseKind_LexError, 0 };
+            token_list_push(arena, list, &token);
+            i += token.size;
+        }
+        
+        if(state->at >= state->one_past_last)
+        {
+            // goto eof;
+            break;
+        }
+        else if(start_i == i)
+        {
+            i += 1;
+            state->at = state->string.str + i;
+        }
+        else
+        {
+            state->at = state->string.str + i;
+            
+            // NOTE(edye): i guess prevents long ass files from being checked
+            emit_counter += 1;
+            if(emit_counter >= max)
+            {
+                break;
+                //goto eof;
+            }
+        }
+    }
+    
+    // NOTE(rjf): Add EOF
+    eof:;
+    {
+        result = true;
+        Token token = { (i64)state->string.size, 1, TokenBaseKind_EOF, 0 };
         token_list_push(arena, list, &token);
-        i += token.size;
     }
     
-    // NOTE(rjf): Comments
-    else if(i+1 < strmax &&
-            state->string.str[i] == '/' &&
-            state->string.str[i+1] == '*')
-    {
-        Token token = { i, 1, TokenBaseKind_Comment, 0 };
-        token.size += 1;
-        for(i64 j = i+2; j+1 < strmax && !(state->string.str[j] == '*' && state->string.str[j+1] == '/'); j += 1, token.size += 1);
-        token.size += 2;
-        token_list_push(arena, list, &token);
-        i += token.size;
-    }
-*/
-    
-    // NOTE(rjf): Identifier
-    if(character_is_alpha(chr))
-    {
-      Token token = { i, 1, TokenBaseKind_Identifier, 0 };
-      for(i64 j = i+1; j < (i64)state->string.size && 
-          (character_is_alpha_numeric(state->string.str[j]) ||
-           state->string.str[j] == '_');
-          j += 1, token.size += 1);
-      token_list_push(arena, list, &token);
-      i += token.size;
-    }
-    
-    // NOTE(rjf): Whitespace
-    else if(character_is_whitespace(chr))
-    {
-      Token token = { i, 1, TokenBaseKind_Whitespace, 0 };
-      for(i64 j = i+1; j < (i64)state->string.size && 
-          character_is_whitespace(state->string.str[j]);
-          j += 1, token.size += 1);
-      token_list_push(arena, list, &token);
-      i += token.size;
-    }
-    
-    // NOTE(rjf): Numeric Literal
-    else if(chr >= '0' && chr <= '9')
-    {
-      Token token = { i, 1, TokenBaseKind_LiteralFloat, 0 };
-      for(i64 j = i+1; j < (i64)state->string.size && 
-          (character_is_alpha_numeric(state->string.str[j]) ||
-           state->string.str[j] == '_' ||
-           state->string.str[j] == '.');
-          j += 1, token.size += 1);
-      token_list_push(arena, list, &token);
-      i += token.size;
-    }
-    
-    /*
-    // NOTE(rjf): Single-Line String Literal
-    else if(chr == '"')
-    {
-        Token token = { i, 1, TokenBaseKind_LiteralString, 0 };
-        for(i64 j = i+1; j < (i64)state->string.size && state->string.str[j] != '"';
-            j += 1, token.size += 1);
-        token.size += 1;
-        token_list_push(arena, list, &token);
-        i += token.size;
-    }
-    
-    // NOTE(rjf): Single-Line String Literal Marker (Bundle-Of-Tokens)
-    else if(chr == '`')
-    {
-        Token token = { i, 1, TokenBaseKind_LiteralString, 0 };
-        token_list_push(arena, list, &token);
-        i += token.size;
-    }
-    
-    // NOTE(rjf): Single-Line Char Literal
-    else if(chr == '\'')
-    {
-        Token token = { i, 1, TokenBaseKind_LiteralString, 0 };
-        for(i64 j = i+1; j < (i64)state->string.size && state->string.str[j] != '\'';
-            j += 1, token.size += 1);
-        token.size += 1;
-        token_list_push(arena, list, &token);
-        i += token.size;
-    }
-    
-    // NOTE(rjf): Multi-line String Literal
-    else if(i+2 < strmax &&
-            state->string.str[i]   == '"' &&
-            state->string.str[i+1] == '"' &&
-            state->string.str[i+2] == '"')
-    {
-        Token token = { i, 1, TokenBaseKind_LiteralString, 0 };
-        for(i64 j = i+1; j+2 < (i64)state->string.size &&
-            !(state->string.str[j]   == '"' &&
-              state->string.str[j+1] == '"' &&
-              state->string.str[j+2] == '"');
-            j += 1, token.size += 1);
-        token.size += 3;
-        token_list_push(arena, list, &token);
-        i += token.size;
-    }
-    
-    // NOTE(rjf): Multi-Line String Literal Marker (Bundle-Of-Tokens)
-    else if(i+2 < strmax &&
-            state->string.str[i]   == '`' &&
-            state->string.str[i+1] == '`' &&
-            state->string.str[i+2] == '`')
-    {
-        Token token = { i, 3, TokenBaseKind_LiteralString, 0 };
-        token_list_push(arena, list, &token);
-        i += token.size;
-    }
-    
-    // NOTE(rjf): Multi-line Char Literal
-    else if(i+2 < strmax &&
-            state->string.str[i]   == '\'' &&
-            state->string.str[i+1] == '\'' &&
-            state->string.str[i+2] == '\'')
-    {
-        Token token = { i, 1, TokenBaseKind_LiteralString, 0 };
-        for(i64 j = i+1; j+2 < (i64)state->string.size &&
-            !(state->string.str[j]   == '\'' &&
-              state->string.str[j+1] == '\'' &&
-              state->string.str[j+2] == '\'');
-            j += 1, token.size += 1);
-        token.size += 3;
-        token_list_push(arena, list, &token);
-        i += token.size;
-    }
-*/
-    
-    // NOTE(rjf): Tags
-    else if(chr == '@')
-    {
-      Token token = { i, 1, TokenBaseKind_Identifier, 0 };
-      token.sub_kind = F4_MD_TokenSubKind_Tag;
-      for(i64 j = i+1; j < (i64)state->string.size && 
-          (character_is_alpha_numeric(state->string.str[j]) ||
-           state->string.str[j] == '_');
-          j += 1, token.size += 1);
-      token_list_push(arena, list, &token);
-      i += token.size;
-    }
-    
-    /*
-    // NOTE(rjf): Scope-Open
-    else if(chr == '{')
-    {
-        Token token = { i, 1, TokenBaseKind_ScopeOpen, 0 };
-        token_list_push(arena, list, &token);
-        i += token.size;
-    }
-    
-    // NOTE(rjf): Scope-Close
-    else if(chr == '}')
-    {
-        Token token = { i, 1, TokenBaseKind_ScopeClose, 0 };
-        token_list_push(arena, list, &token);
-        i += token.size;
-    }
-    
-    // NOTE(rjf): Paren-Open
-    else if(chr == '(' || chr == '[')
-    {
-        Token token = { i, 1, TokenBaseKind_ParentheticalOpen, 0 };
-        token_list_push(arena, list, &token);
-        i += token.size;
-    }
-    
-    // NOTE(rjf): Scope-Close
-    else if(chr == ')' || chr == ']')
-    {
-        Token token = { i, 1, TokenBaseKind_ParentheticalClose, 0 };
-        token_list_push(arena, list, &token);
-        i += token.size;
-    }
-    
-    // NOTE(rjf): Statement closes
-    else if(chr == ',' || chr == ';' || (chr == '-' && i+1 < strmax && state->string.str[i+1] == '>'))
-    {
-        Token token = { i, 1, TokenBaseKind_StatementClose, 0 };
-        token_list_push(arena, list, &token);
-        i += token.size;
-    }
-*/
-    
-    // NOTE(rjf): Operators
-    else if(edye_org_CharIsSymbol(chr))
-    {
-      Token token = { i, 1, TokenBaseKind_Operator, 0 };
-      token_list_push(arena, list, &token);
-      i += token.size;
-    }
-    
-    // NOTE(rjf): Catch-All
-    else
-    {
-      Token token = {i, 1, TokenBaseKind_LexError, 0 };
-      token_list_push(arena, list, &token);
-      i += token.size;
-    }
-    
-    if(state->at >= state->one_past_last)
-    {
-      // goto eof;
-      break;
-    }
-    else if(start_i == i)
-    {
-      i += 1;
-      state->at = state->string.str + i;
-    }
-    else
-    {
-      state->at = state->string.str + i;
-      
-      // NOTE(edye): i guess prevents long ass files from being checked
-      emit_counter += 1;
-      if(emit_counter >= max)
-      {
-        break;
-        //goto eof;
-      }
-    }
-  }
-  
-  // NOTE(rjf): Add EOF
-  eof:;
-  {
-    result = true;
-    Token token = { (i64)state->string.size, 1, TokenBaseKind_EOF, 0 };
-    token_list_push(arena, list, &token);
-  }
-  
-  end:;
-  *(F4_MD_LexerState *)state_ptr = *state;
-  return result;
+    end:;
+    *(F4_MD_LexerState *)state_ptr = *state;
+    return result;
 }
 
 internal F4_LANGUAGE_POSCONTEXT(edye_org_PosContext)
 {
-  return 0;
+    return 0;
 }
 
 internal F4_LANGUAGE_HIGHLIGHT(edye_org_Highlight)
 {
-  Range_i64 visible_range = text_layout_get_visible_range(app, text_layout_id);
-  i64 first_index = token_index_from_pos(array, visible_range.first);
-  Token_Iterator_Array it = token_iterator_index(0, array, first_index);
-  
-  for(;;)
-  {
-    Token *token = token_it_read(&it);
-    if(!token || token->pos >= visible_range.one_past_last)
+    Range_i64 visible_range = text_layout_get_visible_range(app, text_layout_id);
+    i64 first_index = token_index_from_pos(array, visible_range.first);
+    Token_Iterator_Array it = token_iterator_index(0, array, first_index);
+    
+    for(;;)
     {
-      break;
+        Token *token = token_it_read(&it);
+        if(!token || token->pos >= visible_range.one_past_last)
+        {
+            break;
+        }
+        if(token->sub_kind == F4_MD_TokenSubKind_Tag)
+        {
+            paint_text_color(app, text_layout_id, Ii64(token), F4_ARGBFromID(color_table, fleury_color_index_comment_tag, 0));
+        }
+        if(!token_it_inc_all(&it))
+        {
+            break;
+        }
     }
-    if(token->sub_kind == F4_MD_TokenSubKind_Tag)
-    {
-      paint_text_color(app, text_layout_id, Ii64(token), F4_ARGBFromID(color_table, fleury_color_index_comment_tag, 0));
-    }
-    if(!token_it_inc_all(&it))
-    {
-      break;
-    }
-  }
 }
 
 function void
 edye_register_languages(void){
-  // NOTE(rjf): C/C++
-  {
-    String_Const_u8 extensions[] =
+    // NOTE(rjf): C/C++
     {
-      S8Lit("cpp"), S8Lit("cc"), S8Lit("c"), S8Lit("cxx"),
-      S8Lit("C"), S8Lit("h"), S8Lit("hpp"),
-    };
-    for(int i = 0; i < ArrayCount(extensions); i += 1)
-    {
-      F4_RegisterLanguage(extensions[i],
-                          F4_CPP_IndexFile,
-                          lex_full_input_cpp_init,
-                          lex_full_input_cpp_breaks,
-                          F4_CPP_PosContext,
-                          F4_CPP_Highlight,
-                          Lex_State_Cpp);
+        String_Const_u8 extensions[] =
+        {
+            S8Lit("cpp"), S8Lit("cc"), S8Lit("c"), S8Lit("cxx"),
+            S8Lit("C"), S8Lit("h"), S8Lit("hpp"),
+        };
+        for(int i = 0; i < ArrayCount(extensions); i += 1)
+        {
+            F4_RegisterLanguage(extensions[i],
+                                F4_CPP_IndexFile,
+                                lex_full_input_cpp_init,
+                                lex_full_input_cpp_breaks,
+                                F4_CPP_PosContext,
+                                F4_CPP_Highlight,
+                                Lex_State_Cpp);
+        }
     }
-  }
-  
-  // NOTE(rjf): Jai
-  {
-    F4_RegisterLanguage(S8Lit("jai"),
-                        F4_Jai_IndexFile,
-                        lex_full_input_jai_init,
-                        lex_full_input_jai_breaks,
-                        F4_Jai_PosContext,
-                        F4_Jai_Highlight,
-                        Lex_State_Jai);
-  }
-  
-  // NOTE(rjf): Metadesk
-  /*
-  {
-      String_Const_u8 extensions[] =
-      {
-          // TODO(rjf): Maybe find a config-driven way to specify these? "mc" was sort of
-          // introduced ad-hoc...
-          // NOTE(edye): md is markdown extension,
-          // S8Lit("md"),
-          S8Lit("mc"), S8Lit("metacode"), S8Lit("meta"), S8Lit("metadesk"),
-      };
-      for(int i = 0; i < ArrayCount(extensions); i += 1)
-      {
-          F4_RegisterLanguage(extensions[i],
-                              F4_MD_IndexFile,
-                              lex_full_input_cpp_init,
-                              lex_full_input_cpp_breaks,
-                              F4_MD_PosContext,
-                              F4_MD_Highlight,
-                              Lex_State_Cpp);
-      }
-  }*/
-  
-  // TODO(edye): org mode, can't seem to plug in a simple lexer
-  /*
-  {
-      F4_RegisterLanguage(S8Lit("org"),
-                          edye_org_IndexFile,
-                          edye_org_LexInit,
-                          //lex_full_input_cpp_init,
-                          
-                          //lex_full_input_cpp_breaks,
-                          //F4_Language_LexFullInput_NoBreaks, // throws an exception
-                          edye_org_LexFullInput,
-                          
-                          edye_org_PosContext,
-                          edye_org_Highlight,
-                          Lex_State_Cpp);
-  }
-  */
+    
+    // NOTE(rjf): Jai
+    {
+        F4_RegisterLanguage(S8Lit("jai"),
+                            F4_Jai_IndexFile,
+                            lex_full_input_jai_init,
+                            lex_full_input_jai_breaks,
+                            F4_Jai_PosContext,
+                            F4_Jai_Highlight,
+                            Lex_State_Jai);
+    }
+    
+    // NOTE(rjf): Metadesk
+    /*
+    {
+        String_Const_u8 extensions[] =
+        {
+            // TODO(rjf): Maybe find a config-driven way to specify these? "mc" was sort of
+            // introduced ad-hoc...
+            // NOTE(edye): md is markdown extension,
+            // S8Lit("md"),
+            S8Lit("mc"), S8Lit("metacode"), S8Lit("meta"), S8Lit("metadesk"),
+        };
+        for(int i = 0; i < ArrayCount(extensions); i += 1)
+        {
+            F4_RegisterLanguage(extensions[i],
+                                F4_MD_IndexFile,
+                                lex_full_input_cpp_init,
+                                lex_full_input_cpp_breaks,
+                                F4_MD_PosContext,
+                                F4_MD_Highlight,
+                                Lex_State_Cpp);
+        }
+    }*/
+    
+    // TODO(edye): org mode, can't seem to plug in a simple lexer
+    /*
+    {
+        F4_RegisterLanguage(S8Lit("org"),
+                            edye_org_IndexFile,
+                            edye_org_LexInit,
+                            //lex_full_input_cpp_init,
+                            
+                            //lex_full_input_cpp_breaks,
+                            //F4_Language_LexFullInput_NoBreaks, // throws an exception
+                            edye_org_LexFullInput,
+                            
+                            edye_org_PosContext,
+                            edye_org_Highlight,
+                            Lex_State_Cpp);
+    }
+    */
 }
 
 void custom_layer_init(Application_Links *app)
 {
-  
-  default_framework_init(app);
-  global_frame_arena = make_arena(get_base_allocator_system());
-  permanent_arena = make_arena(get_base_allocator_system());
-  
-  // NOTE(rjf): Set up hooks.
-  {
-    set_all_default_hooks(app);
     
-    // TODO (edye) figure out what all of this does and then remove it if possible
+    default_framework_init(app);
+    global_frame_arena = make_arena(get_base_allocator_system());
+    permanent_arena = make_arena(get_base_allocator_system());
     
-    vim_buffer_peek_list[ArrayCount(vim_default_peek_list) + 0] = BYP_peek_list[0];
-    vim_buffer_peek_list[ArrayCount(vim_default_peek_list) + 1] = BYP_peek_list[1];
-    vim_request_vtable[VIM_REQUEST_COUNT + BYP_REQUEST_Title]   = byp_apply_title;
-    vim_request_vtable[VIM_REQUEST_COUNT + BYP_REQUEST_Comment] = byp_apply_comment;
-    vim_request_vtable[VIM_REQUEST_COUNT + BYP_REQUEST_UnComment] = byp_apply_uncomment;
-    
-    vim_text_object_vtable[VIM_TEXT_OBJECT_COUNT + BYP_OBJECT_param0] = {',', (Vim_Text_Object_Func *)byp_object_param};
-    vim_text_object_vtable[VIM_TEXT_OBJECT_COUNT + BYP_OBJECT_param1] = {';', (Vim_Text_Object_Func *)byp_object_param};
-    vim_text_object_vtable[VIM_TEXT_OBJECT_COUNT + BYP_OBJECT_camel0] = {'_', (Vim_Text_Object_Func *)byp_object_camel};
-    vim_text_object_vtable[VIM_TEXT_OBJECT_COUNT + BYP_OBJECT_camel1] = {'-', (Vim_Text_Object_Func *)byp_object_camel};
-    vim_init(app);
-    
-    
-    //t $          ($  , $                             , $                     );
-    set_custom_hook(app, HookID_Tick,                    edye_tick);
-    set_custom_hook(app, HookID_BufferRegion,            edye_buffer_region);
-    //set_custom_hook(app, HookID_BufferRegion,            default_buffer_region);
-    set_custom_hook(app, HookID_RenderCaller,            edye_render);
-    set_custom_hook(app, HookID_BeginBuffer,             F4_BeginBuffer);
-    set_custom_hook(app, HookID_Layout,                  F4_Layout);
-    //set_custom_hook(app, HookID_WholeScreenRenderCaller, F4_WholeScreenRender);
-    set_custom_hook(app, HookID_WholeScreenRenderCaller, byp_whole_screen_render_caller);
-    set_custom_hook(app, HookID_DeltaRule,               F4_DeltaRule);
-    set_custom_hook(app, HookID_BufferEditRange,         F4_BufferEditRange);
-    set_custom_hook_memory_size(app, HookID_DeltaRule, delta_ctx_size(sizeof(Vec2_f32)));
-    
-    //set_custom_hook(app, HookID_BufferEditRange,          vim_buffer_edit_range);
-    //set_custom_hook(app, HookID_ViewChangeBuffer,         vim_view_change_buffer);
-    //set_custom_hook(app, HookID_ViewEventHandler,         vim_view_input_handler);
-  }
-  
-  // NOTE(rjf): Set up mapping.
-  {
-    Thread_Context *tctx = get_thread_context(app);
-    mapping_init(tctx, &framework_mapping);
-    String_Const_u8 bindings_file = string_u8_litexpr("bindings.4coder");
-    F4_SetAbsolutelyNecessaryBindings(&framework_mapping);
-    if(!dynamic_binding_load_from_file(app, &framework_mapping, bindings_file))
+    // NOTE(rjf): Set up hooks.
     {
-      F4_SetDefaultBindings(&framework_mapping);
+        set_all_default_hooks(app);
+        
+        // TODO (edye) figure out what all of this does and then remove it if possible
+        
+        vim_buffer_peek_list[ArrayCount(vim_default_peek_list) + 0] = BYP_peek_list[0];
+        vim_buffer_peek_list[ArrayCount(vim_default_peek_list) + 1] = BYP_peek_list[1];
+        vim_request_vtable[VIM_REQUEST_COUNT + BYP_REQUEST_Title]   = byp_apply_title;
+        vim_request_vtable[VIM_REQUEST_COUNT + BYP_REQUEST_Comment] = byp_apply_comment;
+        vim_request_vtable[VIM_REQUEST_COUNT + BYP_REQUEST_UnComment] = byp_apply_uncomment;
+        
+        vim_text_object_vtable[VIM_TEXT_OBJECT_COUNT + BYP_OBJECT_param0] = {',', (Vim_Text_Object_Func *)byp_object_param};
+        vim_text_object_vtable[VIM_TEXT_OBJECT_COUNT + BYP_OBJECT_param1] = {';', (Vim_Text_Object_Func *)byp_object_param};
+        vim_text_object_vtable[VIM_TEXT_OBJECT_COUNT + BYP_OBJECT_camel0] = {'_', (Vim_Text_Object_Func *)byp_object_camel};
+        vim_text_object_vtable[VIM_TEXT_OBJECT_COUNT + BYP_OBJECT_camel1] = {'-', (Vim_Text_Object_Func *)byp_object_camel};
+        vim_init(app);
+        
+        
+        //t $          ($  , $                             , $                     );
+        set_custom_hook(app, HookID_Tick,                    edye_tick);
+        set_custom_hook(app, HookID_BufferRegion,            edye_buffer_region);
+        //set_custom_hook(app, HookID_BufferRegion,            default_buffer_region);
+        set_custom_hook(app, HookID_RenderCaller,            edye_render);
+        set_custom_hook(app, HookID_BeginBuffer,             F4_BeginBuffer);
+        set_custom_hook(app, HookID_Layout,                  F4_Layout);
+        //set_custom_hook(app, HookID_WholeScreenRenderCaller, F4_WholeScreenRender);
+        set_custom_hook(app, HookID_WholeScreenRenderCaller, byp_whole_screen_render_caller);
+        set_custom_hook(app, HookID_DeltaRule,               F4_DeltaRule);
+        set_custom_hook(app, HookID_BufferEditRange,         F4_BufferEditRange);
+        set_custom_hook_memory_size(app, HookID_DeltaRule, delta_ctx_size(sizeof(Vec2_f32)));
+        
+        //set_custom_hook(app, HookID_BufferEditRange,          vim_buffer_edit_range);
+        //set_custom_hook(app, HookID_ViewChangeBuffer,         vim_view_change_buffer);
+        //set_custom_hook(app, HookID_ViewEventHandler,         vim_view_input_handler);
     }
-    F4_SetAbsolutelyNecessaryBindings(&framework_mapping);
-  }
-  
-  // NOTE(rjf): Set up custom code index.
-  {
-    F4_Index_Initialize();
-  }
-  
-  // NOTE(rjf): Register languages.
-  {
-    edye_register_languages();
-  }
+    
+    // NOTE(rjf): Set up mapping.
+    {
+        Thread_Context *tctx = get_thread_context(app);
+        mapping_init(tctx, &framework_mapping);
+        String_Const_u8 bindings_file = string_u8_litexpr("bindings.4coder");
+        F4_SetAbsolutelyNecessaryBindings(&framework_mapping);
+        if(!dynamic_binding_load_from_file(app, &framework_mapping, bindings_file))
+        {
+            F4_SetDefaultBindings(&framework_mapping);
+        }
+        F4_SetAbsolutelyNecessaryBindings(&framework_mapping);
+    }
+    
+    // NOTE(rjf): Set up custom code index.
+    {
+        F4_Index_Initialize();
+    }
+    
+    // NOTE(rjf): Register languages.
+    {
+        edye_register_languages();
+    }
 }
 
 // TODO(rjf): This is only being used to check if a font file exists because
@@ -2732,14 +2053,14 @@ void custom_layer_init(Application_Links *app)
 function b32
 IsFileReadable(String_Const_u8 path)
 {
-  b32 result = 0;
-  FILE *file = fopen((char *)path.str, "r");
-  if(file)
-  {
-    result = 1;
-    fclose(file);
-  }
-  return result;
+    b32 result = 0;
+    FILE *file = fopen((char *)path.str, "r");
+    if(file)
+    {
+        result = 1;
+        fclose(file);
+    }
+    return result;
 }
 
 
@@ -2747,206 +2068,206 @@ IsFileReadable(String_Const_u8 path)
 CUSTOM_COMMAND_SIG(edye_startup)
 CUSTOM_DOC("edye startup event")
 {
-  ProfileScope(app, "default startup");
-  
-  User_Input input = get_current_input(app);
-  if(!match_core_code(&input, CoreCode_Startup))
-  {
-    return;
-  }
-  
-  //~ NOTE(rjf): Default 4coder initialization.
-  String_Const_u8_Array file_names = input.event.core.file_names;
-  load_themes_default_folder(app);
-  default_4coder_initialize(app, file_names);
-  
-  //~ NOTE(rjf): Open special buffers.
-  {
-    // NOTE(rjf): Open compilation buffer.
+    ProfileScope(app, "default startup");
+    
+    User_Input input = get_current_input(app);
+    if(!match_core_code(&input, CoreCode_Startup))
     {
-      Buffer_ID buffer = create_buffer(app, string_u8_litexpr("*compilation*"),
-                                       BufferCreate_NeverAttachToFile |
-                                       BufferCreate_AlwaysNew);
-      buffer_set_setting(app, buffer, BufferSetting_Unimportant, true);
-      buffer_set_setting(app, buffer, BufferSetting_ReadOnly, true);
+        return;
     }
     
-    // NOTE(rjf): Open lego buffer.
-    {
-      Buffer_ID buffer = create_buffer(app, string_u8_litexpr("*lego*"),
-                                       BufferCreate_NeverAttachToFile |
-                                       BufferCreate_AlwaysNew);
-      buffer_set_setting(app, buffer, BufferSetting_Unimportant, true);
-      buffer_set_setting(app, buffer, BufferSetting_ReadOnly, true);
-    }
+    //~ NOTE(rjf): Default 4coder initialization.
+    String_Const_u8_Array file_names = input.event.core.file_names;
+    load_themes_default_folder(app);
+    default_4coder_initialize(app, file_names);
     
-    // NOTE(rjf): Open calc buffer.
+    //~ NOTE(rjf): Open special buffers.
     {
-      Buffer_ID buffer = create_buffer(app, string_u8_litexpr("*calc*"),
-                                       BufferCreate_NeverAttachToFile |
-                                       BufferCreate_AlwaysNew);
-      buffer_set_setting(app, buffer, BufferSetting_Unimportant, true);
-    }
-    
-    // NOTE(rjf): Open peek buffer.
-    {
-      Buffer_ID buffer = create_buffer(app, string_u8_litexpr("*peek*"),
-                                       BufferCreate_NeverAttachToFile |
-                                       BufferCreate_AlwaysNew);
-      buffer_set_setting(app, buffer, BufferSetting_Unimportant, true);
-    }
-    
-    // NOTE(rjf): Open LOC buffer.
-    {
-      Buffer_ID buffer = create_buffer(app, string_u8_litexpr("*loc*"),
-                                       BufferCreate_NeverAttachToFile |
-                                       BufferCreate_AlwaysNew);
-      buffer_set_setting(app, buffer, BufferSetting_Unimportant, true);
-    }
-  }
-  
-  
-  /*
-    //~ NOTE(rjf): Initialize panels
-    {
-        Buffer_Identifier comp = buffer_identifier(string_u8_litexpr("*compilation*"));
-        Buffer_Identifier calc  = buffer_identifier(string_u8_litexpr("*calc*"));
-        Buffer_Identifier messages = buffer_identifier(string_u8_litexpr("*messages*"));
-        Buffer_ID comp_id = buffer_identifier_to_id(app, comp);
-        Buffer_ID calc_id = buffer_identifier_to_id(app, calc);
-        Buffer_ID messages_id = buffer_identifier_to_id(app, messages);
-        
-        View_ID view = get_active_view(app, Access_Always);
-        new_view_settings(app, view);
-        
-        view_set_buffer(app, view, calc_id, 0);
-        
-        // NOTE(rjf): Bottom compilation panel
-        View_ID compilation_view = 0;
+        // NOTE(rjf): Open compilation buffer.
         {
-            compilation_view = open_view(app, view, ViewSplit_Bottom);
-            new_view_settings(app, compilation_view);
-            Buffer_ID buffer = view_get_buffer(app, compilation_view, Access_Always);
-            Face_ID face_id = get_face_id(app, buffer);
-            Face_Metrics metrics = get_face_metrics(app, face_id);
-            view_set_split_pixel_size(app, compilation_view, (i32)(metrics.line_height*4.f));
-            view_set_passive(app, compilation_view, true);
-            global_compilation_view = compilation_view;
-            view_set_buffer(app, compilation_view, 
-                            comp_id,
-                            0);
+            Buffer_ID buffer = create_buffer(app, string_u8_litexpr("*compilation*"),
+                                             BufferCreate_NeverAttachToFile |
+                                             BufferCreate_AlwaysNew);
+            buffer_set_setting(app, buffer, BufferSetting_Unimportant, true);
+            buffer_set_setting(app, buffer, BufferSetting_ReadOnly, true);
         }
         
-        view_set_active(app, view);
+        // NOTE(rjf): Open lego buffer.
+        {
+            Buffer_ID buffer = create_buffer(app, string_u8_litexpr("*lego*"),
+                                             BufferCreate_NeverAttachToFile |
+                                             BufferCreate_AlwaysNew);
+            buffer_set_setting(app, buffer, BufferSetting_Unimportant, true);
+            buffer_set_setting(app, buffer, BufferSetting_ReadOnly, true);
+        }
         
-        // split panel below
-        open_panel_hsplit(app);
+        // NOTE(rjf): Open calc buffer.
+        {
+            Buffer_ID buffer = create_buffer(app, string_u8_litexpr("*calc*"),
+                                             BufferCreate_NeverAttachToFile |
+                                             BufferCreate_AlwaysNew);
+            buffer_set_setting(app, buffer, BufferSetting_Unimportant, true);
+        }
         
-        View_ID messages_view = get_active_view(app, Access_Always);
-        view_set_buffer(app, messages_view, messages_id, 0);
+        // NOTE(rjf): Open peek buffer.
+        {
+            Buffer_ID buffer = create_buffer(app, string_u8_litexpr("*peek*"),
+                                             BufferCreate_NeverAttachToFile |
+                                             BufferCreate_AlwaysNew);
+            buffer_set_setting(app, buffer, BufferSetting_Unimportant, true);
+        }
         
-        // NOTE(rjf): Restore Active to Left
-        view_set_active(app, view);
-        
-    }
-*/
-  
-  //~ NOTE(rjf): Auto-Load Project.
-  {
-    b32 auto_load = def_get_config_b32(vars_save_string_lit("automatically_load_project"));
-    if (auto_load)
-    {
-      load_project(app);
-    }
-  }
-  
-  //~ NOTE(rjf): Set misc options.
-  {
-    global_battery_saver = def_get_config_b32(vars_save_string_lit("f4_battery_saver"));
-  }
-  
-  //~ NOTE(rjf): Initialize audio.
-  {
-    def_audio_init();
-  }
-  
-  //~ NOTE(rjf): Initialize stylish fonts.
-  {
-    Scratch_Block scratch(app);
-    String_Const_u8 bin_path = system_get_path(scratch, SystemPath_Binary);
-    
-    // NOTE(rjf): Fallback font.
-    Face_ID face_that_should_totally_be_there = get_face_id(app, 0);
-    
-    // NOTE(rjf): Title font.
-    {
-      Face_Description desc = {0};
-      {
-        desc.font.file_name =  push_u8_stringf(scratch, "%.*sfonts/RobotoCondensed-Regular.ttf", string_expand(bin_path));
-        desc.parameters.pt_size = 18;
-        desc.parameters.bold = 0;
-        desc.parameters.italic = 0;
-        desc.parameters.hinting = 0;
-      }
-      
-      if(IsFileReadable(desc.font.file_name))
-      {
-        global_styled_title_face = try_create_new_face(app, &desc);
-      }
-      else
-      {
-        global_styled_title_face = face_that_should_totally_be_there;
-      }
+        // NOTE(rjf): Open LOC buffer.
+        {
+            Buffer_ID buffer = create_buffer(app, string_u8_litexpr("*loc*"),
+                                             BufferCreate_NeverAttachToFile |
+                                             BufferCreate_AlwaysNew);
+            buffer_set_setting(app, buffer, BufferSetting_Unimportant, true);
+        }
     }
     
-    // NOTE(rjf): Label font.
+    
+    /*
+      //~ NOTE(rjf): Initialize panels
+      {
+          Buffer_Identifier comp = buffer_identifier(string_u8_litexpr("*compilation*"));
+          Buffer_Identifier calc  = buffer_identifier(string_u8_litexpr("*calc*"));
+          Buffer_Identifier messages = buffer_identifier(string_u8_litexpr("*messages*"));
+          Buffer_ID comp_id = buffer_identifier_to_id(app, comp);
+          Buffer_ID calc_id = buffer_identifier_to_id(app, calc);
+          Buffer_ID messages_id = buffer_identifier_to_id(app, messages);
+          
+          View_ID view = get_active_view(app, Access_Always);
+          new_view_settings(app, view);
+          
+          view_set_buffer(app, view, calc_id, 0);
+          
+          // NOTE(rjf): Bottom compilation panel
+          View_ID compilation_view = 0;
+          {
+              compilation_view = open_view(app, view, ViewSplit_Bottom);
+              new_view_settings(app, compilation_view);
+              Buffer_ID buffer = view_get_buffer(app, compilation_view, Access_Always);
+              Face_ID face_id = get_face_id(app, buffer);
+              Face_Metrics metrics = get_face_metrics(app, face_id);
+              view_set_split_pixel_size(app, compilation_view, (i32)(metrics.line_height*4.f));
+              view_set_passive(app, compilation_view, true);
+              global_compilation_view = compilation_view;
+              view_set_buffer(app, compilation_view, 
+                              comp_id,
+                              0);
+          }
+          
+          view_set_active(app, view);
+          
+          // split panel below
+          open_panel_hsplit(app);
+          
+          View_ID messages_view = get_active_view(app, Access_Always);
+          view_set_buffer(app, messages_view, messages_id, 0);
+          
+          // NOTE(rjf): Restore Active to Left
+          view_set_active(app, view);
+          
+      }
+  */
+    
+    //~ NOTE(rjf): Auto-Load Project.
     {
-      Face_Description desc = {0};
-      {
-        desc.font.file_name =  push_u8_stringf(scratch, "%.*sfonts/RobotoCondensed-Regular.ttf", string_expand(bin_path));
-        desc.parameters.pt_size = 10;
-        desc.parameters.bold = 1;
-        desc.parameters.italic = 1;
-        desc.parameters.hinting = 0;
-      }
-      
-      if(IsFileReadable(desc.font.file_name))
-      {
-        global_styled_label_face = try_create_new_face(app, &desc);
-      }
-      else
-      {
-        global_styled_label_face = face_that_should_totally_be_there;
-      }
+        b32 auto_load = def_get_config_b32(vars_save_string_lit("automatically_load_project"));
+        if (auto_load)
+        {
+            load_project(app);
+        }
     }
     
-    // NOTE(rjf): Small code font.
+    //~ NOTE(rjf): Set misc options.
     {
-      Face_Description normal_code_desc = get_face_description(app, get_face_id(app, 0));
-      
-      Face_Description desc = {0};
-      {
-        desc.font.file_name =  push_u8_stringf(scratch, "%.*sfonts/Inconsolata-Regular.ttf", string_expand(bin_path));
-        desc.parameters.pt_size = normal_code_desc.parameters.pt_size - 1;
-        desc.parameters.bold = 1;
-        desc.parameters.italic = 1;
-        desc.parameters.hinting = 0;
-      }
-      
-      if(IsFileReadable(desc.font.file_name))
-      {
-        global_small_code_face = try_create_new_face(app, &desc);
-      }
-      else
-      {
-        global_small_code_face = face_that_should_totally_be_there;
-      }
+        global_battery_saver = def_get_config_b32(vars_save_string_lit("f4_battery_saver"));
     }
-  }
-  
-  //~ NOTE(rjf): Prep virtual whitespace.
-  {
-    def_enable_virtual_whitespace = def_get_config_b32(vars_save_string_lit("enable_virtual_whitespace"));
-    clear_all_layouts(app);
-  }
+    
+    //~ NOTE(rjf): Initialize audio.
+    {
+        def_audio_init();
+    }
+    
+    //~ NOTE(rjf): Initialize stylish fonts.
+    {
+        Scratch_Block scratch(app);
+        String_Const_u8 bin_path = system_get_path(scratch, SystemPath_Binary);
+        
+        // NOTE(rjf): Fallback font.
+        Face_ID face_that_should_totally_be_there = get_face_id(app, 0);
+        
+        // NOTE(rjf): Title font.
+        {
+            Face_Description desc = {0};
+            {
+                desc.font.file_name =  push_u8_stringf(scratch, "%.*sfonts/RobotoCondensed-Regular.ttf", string_expand(bin_path));
+                desc.parameters.pt_size = 18;
+                desc.parameters.bold = 0;
+                desc.parameters.italic = 0;
+                desc.parameters.hinting = 0;
+            }
+            
+            if(IsFileReadable(desc.font.file_name))
+            {
+                global_styled_title_face = try_create_new_face(app, &desc);
+            }
+            else
+            {
+                global_styled_title_face = face_that_should_totally_be_there;
+            }
+        }
+        
+        // NOTE(rjf): Label font.
+        {
+            Face_Description desc = {0};
+            {
+                desc.font.file_name =  push_u8_stringf(scratch, "%.*sfonts/RobotoCondensed-Regular.ttf", string_expand(bin_path));
+                desc.parameters.pt_size = 10;
+                desc.parameters.bold = 1;
+                desc.parameters.italic = 1;
+                desc.parameters.hinting = 0;
+            }
+            
+            if(IsFileReadable(desc.font.file_name))
+            {
+                global_styled_label_face = try_create_new_face(app, &desc);
+            }
+            else
+            {
+                global_styled_label_face = face_that_should_totally_be_there;
+            }
+        }
+        
+        // NOTE(rjf): Small code font.
+        {
+            Face_Description normal_code_desc = get_face_description(app, get_face_id(app, 0));
+            
+            Face_Description desc = {0};
+            {
+                desc.font.file_name =  push_u8_stringf(scratch, "%.*sfonts/Inconsolata-Regular.ttf", string_expand(bin_path));
+                desc.parameters.pt_size = normal_code_desc.parameters.pt_size - 1;
+                desc.parameters.bold = 1;
+                desc.parameters.italic = 1;
+                desc.parameters.hinting = 0;
+            }
+            
+            if(IsFileReadable(desc.font.file_name))
+            {
+                global_small_code_face = try_create_new_face(app, &desc);
+            }
+            else
+            {
+                global_small_code_face = face_that_should_totally_be_there;
+            }
+        }
+    }
+    
+    //~ NOTE(rjf): Prep virtual whitespace.
+    {
+        def_enable_virtual_whitespace = def_get_config_b32(vars_save_string_lit("enable_virtual_whitespace"));
+        clear_all_layouts(app);
+    }
 }

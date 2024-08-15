@@ -60,6 +60,10 @@ indent_with_tabs = false;
 indent_width = 2;
 default_tab_width = 2;
 
+// margin size, which is like a border around the entire application.
+f4_margin_size = 0;
+f4_margin_use_mode_color = false;
+
 // Theme
 default_theme_name = "theme-lantern"; // "theme-sourcerer"; // "theme-tomorrow-day"; // "theme-doom-one";
 highlight_line_at_cursor = true;
