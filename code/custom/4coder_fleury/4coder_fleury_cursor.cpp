@@ -361,7 +361,7 @@ F4_HighlightCursorMarkRange(Application_Links *app, View_ID view_id)
         upper_bound_y = global_last_cursor_rect.y1;
     }
     
-    draw_rectangle(app, Rf32(view_rect.x0, lower_bound_y, view_rect.x0 + 4, upper_bound_y), 3.f,
+    draw_rectangle(app, Rf32(view_rect.x0, lower_bound_y, view_rect.x0 + 2, upper_bound_y), 3.f,
                    fcolor_resolve(fcolor_change_alpha(fcolor_id(defcolor_comment), 0.5f)));
     draw_set_clip(app, clip);
 }
