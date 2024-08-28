@@ -38,6 +38,7 @@ keys_global =
     // NOTE(rjf): Project
     { "build_in_build_panel",                     "M",      "Alt"                      },
     { "project_command_lister",                   "X",      "Alt",     "Shift"         },
+    /*
     { "project_fkey_command",                     "F1", "Control"                      },
     { "project_fkey_command",                     "F2", "Control"                      },
     { "project_fkey_command",                     "F3", "Control"                      },
@@ -54,6 +55,24 @@ keys_global =
     { "project_fkey_command",                     "F14", "Control"                     },
     { "project_fkey_command",                     "F15", "Control"                     },
     { "project_fkey_command",                     "F16", "Control"                     },
+    */
+    
+    { "project_fkey_command",                     "F1", "Alt"                      },
+    { "project_fkey_command",                     "F2", "Alt"                      },
+    { "project_fkey_command",                     "F3", "Alt"                      },
+    { "project_fkey_command",                     "F4", "Alt"                      },
+    { "project_fkey_command",                     "F5", "Alt"                      },
+    { "project_fkey_command",                     "F6", "Alt"                      },
+    { "project_fkey_command",                     "F7", "Alt"                      },
+    { "project_fkey_command",                     "F8", "Alt"                      },
+    { "project_fkey_command",                     "F9", "Alt"                      },
+    { "project_fkey_command",                     "F10", "Alt"                     },
+    { "project_fkey_command",                     "F11", "Alt"                     },
+    { "project_fkey_command",                     "F12", "Alt"                     },
+    { "project_fkey_command",                     "F13", "Alt"                     },
+    { "project_fkey_command",                     "F14", "Alt"                     },
+    { "project_fkey_command",                     "F15", "Alt"                     },
+    { "project_fkey_command",                     "F16", "Alt"                     },
     
     // NOTE(rjf): Panels
     { "open_panel_vsplit", "P", "Control" },

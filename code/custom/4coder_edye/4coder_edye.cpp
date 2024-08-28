@@ -2127,50 +2127,49 @@ CUSTOM_DOC("edye startup event")
     }
     
     
-    /*
-      //~ NOTE(rjf): Initialize panels
-      {
-          Buffer_Identifier comp = buffer_identifier(string_u8_litexpr("*compilation*"));
-          Buffer_Identifier calc  = buffer_identifier(string_u8_litexpr("*calc*"));
-          Buffer_Identifier messages = buffer_identifier(string_u8_litexpr("*messages*"));
-          Buffer_ID comp_id = buffer_identifier_to_id(app, comp);
-          Buffer_ID calc_id = buffer_identifier_to_id(app, calc);
-          Buffer_ID messages_id = buffer_identifier_to_id(app, messages);
-          
-          View_ID view = get_active_view(app, Access_Always);
-          new_view_settings(app, view);
-          
-          view_set_buffer(app, view, calc_id, 0);
-          
-          // NOTE(rjf): Bottom compilation panel
-          View_ID compilation_view = 0;
-          {
-              compilation_view = open_view(app, view, ViewSplit_Bottom);
-              new_view_settings(app, compilation_view);
-              Buffer_ID buffer = view_get_buffer(app, compilation_view, Access_Always);
-              Face_ID face_id = get_face_id(app, buffer);
-              Face_Metrics metrics = get_face_metrics(app, face_id);
-              view_set_split_pixel_size(app, compilation_view, (i32)(metrics.line_height*4.f));
-              view_set_passive(app, compilation_view, true);
-              global_compilation_view = compilation_view;
-              view_set_buffer(app, compilation_view, 
-                              comp_id,
-                              0);
-          }
-          
-          view_set_active(app, view);
-          
-          // split panel below
-          open_panel_hsplit(app);
-          
-          View_ID messages_view = get_active_view(app, Access_Always);
-          view_set_buffer(app, messages_view, messages_id, 0);
-          
-          // NOTE(rjf): Restore Active to Left
-          view_set_active(app, view);
-          
-      }
-  */
+    
+    //~ NOTE(rjf): Initialize panels
+    {
+        Buffer_Identifier comp = buffer_identifier(string_u8_litexpr("*compilation*"));
+        // Buffer_Identifier calc  = buffer_identifier(string_u8_litexpr("*calc*"));
+        Buffer_Identifier messages = buffer_identifier(string_u8_litexpr("*messages*"));
+        Buffer_ID comp_id = buffer_identifier_to_id(app, comp);
+        //Buffer_ID calc_id = buffer_identifier_to_id(app, calc);
+        Buffer_ID messages_id = buffer_identifier_to_id(app, messages);
+        
+        View_ID view = get_active_view(app, Access_Always);
+        new_view_settings(app, view);
+        
+        view_set_buffer(app, view, messages_id, 0);
+        
+        // NOTE(rjf): Bottom compilation panel
+        View_ID compilation_view = 0;
+        {
+            compilation_view = open_view(app, view, ViewSplit_Bottom);
+            new_view_settings(app, compilation_view);
+            Buffer_ID buffer = view_get_buffer(app, compilation_view, Access_Always);
+            Face_ID face_id = get_face_id(app, buffer);
+            Face_Metrics metrics = get_face_metrics(app, face_id);
+            view_set_split_pixel_size(app, compilation_view, (i32)(metrics.line_height*4.f));
+            view_set_passive(app, compilation_view, true);
+            global_compilation_view = compilation_view;
+            view_set_buffer(app, compilation_view, 
+                            comp_id,
+                            0);
+        }
+        
+        view_set_active(app, view);
+        
+        // split panel below
+        //open_panel_hsplit(app);
+        
+        // View_ID messages_view = get_active_view(app, Access_Always);
+        // view_set_buffer(app, messages_view, messages_id, 0);
+        
+        // NOTE(rjf): Restore Active to Left
+        //view_set_active(app, view);
+        
+    }
     
     //~ NOTE(rjf): Auto-Load Project.
     {
