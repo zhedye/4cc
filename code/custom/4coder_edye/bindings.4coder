@@ -55,6 +55,23 @@ keys_global =
     { "project_fkey_command",                     "F15", "Control"                     },
     { "project_fkey_command",                     "F16", "Control"                     },
     
+    // mac
+    { "project_fkey_command",                     "F1", "Command"                      },
+    { "project_fkey_command",                     "F2", "Command"                      },
+    { "project_fkey_command",                     "F3", "Command"                      },
+    { "project_fkey_command",                     "F4", "Command"                      },
+    { "project_fkey_command",                     "F5", "Command"                      },
+    { "project_fkey_command",                     "F6", "Command"                      },
+    { "project_fkey_command",                     "F7", "Command"                      },
+    { "project_fkey_command",                     "F8", "Command"                      },
+    { "project_fkey_command",                     "F9", "Command"                      },
+    { "project_fkey_command",                     "F10", "Command"                     },
+    { "project_fkey_command",                     "F11", "Command"                     },
+    { "project_fkey_command",                     "F12", "Command"                     },
+    { "project_fkey_command",                     "F13", "Command"                     },
+    { "project_fkey_command",                     "F14", "Command"                     },
+    { "project_fkey_command",                     "F15", "Command"                     },
+    { "project_fkey_command",                     "F16", "Command"                     },
     
     // NOTE(rjf): Panels
     { "open_panel_vsplit", "P", "Control" },
