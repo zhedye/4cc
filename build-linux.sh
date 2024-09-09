@@ -1,6 +1,8 @@
 #!/usr/bin/env sh
 
-set -e
+# -e exit when anything returns non-zero status
+# -u unset variables are an error, exit immediately
+set -eu
 
 # directories
 
@@ -14,7 +16,7 @@ SRC_ROOT="$LOCATION/code"
 PROJECT_ROOT="$(dirname "$SRC_ROOT")"
 
 if [ ! -d "$PROJECT_ROOT/build" ]; then
-	mkdir "$PROJECT_ROOT/build"
+mkdir "$PROJECT_ROOT/build"
 fi
 
 BUILD_ROOT="$PROJECT_ROOT/build"
