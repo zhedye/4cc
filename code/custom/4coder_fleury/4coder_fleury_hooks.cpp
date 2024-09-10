@@ -565,7 +565,9 @@ F4_DoFullLex_ASYNC_Inner(Async_Context *actx, Buffer_ID buffer_id)
         release_global_frame_mutex(app);
     }
     
-    i32 limit_factor = 10000;
+    // TODO(edye): crashes if we exceed limit. is there a way to stop the lexer nicely?
+    // NOTE(edye): 8 bytes/char; 8*10^6 ~= 8MB file max before crash. 900kb file i get ~30fps on an old 2013 macbook pro intel graphics.
+    i32 limit_factor = 1000000;
     
     Token_List list = {};
     b32 canceled = false;
