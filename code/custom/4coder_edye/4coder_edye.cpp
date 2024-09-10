@@ -1623,7 +1623,7 @@ internal b32 edye_org_LexFullInput(Arena *arena, Token_List *list, void *state_p
     u64 emit_counter = 0;
     i64 strmax = (i64)state->string.size;
     for(i64 i = (i64)(state->at - state->string.str);
-        i < strmax && state->at + i < state->one_past_last;)
+        i < strmax && state->at < state->one_past_last;)
     {
         i64 start_i = i;
         u8 chr = state->string.str[i];
@@ -1679,6 +1679,7 @@ internal b32 edye_org_LexFullInput(Arena *arena, Token_List *list, void *state_p
         }
         
         // NOTE(rjf): Numeric Literal
+        /*
         else if(chr >= '0' && chr <= '9')
         {
             Token token = { i, 1, TokenBaseKind_LiteralFloat, 0 };
@@ -1690,6 +1691,7 @@ internal b32 edye_org_LexFullInput(Arena *arena, Token_List *list, void *state_p
             token_list_push(arena, list, &token);
             i += token.size;
         }
+*/
         
         /*
         // NOTE(rjf): Single-Line String Literal
@@ -1728,7 +1730,7 @@ internal b32 edye_org_LexFullInput(Arena *arena, Token_List *list, void *state_p
                 state->string.str[i+1] == '"' &&
                 state->string.str[i+2] == '"')
         {
-            Token token = { i, 1, TokenBaseKind_LiteralString, 0 };
+            Token token = { i, 3, TokenBaseKind_LiteralString, 0 };
             for(i64 j = i+1; j+2 < (i64)state->string.size &&
                 !(state->string.str[j]   == '"' &&
                   state->string.str[j+1] == '"' &&
@@ -1756,7 +1758,7 @@ internal b32 edye_org_LexFullInput(Arena *arena, Token_List *list, void *state_p
                 state->string.str[i+1] == '\'' &&
                 state->string.str[i+2] == '\'')
         {
-            Token token = { i, 1, TokenBaseKind_LiteralString, 0 };
+            Token token = { i, 3, TokenBaseKind_LiteralString, 0 };
             for(i64 j = i+1; j+2 < (i64)state->string.size &&
                 !(state->string.str[j]   == '\'' &&
                   state->string.str[j+1] == '\'' &&
@@ -1841,8 +1843,7 @@ internal b32 edye_org_LexFullInput(Arena *arena, Token_List *list, void *state_p
         
         if(state->at >= state->one_past_last)
         {
-            // goto eof;
-            break;
+            goto eof;
         }
         else if(start_i == i)
         {
@@ -1853,12 +1854,19 @@ internal b32 edye_org_LexFullInput(Arena *arena, Token_List *list, void *state_p
         {
             state->at = state->string.str + i;
             
-            // NOTE(edye): i guess prevents long ass files from being checked
             emit_counter += 1;
             if(emit_counter >= max)
             {
-                break;
-                //goto eof;
+                goto eof;
+            }
+            
+            // longtran2904:
+            // https://4coder.handmade.network/forums/t/8938-example_of_custom_lexer#30261
+            if(state->at >= state->one_past_last){
+                if (list->last){
+                    Token* last = list->last->tokens + list->last->count - 1;
+                    last->size = state->string.size - last->pos;
+                }
             }
         }
     }
@@ -1961,7 +1969,7 @@ edye_register_languages(void){
     }*/
     
     // TODO(edye): org mode, can't seem to plug in a simple lexer
-    /*
+    
     {
         F4_RegisterLanguage(S8Lit("org"),
                             edye_org_IndexFile,
@@ -1976,7 +1984,6 @@ edye_register_languages(void){
                             edye_org_Highlight,
                             Lex_State_Cpp);
     }
-    */
 }
 
 void custom_layer_init(Application_Links *app)
