@@ -11,8 +11,7 @@ cd "$(dirname "$0")"
 mkdir -p build
 
 # --- Unpack Arguments --------------------------------------------------------
-# -z returns true if a value is unset. ${var+x} evaluates to nothing if $var is unset
-# https://stackoverflow.com/questions/3601515/how-to-check-if-a-variable-is-set-in-bash
+# -v means a value is set. requires bash 4.2+
 for arg in "$@"; do declare $arg='1'; done
 if [[  ! -v gcc && ! -v tcc ]]; then clang=1; fi
 if [ ! -v super ];      then debug=1; fi
