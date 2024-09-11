@@ -1640,6 +1640,7 @@ internal b32 edye_org_LexFullInput(Arena *arena, Token_List *list, void *state_p
             token_list_push(arena, list, &token);
             i += token.size;
         }
+
         
         // NOTE(rjf): Comments
         else if(i+1 < strmax &&
@@ -1857,7 +1858,7 @@ internal b32 edye_org_LexFullInput(Arena *arena, Token_List *list, void *state_p
             emit_counter += 1;
             if(emit_counter >= max)
             {
-                goto eof;
+                goto end;
             }
             
             // longtran2904:

@@ -290,6 +290,9 @@ internal F4_LANGUAGE_LEXFULLINPUT(F4_MD_LexFullInput)
                 goto end;
             }
         }
+        // TODO(edye): debug this assert
+        //Token* last_token = list->last->token + list->last->count-1;
+        // assert(last_token.pos + last_token->size == state.string.size);
     }
     
     // NOTE(rjf): Add EOF
@@ -301,6 +304,7 @@ internal F4_LANGUAGE_LEXFULLINPUT(F4_MD_LexFullInput)
     }
     
     end:;
+    
     *(F4_MD_LexerState *)state_ptr = *state;
     return result;
 }
