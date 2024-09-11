@@ -62,7 +62,7 @@ internal F4_LANGUAGE_LEXFULLINPUT(F4_MD_LexFullInput)
     u64 emit_counter = 0;
     i64 strmax = (i64)state->string.size;
     for(i64 i = (i64)(state->at - state->string.str);
-        i < strmax && state->at + i < state->one_past_last;)
+        i < strmax && state->at < state->one_past_last;)
     {
         i64 start_i = i;
         u8 chr = state->string.str[i];
@@ -164,8 +164,8 @@ internal F4_LANGUAGE_LEXFULLINPUT(F4_MD_LexFullInput)
                 state->string.str[i+1] == '"' &&
                 state->string.str[i+2] == '"')
         {
-            Token token = { i, 1, TokenBaseKind_LiteralString, 0 };
-            for(i64 j = i+1; j+2 < (i64)state->string.size &&
+            Token token = { i, 3, TokenBaseKind_LiteralString, 0 };
+            for(i64 j = i+3; j+2 < (i64)state->string.size &&
                 !(state->string.str[j]   == '"' &&
                   state->string.str[j+1] == '"' &&
                   state->string.str[j+2] == '"');
@@ -192,8 +192,8 @@ internal F4_LANGUAGE_LEXFULLINPUT(F4_MD_LexFullInput)
                 state->string.str[i+1] == '\'' &&
                 state->string.str[i+2] == '\'')
         {
-            Token token = { i, 1, TokenBaseKind_LiteralString, 0 };
-            for(i64 j = i+1; j+2 < (i64)state->string.size &&
+            Token token = { i, 3, TokenBaseKind_LiteralString, 0 };
+            for(i64 j = i+3; j+2 < (i64)state->string.size &&
                 !(state->string.str[j]   == '\'' &&
                   state->string.str[j+1] == '\'' &&
                   state->string.str[j+2] == '\'');
@@ -288,6 +288,17 @@ internal F4_LANGUAGE_LEXFULLINPUT(F4_MD_LexFullInput)
             if(emit_counter >= max)
             {
                 goto end;
+            }
+            
+            // https://4coder.handmade.network/forums/t/8938-example_of_custom_lexer#30253
+            // limit with unclosed string literal
+            if (state->at >= state->one_past_last)
+            {
+                if (list->last)
+                {
+                    Token* last = list->last->tokens + list->last->count - 1;
+                    last->size = state->string.size - last->pos;
+                }
             }
         }
         // TODO(edye): debug this assert

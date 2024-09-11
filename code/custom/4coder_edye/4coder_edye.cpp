@@ -1947,30 +1947,22 @@ edye_register_languages(void){
     }
     
     // NOTE(rjf): Metadesk
-    /*
     {
-        String_Const_u8 extensions[] =
-        {
-            // TODO(rjf): Maybe find a config-driven way to specify these? "mc" was sort of
-            // introduced ad-hoc...
-            // NOTE(edye): md is markdown extension,
-            // S8Lit("md"),
-            S8Lit("mc"), S8Lit("metacode"), S8Lit("meta"), S8Lit("metadesk"),
-        };
-        for(int i = 0; i < ArrayCount(extensions); i += 1)
-        {
-            F4_RegisterLanguage(extensions[i],
-                                F4_MD_IndexFile,
-                                lex_full_input_cpp_init,
-                                lex_full_input_cpp_breaks,
-                                F4_MD_PosContext,
-                                F4_MD_Highlight,
-                                Lex_State_Cpp);
-        }
-    }*/
+        F4_RegisterLanguage(S8Lit("mdesk"),
+                            F4_MD_IndexFile,
+                            
+                            //lex_full_input_cpp_init,
+                            //lex_full_input_cpp_breaks,
+                            
+                            F4_MD_LexInit,
+                            F4_MD_LexFullInput,
+                            
+                            F4_MD_PosContext,
+                            F4_MD_Highlight,
+                            Lex_State_Cpp);
+    }
     
-    // TODO(edye): org mode, can't seem to plug in a simple lexer
-    
+    // org mode
     {
         F4_RegisterLanguage(S8Lit("org"),
                             edye_org_IndexFile,
@@ -1985,6 +1977,8 @@ edye_register_languages(void){
                             edye_org_Highlight,
                             Lex_State_Cpp);
     }
+    
+    
 }
 
 void custom_layer_init(Application_Links *app)
