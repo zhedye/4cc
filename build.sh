@@ -28,31 +28,31 @@ os="$(uname -o)" # operating system name
 # TODO(edye): is exec_cmd necessary?
 # Msys = windows git bash
 if [ $os == "Msys" ]; then 
-    script="build.bat"; 
-    custom_layer_script="buildsuper_x64-win.bat";
-    custom_layer_name="custom_4coder.dll"; 
-    custom_layer_debug="custom_4coder.pdb"; 
+script="build.bat"; 
+custom_layer_script="buildsuper_x64-win.bat";
+custom_layer_name="custom_4coder.dll"; 
+custom_layer_debug="custom_4coder.pdb"; 
 fi
 
 if [ $os == "Linux" ]; then
-    script="build-linux.sh"; 
-    custom_layer_script="buildsuper_x64-linux.sh"; 
-    custom_layer_name="custom_4coder.so"; 
+script="build-linux.sh"; 
+custom_layer_script="buildsuper_x64-linux.sh"; 
+custom_layer_name="custom_4coder.so"; 
 fi
 
 # Mac OS
 if [ $os == "Darwin" ]; then
-    script="build-mac.sh"; 
-    custom_layer_script="buildsuper_x64-mac.sh"; 
-    custom_layer_name="custom_4coder.so";  
+script="build-mac.sh"; 
+custom_layer_script="buildsuper_x64-mac.sh"; 
+custom_layer_name="custom_4coder.so";  
 fi
 
 ### --- Build Exectuable ----------------------------------------------------------
 if [ ! -v custom_layer_only ]; then
-    pushd "code"
-    build_cmd=("bin/$script" "$flag")
-    "${build_cmd[@]}"
-    popd
+pushd "code"
+build_cmd=("bin/$script" "$flag")
+"${build_cmd[@]}"
+popd
 fi
 
 ### --- Build Custom Layer ----------------------------------------------------------
@@ -64,19 +64,19 @@ build_custom_cmd=("../bin/$custom_layer_script" "4coder_edye.cpp" "$custom_layer
 cp "$custom_layer_name" "../../../build/$custom_layer_name"
 
 if [ -v custom_layer_debug ]; then
-    cp "$custom_layer_debug" "../../../build/$custom_layer_debug"
+cp "$custom_layer_debug" "../../../build/$custom_layer_debug"
 fi
 
 popd
 
-// TODO(edye): change lexer for bash script. auto indent if statements
+# TODO(edye): change lexer for bash script. auto indent if statements
 # link my bindings
-if [[ ! -e "../../../build/bindings.4coder" ]]; then
-    ln -s "$absolute_path/code/custom/4coder_edye/bindings.4coder" "build/bindings.4coder"
+if [[ ! -L "build/bindings.4coder" && ! -e "build/bindings.4coder" ]]; then
+ln -s "$absolute_path/code/custom/4coder_edye/bindings.4coder" "build/bindings.4coder"
 fi
 
-if [[ ! -e "../../../build/config.4coder" ]]; then
-    ln -s "$absolute_path/code/custom/4coder_edye/config.4coder" "build/config.4coder"
+if [[ ! -L "build/config.4coder" && ! -e "build/config.4coder" ]]; then
+ln -s "$absolute_path/code/custom/4coder_edye/config.4coder" "build/config.4coder"
 fi
 
 
