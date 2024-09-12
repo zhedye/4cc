@@ -819,7 +819,7 @@ edye_buffer_region(Application_Links *app, View_ID view_id, Rect_f32 region){
 
 #define foreach(i,N) for(i32 i=0; i<N; i++)
 
-// NOTE: byp_hex_color_preview
+// NOTE(edye): byp_hex_color_preview
 function void
 hex_color_preview(Application_Links *app, Buffer_ID buffer_id, Text_Layout_ID text_layout_id){
 	Scratch_Block scratch(app);
@@ -856,7 +856,7 @@ edye_render_buffer(Application_Links *app, View_ID view_id, Face_ID face_id,
                    Rect_f32 rect, Frame_Info frame_info)
 {
     Scratch_Block scratch(app);
-    ProfileScope(app, "[Fleury] Render Buffer");
+    ProfileScope(app, "[edye] Render Buffer");
     
     View_ID active_view = get_active_view(app, Access_Always);
     b32 is_active_view = (active_view == view_id);
@@ -957,7 +957,7 @@ edye_render_buffer(Application_Links *app, View_ID view_id, Face_ID face_id,
     // NOTE(jack): Token Occurance Highlight
     if (!def_get_config_b32(vars_save_string_lit("f4_disable_cursor_token_occurance"))) 
     {
-        ProfileScope(app, "[Fleury] Token Occurance Highlight");
+        ProfileScope(app, "[edye] Token Occurance Highlight");
         
         // NOTE(jack): Get the active cursor's token string
         Buffer_ID active_cursor_buffer = view_get_buffer(app, active_view, Access_Always);
@@ -1013,10 +1013,10 @@ edye_render_buffer(Application_Links *app, View_ID view_id, Face_ID face_id,
             }
         }
     }
-    // NOTE(jack): if "f4_disable_cursor_token_occurance" is set, just highlight the cusror 
+    // NOTE(jack): if "f4_disable_cursor_token_occurance" is set, just highlight the cursor 
     else
     {
-        ProfileScope(app, "[Fleury] Token Highlight");
+        ProfileScope(app, "[edye] Token Highlight");
         
         Token_Iterator_Array it = token_iterator_pos(0, &token_array, cursor_pos);
         Token *token = token_it_read(&it);
@@ -1186,7 +1186,7 @@ edye_render(Application_Links *app, Frame_Info frame_info, View_ID view_id)
 {
     F4_RecentFiles_RefreshView(app, view_id);
     
-    ProfileScope(app, "[Fleury] Render");
+    ProfileScope(app, "[edye] Render");
     Scratch_Block scratch(app);
     
     View_ID active_view = get_active_view(app, Access_Always);
@@ -1577,6 +1577,23 @@ F4_SetDefaultBindings(Mapping *mapping)
     
 }
 
+struct Lexer_State {
+    String_Const_u8 string;
+    u8 *at;
+    u8 *one_past_last;
+};
+
+enum Org_TokenSubKind {
+    Org_TokenSubKind_Heading,
+    Org_TokenSubKind_Metadata,
+    Org_TokenSubKind_Tag,
+};
+
+enum Markdown_TokenSubKind {
+    Markdown_TokenSubKind_Heading,
+    Markdown_TokenSubKind_Code,
+};
+
 internal F4_LANGUAGE_INDEXFILE(edye_org_IndexFile)
 {
     for(;!ctx->done;)
@@ -1602,7 +1619,7 @@ internal F4_LANGUAGE_INDEXFILE(edye_org_IndexFile)
 
 internal F4_LANGUAGE_LEXINIT(edye_org_LexInit)
 {
-    F4_MD_LexerState *state = (F4_MD_LexerState *)state_ptr;
+    Lexer_State *state = (Lexer_State *)state_ptr;
     state->string = contents;
     state->at = contents.str;
     state->one_past_last = contents.str + contents.size;
@@ -1615,11 +1632,43 @@ edye_org_CharIsSymbol(u8 c)
     return (c == '*');
 }
 
+#define ORG_BEGIN_COMMENT_CHARS 14
+#define ORG_END_COMMENT_CHARS 12
+
+internal b32
+edye_org_IsBeginComment(i64 i, String_Const_u8 str, i64 strmax){
+    // check if we have #+BEGIN_COMMENT
+    String_Const_u8 s = {string_u8_litexpr("#+BEGIN_COMMENT")};
+    if(i+(i64)s.size >= strmax) return false;
+        
+    for(u64 j = 0; j < s.size; j++){
+        if(str.str[i+j] != s.str[j]) return false;
+    }
+                                                                    
+    return true;
+    
+}
+
+
+internal b32
+edye_org_IsEndComment(i64 i, String_Const_u8 str, i64 strmax){
+    // check if we have #+END_COMMENT
+    String_Const_u8 s = {string_u8_litexpr("#+END_COMMENT")};
+    if(i+(i64)s.size >= strmax) return false;
+    
+    for(u64 j = 0; j < s.size; j++){
+        if(str.str[i+j] != s.str[j]) return false;
+    }
+                                            
+    return true;
+    
+}
+
 internal b32 edye_org_LexFullInput(Arena *arena, Token_List *list, void *state_ptr, u64 max)
 {
     b32 result = false;
-    F4_MD_LexerState state_ = *(F4_MD_LexerState *)state_ptr;
-    F4_MD_LexerState *state = &state_;
+    Lexer_State state_ = *(Lexer_State *)state_ptr;
+    Lexer_State *state = &state_;
     u64 emit_counter = 0;
     i64 strmax = (i64)state->string.size;
     for(i64 i = (i64)(state->at - state->string.str);
@@ -1628,34 +1677,35 @@ internal b32 edye_org_LexFullInput(Arena *arena, Token_List *list, void *state_p
         i64 start_i = i;
         u8 chr = state->string.str[i];
         
-        // NOTE(rjf): Comments
+        // NOTE(edye): Org Multi-line Comments
+        if(state->string.str[i] == '#' &&
+           edye_org_IsBeginComment(i, state->string, strmax))
+        {
+            String_Const_u8 begin_str = {string_u8_litexpr("#+BEGIN_COMMENT")};
+            String_Const_u8 end_str = {string_u8_litexpr("#+END_COMMENT")};
+            Token token = {i, (i64)begin_str.size, TokenBaseKind_Comment, 0 };
+            for(i64 j = i+begin_str.size; j < strmax; j += 1, token.size += 1){
+                if((state->string.str[j] == '#')
+                   && (((j-1) + (i64)end_str.size) < strmax)
+                   && edye_org_IsEndComment(j, state->string, strmax)){
+                    token.size += end_str.size;
+                    break;
+                }
+            }
+            token_list_push(arena, list, &token);
+            i += token.size;
+        }
+        
+        // NOTE(edye): Org Comments
+        else if(state->string.str[i] == '#')
+        {
+            Token token = { i, 1, TokenBaseKind_Comment, 0 };
+            for(i64 j = i+1; j < strmax && state->string.str[j] != '\n'; j += 1, token.size += 1);
+            token_list_push(arena, list, &token);
+            i += token.size;
+        }
+        
         /*
-        if(i+1 < strmax &&
-           state->string.str[i] == '/' &&
-           state->string.str[i+1] == '/')
-        {
-            Token token = { i, 1, TokenBaseKind_Comment, 0 };
-            token.size += 1;
-            for(i64 j = i+2; j < strmax && state->string.str[j] != '\n'; j += 1, token.size += 1);
-            token_list_push(arena, list, &token);
-            i += token.size;
-        }
-
-        
-        // NOTE(rjf): Comments
-        else if(i+1 < strmax &&
-                state->string.str[i] == '/' &&
-                state->string.str[i+1] == '*')
-        {
-            Token token = { i, 1, TokenBaseKind_Comment, 0 };
-            token.size += 1;
-            for(i64 j = i+2; j+1 < strmax && !(state->string.str[j] == '*' && state->string.str[j+1] == '/'); j += 1, token.size += 1);
-            token.size += 2;
-            token_list_push(arena, list, &token);
-            i += token.size;
-        }
-    */
-        
         // NOTE(rjf): Identifier
         if(character_is_alpha(chr))
         {
@@ -1667,6 +1717,8 @@ internal b32 edye_org_LexFullInput(Arena *arena, Token_List *list, void *state_p
             token_list_push(arena, list, &token);
             i += token.size;
         }
+
+        */
         
         // NOTE(rjf): Whitespace
         else if(character_is_whitespace(chr))
@@ -1732,7 +1784,7 @@ internal b32 edye_org_LexFullInput(Arena *arena, Token_List *list, void *state_p
                 state->string.str[i+2] == '"')
         {
             Token token = { i, 3, TokenBaseKind_LiteralString, 0 };
-            for(i64 j = i+1; j+2 < (i64)state->string.size &&
+            for(i64 j = i+3; j+2 < (i64)state->string.size &&
                 !(state->string.str[j]   == '"' &&
                   state->string.str[j+1] == '"' &&
                   state->string.str[j+2] == '"');
@@ -1760,7 +1812,7 @@ internal b32 edye_org_LexFullInput(Arena *arena, Token_List *list, void *state_p
                 state->string.str[i+2] == '\'')
         {
             Token token = { i, 3, TokenBaseKind_LiteralString, 0 };
-            for(i64 j = i+1; j+2 < (i64)state->string.size &&
+            for(i64 j = i+3; j+2 < (i64)state->string.size &&
                 !(state->string.str[j]   == '\'' &&
                   state->string.str[j+1] == '\'' &&
                   state->string.str[j+2] == '\'');
@@ -1775,7 +1827,7 @@ internal b32 edye_org_LexFullInput(Arena *arena, Token_List *list, void *state_p
         else if(chr == '@')
         {
             Token token = { i, 1, TokenBaseKind_Identifier, 0 };
-            token.sub_kind = F4_MD_TokenSubKind_Tag;
+            token.sub_kind = Org_TokenSubKind_Tag;
             for(i64 j = i+1; j < (i64)state->string.size && 
                 (character_is_alpha_numeric(state->string.str[j]) ||
                  state->string.str[j] == '_');
@@ -1825,11 +1877,23 @@ internal b32 edye_org_LexFullInput(Arena *arena, Token_List *list, void *state_p
             i += token.size;
         }
     */
-        
+               
         // NOTE(rjf): Operators
+        /*
         else if(edye_org_CharIsSymbol(chr))
         {
             Token token = { i, 1, TokenBaseKind_Operator, 0 };
+            token_list_push(arena, list, &token);
+            i += token.size;
+        }
+        */
+        
+        // NOTE(edye): Heading. * must be at the beginning of a line
+        else if((chr == '*') && ((i == 0) || (state->string.str[i-1] == '\n')))
+        {
+            Token token = { i, 1, TokenBaseKind_Identifier, 0 };
+            token.sub_kind = Org_TokenSubKind_Heading;
+            for(i64 j = i+1; j < (i64)state->string.size && state->string.str[j] != '\n'; j+=1, token.size+=1);
             token_list_push(arena, list, &token);
             i += token.size;
         }
@@ -1881,7 +1945,7 @@ internal b32 edye_org_LexFullInput(Arena *arena, Token_List *list, void *state_p
     }
     
     end:;
-    *(F4_MD_LexerState *)state_ptr = *state;
+    *(Lexer_State *)state_ptr = *state;
     return result;
 }
 
@@ -1903,10 +1967,21 @@ internal F4_LANGUAGE_HIGHLIGHT(edye_org_Highlight)
         {
             break;
         }
-        if(token->sub_kind == F4_MD_TokenSubKind_Tag)
+        if(token->sub_kind == Org_TokenSubKind_Tag)
         {
-            paint_text_color(app, text_layout_id, Ii64(token), F4_ARGBFromID(color_table, fleury_color_index_comment_tag, 0));
+            paint_text_color(app, text_layout_id, Ii64(token), F4_ARGBFromID(color_table, fleury_color_plot_cycle, 0));
         }
+        
+        if(token->kind == TokenBaseKind_Identifier && token->sub_kind == Org_TokenSubKind_Heading) {
+            paint_text_color(app, text_layout_id, Ii64(token), F4_ARGBFromID(color_table, fleury_color_plot_cycle, 1));
+        }
+        
+        /*
+        if(token->sub_kind == Org_TokenSubKind_Metadata) {
+            paint_text_color(app, text_layout_id, Ii64(token), F4_ARGBFromID(color_table, fleury_color_plot_cycle, 2));
+        } 
+        */
+        
         if(!token_it_inc_all(&it))
         {
             break;
@@ -1966,11 +2041,28 @@ edye_register_languages(void){
     {
         F4_RegisterLanguage(S8Lit("org"),
                             edye_org_IndexFile,
-                            edye_org_LexInit,
-                            //lex_full_input_cpp_init,
                             
+                            //lex_full_input_cpp_init,
                             //lex_full_input_cpp_breaks,
-                            //F4_Language_LexFullInput_NoBreaks, // throws an exception
+                            
+                            edye_org_LexInit,
+                            edye_org_LexFullInput,
+                            
+                            edye_org_PosContext,
+                            edye_org_Highlight,
+                            Lex_State_Cpp);
+    }
+    
+    
+    // markdown mode
+    {
+        F4_RegisterLanguage(S8Lit("md"),
+                            edye_org_IndexFile,
+                            
+                            //lex_full_input_cpp_init,
+                            //lex_full_input_cpp_breaks,
+                            
+                            edye_org_LexInit,
                             edye_org_LexFullInput,
                             
                             edye_org_PosContext,
