@@ -868,7 +868,7 @@ edye_render_buffer(Application_Links *app, View_ID view_id, Face_ID face_id,
     {
         F4_SyntaxHighlight(app, text_layout_id, &token_array);
         
-        // NOTE(edye): Scan for TODOs, NOTEs, DONEs
+        // NOTE(edye): Scan for TODO, NOTE, DONE
         b32 use_comment_keywords = def_get_config_b32(vars_save_string_lit("use_comment_keywords"));
         if(use_comment_keywords)
         {
@@ -1583,6 +1583,19 @@ struct Lexer_State {
     u8 *one_past_last;
 };
 
+// NOTE(edye): same as Lex_State_CPP
+struct Lex_State_Type_Default {
+    u32 flags_ZF0;
+    u32 flags_KF0;
+    u16 flags_KB0;
+    u8 *base;
+    u8 *delim_first;
+    u8 *delim_one_past_last;
+    u8 *emit_ptr;
+    u8 *ptr;
+    u8 *opl_ptr;
+};
+
 enum Org_TokenSubKind {
     Org_TokenSubKind_Heading,
     Org_TokenSubKind_Metadata,
@@ -1591,6 +1604,7 @@ enum Org_TokenSubKind {
 
 enum Markdown_TokenSubKind {
     Markdown_TokenSubKind_Heading,
+    Markdown_TokenSubKind_Tag,
     Markdown_TokenSubKind_Code,
 };
 
@@ -1626,10 +1640,16 @@ internal F4_LANGUAGE_LEXINIT(edye_org_LexInit)
 }
 
 
+// NOTE(edye): based on F4_MD_CharIsSymbol
 internal b32
-edye_org_CharIsSymbol(u8 c)
+edye_is_operator(u8 c)
 {
-    return (c == '*');
+    return (c == '~' || c == '!' || c == '@' || c == '#' || c == '$' ||
+            c == '%' || c == '^' || c == '&' || c == '*' || c == '(' ||
+            c == ')' || c == '-' || c == '=' || c == '+' || c == '[' ||
+            c == ']' || c == '{' || c == '}' || c == ':' || c == ';' ||
+            c == ',' || c == '<' || c == '.' || c == '>' || c == '/' ||
+            c == '?' || c == '|' || c == '\\');
 }
 
 #define ORG_BEGIN_COMMENT_CHARS 14
@@ -1705,6 +1725,180 @@ internal b32 edye_org_LexFullInput(Arena *arena, Token_List *list, void *state_p
             i += token.size;
         }
         
+        // NOTE(rjf): Whitespace
+        else if(character_is_whitespace(chr))
+        {
+            Token token = { i, 1, TokenBaseKind_Whitespace, 0 };
+            for(i64 j = i+1; j < (i64)state->string.size && 
+                character_is_whitespace(state->string.str[j]);
+                j += 1, token.size += 1);
+            token_list_push(arena, list, &token);
+            i += token.size;
+        }
+        
+        
+        // NOTE(rjf): Tags
+        else if(chr == '@')
+        {
+            Token token = { i, 1, TokenBaseKind_Identifier, 0 };
+            token.sub_kind = Org_TokenSubKind_Tag;
+            for(i64 j = i+1; j < (i64)state->string.size && 
+                (character_is_alpha_numeric(state->string.str[j]) ||
+                 state->string.str[j] == '_');
+                j += 1, token.size += 1);
+            token_list_push(arena, list, &token);
+            i += token.size;
+        }
+        
+        // NOTE(edye): Heading. * must be at the beginning of a line
+        else if((chr == '*') && ((i == 0) || (state->string.str[i-1] == '\n')))
+        {
+            Token token = { i, 1, TokenBaseKind_Identifier, 0 };
+            token.sub_kind = Org_TokenSubKind_Heading;
+            token.sub_flags = 0; // count number of asterisks to find the heading level
+            b32 is_in_header_marker = true; // heading marker is the *'s at the beginning of the line
+            for(i64 j = i+1; j < (i64)state->string.size && state->string.str[j] != '\n'; j+=1, token.size+=1){
+                if(is_in_header_marker && state->string.str[j] == '*') token.sub_flags++;
+                
+                if(state->string.str[j] != '*') is_in_header_marker=false;
+            }
+            token_list_push(arena, list, &token);
+            i += token.size;
+        }
+        
+        
+        // NOTE(rjf): Operators
+        else if(edye_is_operator(chr))
+        {
+            Token token = { i, 1, TokenBaseKind_Operator, 0 };
+            token_list_push(arena, list, &token);
+            i += token.size;
+        }
+        
+        
+        // NOTE(rjf): Catch-All
+        else
+        {
+            Token token = {i, 1, TokenBaseKind_LexError, 0 };
+            token_list_push(arena, list, &token);
+            i += token.size;
+        }
+        
+        if(state->at >= state->one_past_last)
+        {
+            goto eof;
+        }
+        else if(start_i == i)
+        {
+            i += 1;
+            state->at = state->string.str + i;
+        }
+        else
+        {
+            state->at = state->string.str + i;
+            
+            emit_counter += 1;
+            if(emit_counter >= max)
+            {
+                goto end;
+            }
+            
+            // longtran2904:
+            // https://4coder.handmade.network/forums/t/8938-example_of_custom_lexer#30261
+            if(state->at >= state->one_past_last){
+                if (list->last){
+                    Token* last = list->last->tokens + list->last->count - 1;
+                    last->size = state->string.size - last->pos;
+                }
+            }
+        }
+    }
+    
+    // NOTE(rjf): Add EOF
+    eof:;
+    {
+        result = true;
+        Token token = { (i64)state->string.size, 1, TokenBaseKind_EOF, 0 };
+        token_list_push(arena, list, &token);
+    }
+    
+    end:;
+    *(Lexer_State *)state_ptr = *state;
+    return result;
+}
+
+internal F4_LANGUAGE_POSCONTEXT(edye_language_PosContext)
+{
+    return 0;
+}
+
+internal F4_LANGUAGE_HIGHLIGHT(edye_org_Highlight)
+{
+    Range_i64 visible_range = text_layout_get_visible_range(app, text_layout_id);
+    i64 first_index = token_index_from_pos(array, visible_range.first);
+    Token_Iterator_Array it = token_iterator_index(0, array, first_index);
+    
+    for(;;)
+    {
+        Token *token = token_it_read(&it);
+        if(!token || token->pos >= visible_range.one_past_last)
+        {
+            break;
+        }
+        if(token->sub_kind == Org_TokenSubKind_Tag)
+        {
+            paint_text_color(app, text_layout_id, Ii64(token), F4_ARGBFromID(color_table, fleury_color_plot_cycle, 0));
+        }
+        
+        if(token->kind == TokenBaseKind_Identifier && token->sub_kind == Org_TokenSubKind_Heading) {
+            
+            // TODO(edye): add new colors for headings
+            Color_Array org_heading_color_cycle = finalize_color_array(fleury_color_plot_cycle);
+            
+            i32 num_asterisks = token->sub_flags;
+            
+            ARGB_Color heading_color = org_heading_color_cycle.vals[num_asterisks % org_heading_color_cycle.count];
+            
+            paint_text_color(app, text_layout_id, Ii64(token), heading_color);
+        }
+        
+        
+        if(!token_it_inc_all(&it))
+        {
+            break;
+        }
+    }
+}
+
+internal b32 edye_markdown_LexFullInput(Arena *arena, Token_List *list, void *state_ptr, u64 max)
+{
+    b32 result = false;
+    Lexer_State state_ = *(Lexer_State *)state_ptr;
+    Lexer_State *state = &state_;
+    u64 emit_counter = 0;
+    i64 strmax = (i64)state->string.size;
+    for(i64 i = (i64)(state->at - state->string.str);
+        i < strmax && state->at < state->one_past_last;)
+    {
+        i64 start_i = i;
+        u8 chr = state->string.str[i];
+        
+        // NOTE(edye): Markdown Heading
+        if((chr == '#') && ((i == 0) || (state->string.str[i-1] == '\n')))
+        {
+            Token token = { i, 1, TokenBaseKind_Identifier, 0 };
+            token.sub_kind = Org_TokenSubKind_Heading;
+            token.sub_flags = 0; // count number of asterisks to find the heading level
+            b32 is_in_header_marker = true; // heading marker is the #'s at the beginning of the line
+            for(i64 j = i+1; j < strmax && state->string.str[j] != '\n'; j += 1, token.size += 1){
+                if(is_in_header_marker && state->string.str[j] == '#') token.sub_flags++;
+                
+                if(state->string.str[j] != '#') is_in_header_marker=false;
+            }
+            token_list_push(arena, list, &token);
+            i += token.size;
+        }
+        
         /*
         // NOTE(rjf): Identifier
         if(character_is_alpha(chr))
@@ -1731,98 +1925,6 @@ internal b32 edye_org_LexFullInput(Arena *arena, Token_List *list, void *state_p
             i += token.size;
         }
         
-        // NOTE(rjf): Numeric Literal
-        /*
-        else if(chr >= '0' && chr <= '9')
-        {
-            Token token = { i, 1, TokenBaseKind_LiteralFloat, 0 };
-            for(i64 j = i+1; j < (i64)state->string.size && 
-                (character_is_alpha_numeric(state->string.str[j]) ||
-                 state->string.str[j] == '_' ||
-                 state->string.str[j] == '.');
-                j += 1, token.size += 1);
-            token_list_push(arena, list, &token);
-            i += token.size;
-        }
-*/
-        
-        /*
-        // NOTE(rjf): Single-Line String Literal
-        else if(chr == '"')
-        {
-            Token token = { i, 1, TokenBaseKind_LiteralString, 0 };
-            for(i64 j = i+1; j < (i64)state->string.size && state->string.str[j] != '"';
-                j += 1, token.size += 1);
-            token.size += 1;
-            token_list_push(arena, list, &token);
-            i += token.size;
-        }
-        
-        // NOTE(rjf): Single-Line String Literal Marker (Bundle-Of-Tokens)
-        else if(chr == '`')
-        {
-            Token token = { i, 1, TokenBaseKind_LiteralString, 0 };
-            token_list_push(arena, list, &token);
-            i += token.size;
-        }
-        
-        // NOTE(rjf): Single-Line Char Literal
-        else if(chr == '\'')
-        {
-            Token token = { i, 1, TokenBaseKind_LiteralString, 0 };
-            for(i64 j = i+1; j < (i64)state->string.size && state->string.str[j] != '\'';
-                j += 1, token.size += 1);
-            token.size += 1;
-            token_list_push(arena, list, &token);
-            i += token.size;
-        }
-        
-        // NOTE(rjf): Multi-line String Literal
-        else if(i+2 < strmax &&
-                state->string.str[i]   == '"' &&
-                state->string.str[i+1] == '"' &&
-                state->string.str[i+2] == '"')
-        {
-            Token token = { i, 3, TokenBaseKind_LiteralString, 0 };
-            for(i64 j = i+3; j+2 < (i64)state->string.size &&
-                !(state->string.str[j]   == '"' &&
-                  state->string.str[j+1] == '"' &&
-                  state->string.str[j+2] == '"');
-                j += 1, token.size += 1);
-            token.size += 3;
-            token_list_push(arena, list, &token);
-            i += token.size;
-        }
-        
-        // NOTE(rjf): Multi-Line String Literal Marker (Bundle-Of-Tokens)
-        else if(i+2 < strmax &&
-                state->string.str[i]   == '`' &&
-                state->string.str[i+1] == '`' &&
-                state->string.str[i+2] == '`')
-        {
-            Token token = { i, 3, TokenBaseKind_LiteralString, 0 };
-            token_list_push(arena, list, &token);
-            i += token.size;
-        }
-        
-        // NOTE(rjf): Multi-line Char Literal
-        else if(i+2 < strmax &&
-                state->string.str[i]   == '\'' &&
-                state->string.str[i+1] == '\'' &&
-                state->string.str[i+2] == '\'')
-        {
-            Token token = { i, 3, TokenBaseKind_LiteralString, 0 };
-            for(i64 j = i+3; j+2 < (i64)state->string.size &&
-                !(state->string.str[j]   == '\'' &&
-                  state->string.str[j+1] == '\'' &&
-                  state->string.str[j+2] == '\'');
-                j += 1, token.size += 1);
-            token.size += 3;
-            token_list_push(arena, list, &token);
-            i += token.size;
-        }
-    */
-        
         // NOTE(rjf): Tags
         else if(chr == '@')
         {
@@ -1836,7 +1938,6 @@ internal b32 edye_org_LexFullInput(Arena *arena, Token_List *list, void *state_p
             i += token.size;
         }
         
-        /*
         // NOTE(rjf): Scope-Open
         else if(chr == '{')
         {
@@ -1876,24 +1977,11 @@ internal b32 edye_org_LexFullInput(Arena *arena, Token_List *list, void *state_p
             token_list_push(arena, list, &token);
             i += token.size;
         }
-    */
-               
+        
         // NOTE(rjf): Operators
-        /*
-        else if(edye_org_CharIsSymbol(chr))
+        else if(edye_is_operator(chr))
         {
             Token token = { i, 1, TokenBaseKind_Operator, 0 };
-            token_list_push(arena, list, &token);
-            i += token.size;
-        }
-        */
-        
-        // NOTE(edye): Heading. * must be at the beginning of a line
-        else if((chr == '*') && ((i == 0) || (state->string.str[i-1] == '\n')))
-        {
-            Token token = { i, 1, TokenBaseKind_Identifier, 0 };
-            token.sub_kind = Org_TokenSubKind_Heading;
-            for(i64 j = i+1; j < (i64)state->string.size && state->string.str[j] != '\n'; j+=1, token.size+=1);
             token_list_push(arena, list, &token);
             i += token.size;
         }
@@ -1949,12 +2037,8 @@ internal b32 edye_org_LexFullInput(Arena *arena, Token_List *list, void *state_p
     return result;
 }
 
-internal F4_LANGUAGE_POSCONTEXT(edye_org_PosContext)
-{
-    return 0;
-}
 
-internal F4_LANGUAGE_HIGHLIGHT(edye_org_Highlight)
+internal F4_LANGUAGE_HIGHLIGHT(edye_markdown_Highlight)
 {
     Range_i64 visible_range = text_layout_get_visible_range(app, text_layout_id);
     i64 first_index = token_index_from_pos(array, visible_range.first);
@@ -1967,13 +2051,21 @@ internal F4_LANGUAGE_HIGHLIGHT(edye_org_Highlight)
         {
             break;
         }
-        if(token->sub_kind == Org_TokenSubKind_Tag)
+        if(token->sub_kind == Markdown_TokenSubKind_Tag)
         {
             paint_text_color(app, text_layout_id, Ii64(token), F4_ARGBFromID(color_table, fleury_color_plot_cycle, 0));
         }
         
-        if(token->kind == TokenBaseKind_Identifier && token->sub_kind == Org_TokenSubKind_Heading) {
-            paint_text_color(app, text_layout_id, Ii64(token), F4_ARGBFromID(color_table, fleury_color_plot_cycle, 1));
+        if(token->kind == TokenBaseKind_Identifier && token->sub_kind == Markdown_TokenSubKind_Heading) {
+            
+            // TODO(edye): add new colors for headings
+            Color_Array markdown_heading_color_cycle = finalize_color_array(fleury_color_plot_cycle);
+            
+            i32 num_hash_symbols = token->sub_flags;
+            
+            ARGB_Color heading_color = markdown_heading_color_cycle.vals[num_hash_symbols % markdown_heading_color_cycle.count];
+            
+            paint_text_color(app, text_layout_id, Ii64(token), heading_color);
         }
         
         /*
@@ -1988,6 +2080,7 @@ internal F4_LANGUAGE_HIGHLIGHT(edye_org_Highlight)
         }
     }
 }
+
 
 function void
 edye_register_languages(void){
@@ -2034,7 +2127,7 @@ edye_register_languages(void){
                             
                             F4_MD_PosContext,
                             F4_MD_Highlight,
-                            Lex_State_Cpp);
+                            Lex_State_Type_Default);
     }
     
     // org mode
@@ -2048,9 +2141,9 @@ edye_register_languages(void){
                             edye_org_LexInit,
                             edye_org_LexFullInput,
                             
-                            edye_org_PosContext,
+                            edye_language_PosContext,
                             edye_org_Highlight,
-                            Lex_State_Cpp);
+                            Lex_State_Type_Default);
     }
     
     
@@ -2063,14 +2156,12 @@ edye_register_languages(void){
                             //lex_full_input_cpp_breaks,
                             
                             edye_org_LexInit,
-                            edye_org_LexFullInput,
+                            edye_markdown_LexFullInput,
                             
-                            edye_org_PosContext,
-                            edye_org_Highlight,
-                            Lex_State_Cpp);
-    }
-    
-    
+                            edye_language_PosContext,
+                            edye_markdown_Highlight,
+                            Lex_State_Type_Default);
+    }    
 }
 
 void custom_layer_init(Application_Links *app)
@@ -2140,6 +2231,8 @@ void custom_layer_init(Application_Links *app)
         edye_register_languages();
     }
 }
+
+
 
 // TODO(rjf): This is only being used to check if a font file exists because
 // there's a bug in try_create_new_face that crashes the program if a font is
