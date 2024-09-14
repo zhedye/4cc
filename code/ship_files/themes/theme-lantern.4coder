@@ -171,10 +171,14 @@ fleury_color_index_decl            = violet; // declarations: max_u8, ...
 fleury_color_cursor_macro          = orange; // cursor when macro is being recorded
 fleury_color_cursor_power_mode     = base8;
 fleury_color_cursor_inactive       = base6;
-fleury_color_plot_cycle            = { blue, green, orange, red, magenta, cyan, violet, yellow, teal }; // colors for plotting
+fleury_color_plot_cycle            = { blue, green, orange, magenta, cyan, violet, yellow, teal, red_transparent }; // colors for plotting
 fleury_color_token_highlight       = yellow_transparent; // underline string cursor is at
 fleury_color_token_minor_highlight = ochre_transparent; // other occurances of the string at the cursor
 fleury_color_error_annotation      = red;
 fleury_color_lego_grab             = orange_transparent;
 fleury_color_lego_splat            = orange_transparent;
 fleury_color_comment_user_name     = violet;
+
+
+// NOTE(edye): some custom colors
+edye_color_headings_cycle          = { green, orange, yellow, ochre, violet, blue, dark_cyan, red_transparent };
