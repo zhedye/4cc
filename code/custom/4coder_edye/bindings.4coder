@@ -9,7 +9,7 @@ keys_global =
     { "change_active_panel",                      "Comma",  "Control"                  },
     { "change_active_panel_backwards",            "Comma",  "Control", "Shift"         },
     { "project_go_to_root_directory",             "H",      "Control"                  },
-    { "f4_toggle_compilation_expand",      	   "Insert"                             },
+    { "f4_toggle_compilation_expand",      	   "Insert", "Control"                             },
     { "change_to_build_panel",                    "Period", "Alt"                      },
     { "close_build_panel",                        "Comma",  "Alt"                      },
     { "f4_switch_syntax_option",                  "Tick",   "Control"                  },
@@ -153,6 +153,7 @@ keys_file =
     // NOTE(rjf): Clipboard
     { "copy",                        "C", "Control" },
     { "paste_and_indent",            "V", "Control" },
+    { "paste_and_indent",            "Insert" },
     { "paste_next_and_indent",       "V", "Control", "Shift" },
     { "cut",                         "X", "Control" },
     

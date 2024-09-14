@@ -434,6 +434,8 @@ CUSTOM_ID(colors, defcolor_control);
 CUSTOM_ID(colors, defcolor_struct);
 CUSTOM_ID(colors, defcolor_non_text);
 
+CUSTOM_ID(colors, edye_color_headings_cycle); // NOTE(edye): for org mode and markdown heading colors
+
 // TODO(edye): experimenting with vim_lister
 //#include "../4coder_byp/4coder_vim/4coder_vim_lister.cpp"
 //#include "../4coder_byp/4coder_vim/4coder_vim_lists.cpp"
@@ -488,6 +490,15 @@ CUSTOM_ID(colors, defcolor_non_text);
 //~ NOTE(rjf): 4coder Stuff
 #include "generated/managed_id_metadata.cpp"
 
+#if _WIN32
+#  define debugbreak __debugbreak()
+#else
+#  define debugbreak __builtin_trap()
+#endif
+
+#define kv_assert(claim) do{if (!(claim)) { debugbreak; }} while(0)
+
+#define kv_assert_defend(CLAIM, DEFEND)   if (!(CLAIM))  { DEFEND; }
 
 struct Command_Map_ID_Pair
 {
@@ -608,6 +619,156 @@ CUSTOM_DOC("Combine/join lines togther like in vim.")
 		}
 	}
 	if(N > 1){ history_group_end(history_group); }
+}
+
+function String_Const_u8_Array
+kv_string_split_wildcards(Arena *arena, String_Const_u8 string)
+{
+    String_Const_u8_Array array = {};
+    List_String_Const_u8 list = string_split(arena, string, (u8*)"* ", 2);
+    array.count   = list.node_count;
+    array.strings = push_array(arena, String_Const_u8, array.count);
+    i64 index = 0;
+    for (Node_String_Const_u8 *node = list.first;
+         node;
+         node = node->next)
+    {
+        kv_assert(index < array.count);
+        array.strings[index++] = node->string;
+    }
+    return(array);
+}
+
+function i64
+kv_seek_string_wildcard_insensitive_forward(Application_Links *app, Buffer_ID buffer, i64 pos, String_Const_u8 needle)
+{
+    i64 buffer_size = buffer_get_size(app, buffer);
+    i64 result = buffer_size;
+    
+    Scratch_Block temp(app);
+    String_Const_u8_Array splits = kv_string_split_wildcards(temp, needle);
+    if ( !splits.count ) { return result; }
+    
+    while( pos < buffer_size )
+    {
+        i64 original_pos = pos;
+        String_Match first_match = buffer_seek_string(app, buffer, splits.strings[0], Scan_Forward, pos);
+        if ( !first_match.buffer ) break;
+        
+        i64 match_start = first_match.range.min;
+        i64 line_end    = get_line_end_pos_from_pos(app, buffer, match_start);
+        pos = first_match.range.end - 1;
+        b32 matched = true;
+        for (i64 index = 1;
+             index < splits.count;
+             index++)
+        {
+            String_Const_u8 substring = splits.strings[index];
+            String_Match match = buffer_seek_string(app, buffer, substring, Scan_Forward, pos);
+            if ( match.buffer )
+            {
+                if ( match.range.max <= line_end )
+                {
+                    pos = match.range.end - 1;
+                }
+                else
+                {
+                    pos = get_line_start_pos_from_pos(app, buffer, match.range.start) - 1;
+                    matched = false;
+                    break;
+                }
+            }
+            else
+            {
+                return result;
+            }
+        }
+        if ( matched )
+        {
+            result = match_start;
+            break;
+        }
+        
+        kv_assert_defend(pos > original_pos, return buffer_size;);
+    }
+    
+    return result;
+}
+
+function i64
+kv_seek_string_wildcard_insensitive_backward(Application_Links *app, Buffer_ID buffer, i64 pos, String_Const_u8 needle)
+{
+    i64 buffer_size = buffer_get_size(app, buffer);
+    i64 result = -1;
+    
+    Scratch_Block temp(app);
+    String_Const_u8_Array splits = kv_string_split_wildcards(temp, needle);
+    if ( !splits.count ) { return result; }
+    
+    while( pos > -1 )
+    {
+        i64 original_pos = pos;
+        String_Match first_match = buffer_seek_string(app, buffer, splits.strings[splits.count-1], Scan_Backward, pos);
+        if( !first_match.buffer ) break;
+        
+        i64 match_start = first_match.range.max;
+        i64 line_start   = get_line_start_pos_from_pos(app, buffer, match_start);
+        pos = first_match.range.start;
+        b32 matched = true;
+        for (i64 index = splits.count-2;
+             index >= 0;
+             index--)
+        {
+            String_Const_u8 substring = splits.strings[index];
+            String_Match match = buffer_seek_string(app, buffer, substring, Scan_Backward, pos);
+            if ( match.buffer)
+            {
+                if ( match.range.min >= line_start )
+                {
+                    pos = match.range.start;
+                }
+                else
+                {
+                    pos = get_line_end_pos_from_pos(app, buffer, match.range.start);
+                    matched = false;
+                    break;
+                }
+            }
+            else
+            {
+                return result;
+            }
+        }
+        if ( matched )
+        {
+            result = pos;
+            break;
+        }
+        
+        kv_assert_defend(pos < original_pos, return result;);
+    }
+    
+    return result;
+}
+
+
+internal void
+edye_search(Application_Links *app)
+{
+    Scratch_Block scratch(app);
+    View_ID view = get_active_view(app, Access_Read);
+    Buffer_ID buffer = view_get_buffer(app, view, Access_Read);
+    if(view && buffer)
+    {
+        i64 cursor = view_get_cursor_pos(app, view);
+        i64 mark = view_get_mark_pos(app, view);
+        i64 cursor_line = get_line_number_from_pos(app, buffer, cursor);
+        i64 mark_line = get_line_number_from_pos(app, buffer, mark);
+        String_Const_u8 query_init = (fcoder_mode != FCoderMode_NotepadLike || cursor == mark || cursor_line != mark_line) ? SCu8() : push_buffer_range(app, scratch, buffer, Ii64(cursor, mark));
+        
+        // TODO(edye): switch this with a custom search function that uses fuzzy search, doesn't doesn't take a direction
+        //isearch(app, dir, cursor, query_init);
+    }
 }
 
 // NOTE(edye): recent commands, stored in array from oldest to newest.
@@ -1852,8 +2013,7 @@ internal F4_LANGUAGE_HIGHLIGHT(edye_org_Highlight)
         
         if(token->kind == TokenBaseKind_Identifier && token->sub_kind == Org_TokenSubKind_Heading) {
             
-            // TODO(edye): add new colors for headings
-            Color_Array org_heading_color_cycle = finalize_color_array(fleury_color_plot_cycle);
+            Color_Array org_heading_color_cycle = finalize_color_array(edye_color_headings_cycle);
             
             i32 num_asterisks = token->sub_flags;
             
@@ -2053,13 +2213,12 @@ internal F4_LANGUAGE_HIGHLIGHT(edye_markdown_Highlight)
         }
         if(token->sub_kind == Markdown_TokenSubKind_Tag)
         {
-            paint_text_color(app, text_layout_id, Ii64(token), F4_ARGBFromID(color_table, fleury_color_plot_cycle, 0));
+            paint_text_color(app, text_layout_id, Ii64(token), F4_ARGBFromID(color_table, edye_color_headings_cycle, 0));
         }
         
         if(token->kind == TokenBaseKind_Identifier && token->sub_kind == Markdown_TokenSubKind_Heading) {
             
-            // TODO(edye): add new colors for headings
-            Color_Array markdown_heading_color_cycle = finalize_color_array(fleury_color_plot_cycle);
+            Color_Array markdown_heading_color_cycle = finalize_color_array(edye_color_headings_cycle);
             
             i32 num_hash_symbols = token->sub_flags;
             
@@ -2067,12 +2226,6 @@ internal F4_LANGUAGE_HIGHLIGHT(edye_markdown_Highlight)
             
             paint_text_color(app, text_layout_id, Ii64(token), heading_color);
         }
-        
-        /*
-        if(token->sub_kind == Org_TokenSubKind_Metadata) {
-            paint_text_color(app, text_layout_id, Ii64(token), F4_ARGBFromID(color_table, fleury_color_plot_cycle, 2));
-        } 
-        */
         
         if(!token_it_inc_all(&it))
         {

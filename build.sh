@@ -48,6 +48,7 @@ custom_layer_name="custom_4coder.so";
 fi
 
 ### --- Build Exectuable ----------------------------------------------------------
+# TODO(edye): can i get the output of the cl compiler
 if [ ! -v custom_layer_only ]; then
 pushd "code"
 build_cmd=("bin/$script" "$flag")
