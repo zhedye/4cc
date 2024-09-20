@@ -639,6 +639,7 @@ kv_string_split_wildcards(Arena *arena, String_Const_u8 string)
     return(array);
 }
 
+// NOTE(edye): from https://github.com/lackhoa/autodraw/blob/3c8d8cab443d0d5c71c6b905e850a41d794ad799/4coder_kv/4coder_vim/4coder_vim_search.cpp#L25
 function i64
 kv_seek_string_wildcard_insensitive_forward(Application_Links *app, Buffer_ID buffer, i64 pos, String_Const_u8 needle)
 {
@@ -653,7 +654,14 @@ kv_seek_string_wildcard_insensitive_forward(Application_Links *app, Buffer_ID bu
     {
         i64 original_pos = pos;
         String_Match first_match = buffer_seek_string(app, buffer, splits.strings[0], Scan_Forward, pos);
-        if ( !first_match.buffer ) break;
+        if ( !first_match.buffer ){
+            // NOTE(edye): if no match try to search from beginning of document
+            first_match = buffer_seek_string(app, buffer, splits.strings[0], Scan_Forward, 0);
+            
+            if( !first_match.buffer ){
+                break;
+            }
+        }
         
         i64 match_start = first_match.range.min;
         i64 line_end    = get_line_end_pos_from_pos(app, buffer, match_start);
@@ -753,7 +761,7 @@ kv_seek_string_wildcard_insensitive_backward(Application_Links *app, Buffer_ID b
 
 
 internal void
-edye_search(Application_Links *app)
+Edye_Search(Application_Links *app, Scan_Direction dir)
 {
     Scratch_Block scratch(app);
     View_ID view = get_active_view(app, Access_Read);
@@ -766,10 +774,216 @@ edye_search(Application_Links *app)
         i64 mark_line = get_line_number_from_pos(app, buffer, mark);
         String_Const_u8 query_init = (fcoder_mode != FCoderMode_NotepadLike || cursor == mark || cursor_line != mark_line) ? SCu8() : push_buffer_range(app, scratch, buffer, Ii64(cursor, mark));
         
-        // TODO(edye): switch this with a custom search function that uses fuzzy search, doesn't doesn't take a direction
-        //isearch(app, dir, cursor, query_init);
+        {// isearch
+            
+            i64 buffer_size = buffer_get_size(app, buffer);
+            
+            Query_Bar_Group group(app);
+            Query_Bar bar = {};
+            if (start_query_bar(app, &bar, 0) == 0){
+                return;
+            }
+            
+            Vec2_f32 old_margin = {};
+            Vec2_f32 old_push_in = {};
+            view_get_camera_bounds(app, view, &old_margin, &old_push_in);
+            
+            Vec2_f32 margin = old_margin;
+            margin.y = clamp_bot(200.f, margin.y);
+            view_set_camera_bounds(app, view, margin, old_push_in);
+            
+            Scan_Direction scan = dir;
+            i64 pos = cursor;
+            
+            u8 bar_string_space[256];
+            bar.string = SCu8(bar_string_space, query_init.size);
+            block_copy(bar.string.str, query_init.str, query_init.size);
+            
+            String_Const_u8 isearch_str = string_u8_litexpr("I-Search: ");
+            String_Const_u8 rsearch_str = string_u8_litexpr("Reverse-I-Search: ");
+            
+            u64 match_size = bar.string.size;
+            
+            User_Input in = {};
+            for (;;){
+                switch (scan){
+                    case Scan_Forward:
+                    {
+                        bar.prompt = isearch_str;
+                    }break;
+                    case Scan_Backward:
+                    {
+                        bar.prompt = rsearch_str;
+                    }break;
+                }
+                isearch__update_highlight(app, view, Ii64_size(pos, match_size));
+                
+                in = get_next_input(app, EventPropertyGroup_Any, EventProperty_Escape);
+                if (in.abort){
+                    break;
+                }
+                
+                String_Const_u8 string = to_writable(&in);
+                
+                b32 string_change = false;
+                if (match_key_code(&in, KeyCode_Return) ||
+                    match_key_code(&in, KeyCode_Tab)){
+                    Input_Modifier_Set *mods = &in.event.key.modifiers;
+                    if (has_modifier(mods, KeyCode_Control)){
+                        bar.string.size = cstring_length(previous_isearch_query);
+                        block_copy(bar.string.str, previous_isearch_query, bar.string.size);
+                    }
+                    else{
+                        u64 size = bar.string.size;
+                        size = clamp_top(size, sizeof(previous_isearch_query) - 1);
+                        block_copy(previous_isearch_query, bar.string.str, size);
+                        previous_isearch_query[size] = 0;
+                        break;
+                    }
+                }
+                else if (string.str != 0 && string.size > 0){
+                    String_u8 bar_string = Su8(bar.string, sizeof(bar_string_space));
+                    string_append(&bar_string, string);
+                    bar.string = bar_string.string;
+                    string_change = true;
+                }
+                else if (match_key_code(&in, KeyCode_Backspace)){
+                    if (is_unmodified_key(&in.event)){
+                        u64 old_bar_string_size = bar.string.size;
+                        bar.string = backspace_utf8(bar.string);
+                        string_change = (bar.string.size < old_bar_string_size);
+                    }
+                    else if (has_modifier(&in.event.key.modifiers, KeyCode_Control)){
+                        if (bar.string.size > 0){
+                            string_change = true;
+                            bar.string.size = 0;
+                        }
+                    }
+                }
+                
+                b32 do_scan_action = false;
+                b32 do_scroll_wheel = false;
+                Scan_Direction change_scan = scan;
+                if (!string_change){
+                    if (match_key_code(&in, KeyCode_PageDown) ||
+                        match_key_code(&in, KeyCode_Down)){
+                        change_scan = Scan_Forward;
+                        do_scan_action = true;
+                    }
+                    else if (match_key_code(&in, KeyCode_PageUp) ||
+                             match_key_code(&in, KeyCode_Up)){
+                        change_scan = Scan_Backward;
+                        do_scan_action = true;
+                    }
+                    else{
+                        // NOTE(allen): is the user trying to execute another command?
+                        View_Context ctx = view_current_context(app, view);
+                        Mapping *mapping = ctx.mapping;
+                        Command_Map *map = mapping_get_map(mapping, ctx.map_id);
+                        Command_Binding binding = map_get_binding_recursive(mapping, map, &in.event);
+                        if (binding.custom != 0){
+                            if (binding.custom == search){
+                                change_scan = Scan_Forward;
+                                do_scan_action = true;
+                            }
+                            else if (binding.custom == reverse_search){
+                                change_scan = Scan_Backward;
+                                do_scan_action = true;
+                            }
+                            else{
+                                Command_Metadata *metadata = get_command_metadata(binding.custom);
+                                if (metadata != 0){
+                                    if (metadata->is_ui){
+                                        view_enqueue_command_function(app, view, binding.custom);
+                                        break;
+                                    }
+                                }
+                                binding.custom(app);
+                            }
+                        }
+                        else{
+                            leave_current_input_unhandled(app);
+                        }
+                    }
+                }
+                
+                if (string_change){
+                    switch (scan){
+                        case Scan_Forward:
+                        {
+                            i64 new_pos = kv_seek_string_wildcard_insensitive_forward(app, buffer, pos-1, bar.string);
+                            if (new_pos < buffer_size){
+                                pos = new_pos;
+                                match_size = bar.string.size;
+                            }
+                        }break;
+                        
+                        case Scan_Backward:
+                        {
+                            i64 new_pos = kv_seek_string_wildcard_insensitive_backward(app, buffer, pos+1, bar.string);
+                            if (new_pos >= 0){
+                                pos = new_pos;
+                                match_size = bar.string.size;
+                            }
+                        }break;
+                    }
+                }
+                else if (do_scan_action){
+                    scan = change_scan;
+                    switch (scan){
+                        case Scan_Forward:
+                        {
+                            i64 new_pos = kv_seek_string_wildcard_insensitive_forward(app, buffer, pos, bar.string);
+                            if (new_pos < buffer_size){
+                                pos = new_pos;
+                                match_size = bar.string.size;
+                            }
+                        }break;
+                        
+                        case Scan_Backward:
+                        {
+                            i64 new_pos = kv_seek_string_wildcard_insensitive_backward(app, buffer, pos, bar.string);
+                            if (new_pos >= 0){
+                                pos = new_pos;
+                                match_size = bar.string.size;
+                            }
+                        }break;
+                    }
+                }
+                else if (do_scroll_wheel){
+                    mouse_wheel_scroll(app);
+                }
+            }
+            
+            view_disable_highlight_range(app, view);
+            
+            if (in.abort){
+                u64 size = bar.string.size;
+                size = clamp_top(size, sizeof(previous_isearch_query) - 1);
+                block_copy(previous_isearch_query, bar.string.str, size);
+                previous_isearch_query[size] = 0;
+                view_set_cursor_and_preferred_x(app, view, seek_pos(cursor));
+            }
+            
+            view_set_camera_bounds(app, view, old_margin, old_push_in);
+        }
     }
 }
+
+CUSTOM_COMMAND_SIG(edye_search)
+CUSTOM_DOC("Searches the current buffer forward. If something is highlighted, will fill search query with it.")
+{
+    Edye_Search(app, Scan_Forward);
+}
+
+
+CUSTOM_COMMAND_SIG(edye_reverse_search)
+CUSTOM_DOC("Searches the current buffer backwards. If something is highlighted, will fill search query with it.")
+{
+    Edye_Search(app, Scan_Backward);
+}
+
+
 
 // NOTE(edye): recent commands, stored in array from oldest to newest.
 Custom_Command_Function *recent_commands[command_one_past_last_id]; // function pointer to the command
@@ -1821,11 +2035,11 @@ edye_org_IsBeginComment(i64 i, String_Const_u8 str, i64 strmax){
     // check if we have #+BEGIN_COMMENT
     String_Const_u8 s = {string_u8_litexpr("#+BEGIN_COMMENT")};
     if(i+(i64)s.size >= strmax) return false;
-        
+    
     for(u64 j = 0; j < s.size; j++){
         if(str.str[i+j] != s.str[j]) return false;
     }
-                                                                    
+    
     return true;
     
 }
@@ -1840,7 +2054,7 @@ edye_org_IsEndComment(i64 i, String_Const_u8 str, i64 strmax){
     for(u64 j = 0; j < s.size; j++){
         if(str.str[i+j] != s.str[j]) return false;
     }
-                                            
+    
     return true;
     
 }
