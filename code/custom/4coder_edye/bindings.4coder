@@ -135,8 +135,10 @@ keys_file =
     { "cursor_mark_swap",            "M", "Control" },
     
     // NOTE(rjf): Search
-    { "f4_search",                   "F", "Control" },
-    { "f4_reverse_search",           "R", "Control" },
+    //{ "f4_search",                   "F", "Control" },
+    //{ "f4_reverse_search",           "R", "Control" },
+    { "edye_search",                   "F", "Control" },
+    { "edye_reverse_search",           "R", "Control" },
     { "list_all_locations",          "F", "Control", "Shift" },
     { "list_all_substring_locations_case_insensitive", "F", "Alt" },
     { "goto_line",                   "G", "Control" },
