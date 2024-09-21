@@ -654,14 +654,7 @@ kv_seek_string_wildcard_insensitive_forward(Application_Links *app, Buffer_ID bu
     {
         i64 original_pos = pos;
         String_Match first_match = buffer_seek_string(app, buffer, splits.strings[0], Scan_Forward, pos);
-        if ( !first_match.buffer ){
-            // NOTE(edye): if no match try to search from beginning of document
-            first_match = buffer_seek_string(app, buffer, splits.strings[0], Scan_Forward, 0);
-            
-            if( !first_match.buffer ){
-                break;
-            }
-        }
+        if ( !first_match.buffer ) break;
         
         i64 match_start = first_match.range.min;
         i64 line_end    = get_line_end_pos_from_pos(app, buffer, match_start);
@@ -799,23 +792,17 @@ Edye_Search(Application_Links *app, Scan_Direction dir)
             bar.string = SCu8(bar_string_space, query_init.size);
             block_copy(bar.string.str, query_init.str, query_init.size);
             
-            String_Const_u8 isearch_str = string_u8_litexpr("I-Search: ");
+            String_Const_u8 search_str = string_u8_litexpr("Fuzzy Search: ");
+            String_Const_u8 isearch_str = string_u8_litexpr("I-Search Fuzzy: ");
             String_Const_u8 rsearch_str = string_u8_litexpr("Reverse-I-Search: ");
             
             u64 match_size = bar.string.size;
             
             User_Input in = {};
             for (;;){
-                switch (scan){
-                    case Scan_Forward:
-                    {
-                        bar.prompt = isearch_str;
-                    }break;
-                    case Scan_Backward:
-                    {
-                        bar.prompt = rsearch_str;
-                    }break;
-                }
+                //bar.prompt = (scan == Scan_Forward) ? isearch_str : rsearch_str;
+                bar.prompt = search_str;
+                
                 isearch__update_highlight(app, view, Ii64_size(pos, match_size));
                 
                 in = get_next_input(app, EventPropertyGroup_Any, EventProperty_Escape);
@@ -915,6 +902,13 @@ Edye_Search(Application_Links *app, Scan_Direction dir)
                             if (new_pos < buffer_size){
                                 pos = new_pos;
                                 match_size = bar.string.size;
+                            } else {
+                                // NOTE(edye): wrap around
+                                new_pos = kv_seek_string_wildcard_insensitive_forward(app, buffer, 0, bar.string);
+                                if (new_pos < buffer_size) {
+                                    pos = new_pos;
+                                    match_size = bar.string.size;
+                                }
                             }
                         }break;
                         
@@ -924,6 +918,12 @@ Edye_Search(Application_Links *app, Scan_Direction dir)
                             if (new_pos >= 0){
                                 pos = new_pos;
                                 match_size = bar.string.size;
+                            } else {
+                                new_pos = kv_seek_string_wildcard_insensitive_backward(app, buffer, buffer_size-1, bar.string);
+                                if (new_pos < buffer_size) {
+                                    pos = new_pos;
+                                    match_size = bar.string.size;
+                                }
                             }
                         }break;
                     }
@@ -933,19 +933,32 @@ Edye_Search(Application_Links *app, Scan_Direction dir)
                     switch (scan){
                         case Scan_Forward:
                         {
-                            i64 new_pos = kv_seek_string_wildcard_insensitive_forward(app, buffer, pos, bar.string);
+                            i64 new_pos = kv_seek_string_wildcard_insensitive_forward(app, buffer, pos+1, bar.string);
                             if (new_pos < buffer_size){
                                 pos = new_pos;
                                 match_size = bar.string.size;
+                            } else {
+                                // NOTE(edye): wrap around
+                                new_pos = kv_seek_string_wildcard_insensitive_forward(app, buffer, 0, bar.string);
+                                if (new_pos < buffer_size) {
+                                    pos = new_pos;
+                                    match_size = bar.string.size;
+                                }
                             }
                         }break;
                         
                         case Scan_Backward:
                         {
-                            i64 new_pos = kv_seek_string_wildcard_insensitive_backward(app, buffer, pos, bar.string);
+                            i64 new_pos = kv_seek_string_wildcard_insensitive_backward(app, buffer, pos-1, bar.string);
                             if (new_pos >= 0){
                                 pos = new_pos;
                                 match_size = bar.string.size;
+                            } else {
+                                new_pos = kv_seek_string_wildcard_insensitive_backward(app, buffer, buffer_size-1, bar.string);
+                                if (new_pos < buffer_size) {
+                                    pos = new_pos;
+                                    match_size = bar.string.size;
+                                }
                             }
                         }break;
                     }
@@ -975,7 +988,6 @@ CUSTOM_DOC("Searches the current buffer forward. If something is highlighted, wi
 {
     Edye_Search(app, Scan_Forward);
 }
-
 
 CUSTOM_COMMAND_SIG(edye_reverse_search)
 CUSTOM_DOC("Searches the current buffer backwards. If something is highlighted, will fill search query with it.")
