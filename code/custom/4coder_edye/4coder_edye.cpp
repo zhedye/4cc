@@ -2273,8 +2273,8 @@ internal b32 edye_markdown_LexFullInput(Arena *arena, Token_List *list, void *st
         if((chr == '#') && ((i == 0) || (state->string.str[i-1] == '\n')))
         {
             Token token = { i, 1, TokenBaseKind_Identifier, 0 };
-            token.sub_kind = Org_TokenSubKind_Heading;
-            token.sub_flags = 0; // count number of asterisks to find the heading level
+            token.sub_kind = Markdown_TokenSubKind_Heading;
+            token.sub_flags = 0; // count number of #'s to find the heading level
             b32 is_in_header_marker = true; // heading marker is the #'s at the beginning of the line
             for(i64 j = i+1; j < strmax && state->string.str[j] != '\n'; j += 1, token.size += 1){
                 if(is_in_header_marker && state->string.str[j] == '#') token.sub_flags++;
@@ -2315,7 +2315,7 @@ internal b32 edye_markdown_LexFullInput(Arena *arena, Token_List *list, void *st
         else if(chr == '@')
         {
             Token token = { i, 1, TokenBaseKind_Identifier, 0 };
-            token.sub_kind = Org_TokenSubKind_Tag;
+            token.sub_kind = Markdown_TokenSubKind_Tag;
             for(i64 j = i+1; j < (i64)state->string.size && 
                 (character_is_alpha_numeric(state->string.str[j]) ||
                  state->string.str[j] == '_');
