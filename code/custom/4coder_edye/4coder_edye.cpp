@@ -1683,8 +1683,10 @@ edye_render(Application_Links *app, Frame_Info frame_info, View_ID view_id)
     Rect_f32 line_number_rect = {};
     if(def_get_config_b32(vars_save_string_lit("show_line_number_margins")))
     {
-        Face_Metrics small_code_face_metrics = get_face_metrics(app, global_small_code_face);
+        // NOTE(edye): idk what this was for, maybe see F4_Render
+        // Face_Metrics small_code_face_metrics = get_face_metrics(app, global_small_code_face);
         // f32 line_height = face_metrics.line_height;
+        
         f32 digit_advance = face_metrics.decimal_digit_advance;
         
         Rect_f32_Pair pair = layout_line_number_margin(app, buffer, region, digit_advance);
@@ -1708,6 +1710,8 @@ edye_render(Application_Links *app, Frame_Info frame_info, View_ID view_id)
     if(def_get_config_b32(vars_save_string_lit("show_line_number_margins")))
     {
         //draw_line_number_margin(app, view_id, buffer, face_id, text_layout_id, line_number_rect);
+        
+        // NOTE(edye): make line numbers in the margin smaller than normal using global_small_code_face
         draw_line_number_margin(app, view_id, buffer, global_small_code_face, text_layout_id, line_number_rect);
     }
     
@@ -2259,7 +2263,7 @@ internal F4_LANGUAGE_HIGHLIGHT(edye_org_Highlight)
 internal b32 edye_markdown_LexFullInput(Arena *arena, Token_List *list, void *state_ptr, u64 max)
 {
     b32 result = false;
-    Lexer_State state_ = *(Lexer_State *)state_ptr;
+    Lexer_State state_ = *(Lexer_State *)state_ptr; // TODO why do this?
     Lexer_State *state = &state_;
     u64 emit_counter = 0;
     i64 strmax = (i64)state->string.size;

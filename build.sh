@@ -25,7 +25,7 @@ if [ -v custom_layer_only ]; then custom_layer_only=1; echo "[custom layer only]
 
 # --- Compile/Link Line Definitions -------------------------------------------
 os="$(uname -o)" # operating system name
-# TODO(edye): is exec_cmd necessary?
+
 # Msys = windows git bash
 if [ $os == "Msys" ]; then 
 script="build.bat"; 
@@ -34,7 +34,7 @@ custom_layer_name="custom_4coder.dll";
 custom_layer_debug="custom_4coder.pdb"; 
 fi
 
-if [ $os == "Linux" ]; then
+if [ $os == "GNU/Linux" ]; then
 script="build-linux.sh"; 
 custom_layer_script="buildsuper_x64-linux.sh"; 
 custom_layer_name="custom_4coder.so"; 
@@ -60,7 +60,7 @@ fi
 pushd "code/custom/4coder_edye"
 
 build_custom_cmd=("../bin/$custom_layer_script" "4coder_edye.cpp" "$custom_layer_flag")
-# "${build_custom_cmd[@]}"
+"${build_custom_cmd[@]}"
 
 cp "$custom_layer_name" "../../../build/$custom_layer_name"
 
