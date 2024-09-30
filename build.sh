@@ -24,17 +24,9 @@ if [ -v custom_layer_only ]; then custom_layer_only=1; echo "[custom layer only]
 # NOTE: mac DEV_BUILD has profiling print outs each frame, which are annoying
 
 # --- Compile/Link Line Definitions -------------------------------------------
-os="$(uname -o)" # operating system name
+os="$(uname -s)" # operating system name
 
-# Msys = windows git bash
-if [ $os == "Msys" ]; then 
-script="build.bat"; 
-custom_layer_script="buildsuper_x64-win.bat";
-custom_layer_name="custom_4coder.dll"; 
-custom_layer_debug="custom_4coder.pdb"; 
-fi
-
-if [ $os == "GNU/Linux" ]; then
+if [ $os == "Linux" ]; then
 script="build-linux.sh"; 
 custom_layer_script="buildsuper_x64-linux.sh"; 
 custom_layer_name="custom_4coder.so"; 
@@ -45,6 +37,14 @@ if [ $os == "Darwin" ]; then
 script="build-mac.sh"; 
 custom_layer_script="buildsuper_x64-mac.sh"; 
 custom_layer_name="custom_4coder.so";  
+fi
+
+# windows?
+if [[ $os != "Linux" && $os != "Darwin" ]]; then 
+script="build.bat"; 
+custom_layer_script="buildsuper_x64-win.bat";
+custom_layer_name="custom_4coder.dll"; 
+custom_layer_debug="custom_4coder.pdb"; 
 fi
 
 ### --- Build Exectuable ----------------------------------------------------------
