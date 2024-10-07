@@ -2033,7 +2033,7 @@ internal F4_LANGUAGE_LEXINIT(edye_org_LexInit)
 
 // NOTE(edye): based on F4_MD_CharIsSymbol
 internal b32
-edye_is_operator(u8 c)
+character_is_operator(u8 c)
 {
     return (c == '~' || c == '!' || c == '@' || c == '#' || c == '$' ||
             c == '%' || c == '^' || c == '&' || c == '*' || c == '(' ||
@@ -2042,6 +2042,14 @@ edye_is_operator(u8 c)
             c == ',' || c == '<' || c == '.' || c == '>' || c == '/' ||
             c == '?' || c == '|' || c == '\\');
 }
+
+
+function b32
+character_is_numeric(u8 c){
+    return((('a' <= c) && (c <= 'z')) || (('A' <= c) && (c <= 'Z')) || (('0' <= c) && (c <= '9')) || c == '_');
+}
+
+
 
 #define ORG_BEGIN_COMMENT_CHARS 14
 #define ORG_END_COMMENT_CHARS 12
@@ -2116,6 +2124,33 @@ internal b32 edye_org_LexFullInput(Arena *arena, Token_List *list, void *state_p
             i += token.size;
         }
         
+        // NOTE(rjf): Identifier
+        else if(character_is_alpha(chr))
+        {
+            Token token = { i, 1, TokenBaseKind_Identifier, 0 };
+            for(i64 j = i+1; j < (i64)state->string.size && 
+                (character_is_alpha_numeric(state->string.str[j]) ||
+                 state->string.str[j] == '_');
+                j += 1, token.size += 1);
+            token_list_push(arena, list, &token);
+            i += token.size;
+        }
+        
+        // NOTE(edye): integers and floats
+        else if(('0' <= chr) && (chr <= '9')){
+            Token token = { i, 1, TokenBaseKind_LiteralInteger, 0 };
+            for(i64 j = i+1; j < (i64)state->string.size && 
+                ((('0' <= state->string.str[j]) && (state->string.str[j] <= '9')) ||
+                 state->string.str[j] == '.');
+                j += 1, token.size += 1){
+                if(state->string.str[j] == '.') token.kind = TokenBaseKind_LiteralFloat;
+            }
+            token_list_push(arena, list, &token);
+            i += token.size;
+        }
+                
+                
+        
         // NOTE(rjf): Whitespace
         else if(character_is_whitespace(chr))
         {
@@ -2159,7 +2194,7 @@ internal b32 edye_org_LexFullInput(Arena *arena, Token_List *list, void *state_p
         
         
         // NOTE(rjf): Operators
-        else if(edye_is_operator(chr))
+        else if(character_is_operator(chr))
         {
             Token token = { i, 1, TokenBaseKind_Operator, 0 };
             token_list_push(arena, list, &token);
@@ -2289,7 +2324,7 @@ internal b32 edye_markdown_LexFullInput(Arena *arena, Token_List *list, void *st
             i += token.size;
         }
         
-        /*
+        
         // NOTE(rjf): Identifier
         if(character_is_alpha(chr))
         {
@@ -2301,8 +2336,6 @@ internal b32 edye_markdown_LexFullInput(Arena *arena, Token_List *list, void *st
             token_list_push(arena, list, &token);
             i += token.size;
         }
-
-        */
         
         // NOTE(rjf): Whitespace
         else if(character_is_whitespace(chr))
@@ -2369,7 +2402,7 @@ internal b32 edye_markdown_LexFullInput(Arena *arena, Token_List *list, void *st
         }
         
         // NOTE(rjf): Operators
-        else if(edye_is_operator(chr))
+        else if(character_is_operator(chr))
         {
             Token token = { i, 1, TokenBaseKind_Operator, 0 };
             token_list_push(arena, list, &token);
