@@ -793,8 +793,8 @@ Edye_Search(Application_Links *app, Scan_Direction dir)
             block_copy(bar.string.str, query_init.str, query_init.size);
             
             String_Const_u8 search_str = string_u8_litexpr("Fuzzy Search: ");
-            String_Const_u8 isearch_str = string_u8_litexpr("I-Search Fuzzy: ");
-            String_Const_u8 rsearch_str = string_u8_litexpr("Reverse-I-Search: ");
+            //String_Const_u8 isearch_str = string_u8_litexpr("I-Search Fuzzy: ");
+            //String_Const_u8 rsearch_str = string_u8_litexpr("Reverse-I-Search: ");
             
             u64 match_size = bar.string.size;
             
@@ -1988,12 +1988,14 @@ struct Lex_State_Type_Default {
 };
 
 enum Org_TokenSubKind {
+    Org_TokenSubKind_Default,
     Org_TokenSubKind_Heading,
     Org_TokenSubKind_Metadata,
     Org_TokenSubKind_Tag,
 };
 
 enum Markdown_TokenSubKind {
+    Markdown_TokenSubKind_Default,
     Markdown_TokenSubKind_Heading,
     Markdown_TokenSubKind_Tag,
     Markdown_TokenSubKind_Code,
@@ -2148,8 +2150,6 @@ internal b32 edye_org_LexFullInput(Arena *arena, Token_List *list, void *state_p
             token_list_push(arena, list, &token);
             i += token.size;
         }
-                
-                
         
         // NOTE(rjf): Whitespace
         else if(character_is_whitespace(chr))
@@ -2161,7 +2161,6 @@ internal b32 edye_org_LexFullInput(Arena *arena, Token_List *list, void *state_p
             token_list_push(arena, list, &token);
             i += token.size;
         }
-        
         
         // NOTE(rjf): Tags
         else if(chr == '@')
@@ -2285,8 +2284,9 @@ internal F4_LANGUAGE_HIGHLIGHT(edye_org_Highlight)
             ARGB_Color heading_color = org_heading_color_cycle.vals[num_asterisks % org_heading_color_cycle.count];
             
             paint_text_color(app, text_layout_id, Ii64(token), heading_color);
+        } else if(token->kind == TokenBaseKind_Identifier){
+            paint_text_color_fcolor(app, text_layout_id, Ii64(token), fcolor_id(defcolor_text_default));
         }
-        
         
         if(!token_it_inc_all(&it))
         {
@@ -2488,6 +2488,8 @@ internal F4_LANGUAGE_HIGHLIGHT(edye_markdown_Highlight)
             ARGB_Color heading_color = markdown_heading_color_cycle.vals[num_hash_symbols % markdown_heading_color_cycle.count];
             
             paint_text_color(app, text_layout_id, Ii64(token), heading_color);
+        } else if(token->kind == TokenBaseKind_Identifier){
+            paint_text_color_fcolor(app, text_layout_id, Ii64(token), fcolor_id(defcolor_text_default));
         }
         
         if(!token_it_inc_all(&it))

@@ -130,7 +130,7 @@ defcolor_highlight_junk = orange_extra_transparent; // error line highlighting
 defcolor_highlight_white = base2;
 
 // nested code blocks background and text colors
-defcolor_back_cycle = {bg, bg, bg, bg, bg_alt, base2, base3}; // arbitrary pattern
+defcolor_back_cycle = {bg, bg, bg_alt, base2, base3}; // arbitrary pattern
 defcolor_text_cycle = {fg, fg, fg_alt, fg_alt};
 
 defcolor_line_numbers_back = bg_alt;
@@ -180,5 +180,5 @@ fleury_color_lego_splat            = orange_transparent;
 fleury_color_comment_user_name     = violet;
 
 
-// NOTE(edye): some custom colors
+// NOTE(edye): org and markdown headings by level.
 edye_color_headings_cycle          = { green, orange, yellow, ochre, violet, blue, dark_cyan, red_transparent };
