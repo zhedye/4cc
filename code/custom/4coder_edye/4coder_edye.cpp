@@ -2275,17 +2275,20 @@ internal F4_LANGUAGE_HIGHLIGHT(edye_org_Highlight)
             paint_text_color(app, text_layout_id, Ii64(token), F4_ARGBFromID(color_table, fleury_color_plot_cycle, 0));
         }
         
-        if(token->kind == TokenBaseKind_Identifier && token->sub_kind == Org_TokenSubKind_Heading) {
+        if(token->kind == TokenBaseKind_Identifier ) {
             
-            Color_Array org_heading_color_cycle = finalize_color_array(edye_color_headings_cycle);
-            
-            i32 num_asterisks = token->sub_flags;
-            
-            ARGB_Color heading_color = org_heading_color_cycle.vals[num_asterisks % org_heading_color_cycle.count];
-            
-            paint_text_color(app, text_layout_id, Ii64(token), heading_color);
-        } else if(token->kind == TokenBaseKind_Identifier){
-            paint_text_color_fcolor(app, text_layout_id, Ii64(token), fcolor_id(defcolor_text_default));
+            if(token->sub_kind == Org_TokenSubKind_Heading){
+                
+                Color_Array org_heading_color_cycle = finalize_color_array(edye_color_headings_cycle);
+                
+                i32 num_asterisks = token->sub_flags;
+                
+                ARGB_Color heading_color = org_heading_color_cycle.vals[num_asterisks % org_heading_color_cycle.count];
+                
+                paint_text_color(app, text_layout_id, Ii64(token), heading_color);
+            } else {
+                paint_text_color_fcolor(app, text_layout_id, Ii64(token), fcolor_id(defcolor_text_default));
+            }
         }
         
         if(!token_it_inc_all(&it))
@@ -2479,18 +2482,20 @@ internal F4_LANGUAGE_HIGHLIGHT(edye_markdown_Highlight)
             paint_text_color(app, text_layout_id, Ii64(token), F4_ARGBFromID(color_table, edye_color_headings_cycle, 0));
         }
         
-        if(token->kind == TokenBaseKind_Identifier && token->sub_kind == Markdown_TokenSubKind_Heading) {
-            
-            Color_Array markdown_heading_color_cycle = finalize_color_array(edye_color_headings_cycle);
-            
-            i32 num_hash_symbols = token->sub_flags;
-            
-            ARGB_Color heading_color = markdown_heading_color_cycle.vals[num_hash_symbols % markdown_heading_color_cycle.count];
-            
-            paint_text_color(app, text_layout_id, Ii64(token), heading_color);
-        } else if(token->kind == TokenBaseKind_Identifier){
-            paint_text_color_fcolor(app, text_layout_id, Ii64(token), fcolor_id(defcolor_text_default));
-        }
+        if(token->kind == TokenBaseKind_Identifier) {
+            if(token->sub_kind == Markdown_TokenSubKind_Heading){
+                
+                Color_Array markdown_heading_color_cycle = finalize_color_array(edye_color_headings_cycle);
+                
+                i32 num_hash_symbols = token->sub_flags;
+                
+                ARGB_Color heading_color = markdown_heading_color_cycle.vals[num_hash_symbols % markdown_heading_color_cycle.count];
+                
+                paint_text_color(app, text_layout_id, Ii64(token), heading_color);   
+            } else {
+                paint_text_color_fcolor(app, text_layout_id, Ii64(token), fcolor_id(defcolor_text_default));
+            }
+        } 
         
         if(!token_it_inc_all(&it))
         {
