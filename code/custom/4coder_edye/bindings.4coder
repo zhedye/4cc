@@ -33,8 +33,8 @@ keys_global =
     // NOTE(rjf): Commands
     { "execute_any_cli",                          "Z",      "Alt"                      },
     { "execute_previous_cli",                     "Z",      "Alt",     "Shift"         },
-    //{ "edye_command_lister",                      "X",      "Alt"},
-    { "edye_command_lister",                      "Space",      "Control"},
+    { "edye_command_lister",                      "X",      "Alt"},
+    // { "edye_command_lister",                      "Space",      "Control"},
     
     
     // NOTE(rjf): Project
@@ -134,7 +134,8 @@ keys_file =
     
     // NOTE(rjf): Mark
     //{ "set_mark",                    "X", "Alt" },
-    { "set_mark",                    "Space", "Control", "Shift" },
+    //{ "set_mark",                    "Space", "Control", "Shift" },
+    { "set_mark",                    "Space", "Control" },
     { "cursor_mark_swap",             "M", "Control" },
     
     // NOTE(rjf): Search
