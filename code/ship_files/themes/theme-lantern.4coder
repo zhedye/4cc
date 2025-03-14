@@ -86,7 +86,7 @@ dark_cyan_extra_transparent             = 0x335699AF;
 
 transparent                             = 0x00000000;
 
-defcolor_bar = base1;
+defcolor_bar  = base1;
 // defcolor_bar_active = blue;
 defcolor_base = fg; // text color of the modeline bar
 defcolor_pop1 = green; // Query bar, lister text color
@@ -95,31 +95,32 @@ defcolor_pop2 = red; // command hotkey color
 defcolor_back = bg; // background 
 
 // command lister
-defcolor_margin = base4;
-defcolor_margin_hover = base4;
-defcolor_margin_active = base5;
-defcolor_list_item = {defcolor_margin, defcolor_back};
-defcolor_list_item_hover = {defcolor_margin_hover, defcolor_margin};
-defcolor_list_item_active = {defcolor_margin_active, defcolor_margin_active};
-defcolor_cursor = yellow_transparent; // yellow_extra_transparent;
+defcolor_margin                = base4;
+defcolor_margin_hover          = base4;
+defcolor_margin_active         = base5;
+defcolor_list_item             = {defcolor_margin, defcolor_back};
+defcolor_list_item_hover       = {defcolor_margin_hover, defcolor_margin};
+defcolor_list_item_active      = {defcolor_margin_active, defcolor_margin_active};
+defcolor_cursor                = yellow_transparent; // yellow_extra_transparent;
+
 //defcolor_at_cursor = defcolor_back;
 defcolor_at_cursor             = base4;
 defcolor_highlight_cursor_line = dark_brown;
-defcolor_mark = grey;
-defcolor_highlight = ochre;
-defcolor_at_highlight = defcolor_back;
-defcolor_text_default = fg;
-defcolor_comment = base8;
-defcolor_comment_pop = {yellow, orange, green}; // comment NOTE, TODO, DONE
-defcolor_keyword = blue; // if, "string", return, ...
-defcolor_str_constant = green;
-defcolor_char_constant = violet;
-defcolor_int_constant = yellow;
-defcolor_float_constant = defcolor_int_constant;
-defcolor_bool_constant = defcolor_char_constant;
-defcolor_include = defcolor_char_constant;
-defcolor_preproc = ochre;
-defcolor_special_character = red;
+defcolor_mark                  = grey;
+defcolor_highlight             = ochre;
+defcolor_at_highlight          = defcolor_back;
+defcolor_text_default          = fg;
+defcolor_comment               = base8;
+defcolor_comment_pop           = {yellow, orange, green}; // comment NOTE, TODO, DONE
+defcolor_keyword               = blue; // if, "string", return, ...
+defcolor_str_constant          = green;
+defcolor_char_constant         = violet;
+defcolor_int_constant          = yellow;
+defcolor_float_constant        = defcolor_int_constant;
+defcolor_bool_constant         = defcolor_char_constant;
+defcolor_include               = defcolor_char_constant;
+defcolor_preproc               = ochre;
+defcolor_special_character     = red;
 
 //defcolor_ghost_character = base5; // byp?
 
@@ -137,47 +138,48 @@ defcolor_line_numbers_back = bg_alt;
 defcolor_line_numbers_text = base7_transparent;
 
 /// BYP Colors
-defcolor_function                   =  0xFFBDA3F9;
-defcolor_type                       =  0xFFB84AFD;
-defcolor_primitive                  =  0xFFB84AFD;
-defcolor_macro                      =  0xFF579EA8;
-defcolor_control                    =  defcolor_preproc;
-defcolor_struct                     =  defcolor_keyword;
-defcolor_non_text                   =  0xFFDAAEFE;
-//defcolor_struct                   =  0xFF70A7F7;
+defcolor_type                         = yellow;
+defcolor_function                     = ochre;
+defcolor_macro                        = orange;
+defcolor_enum                         = green;
+defcolor_global                       = ochre;
+defcolor_control                      = defcolor_preproc;
+defcolor_primitive                    = green;
+defcolor_struct                       = defcolor_keyword;
+defcolor_non_text                     = orange; // ; {} () 
 
 /// Vim Colors
-defcolor_vim_filebar_pop            =  0xFF8A4CDB;
-defcolor_vim_chord_text             =  defcolor_text_default;
-defcolor_vim_chord_unresolved       =  defcolor_mark;
-defcolor_vim_chord_error            =  defcolor_special_character;
+ defcolor_vim_filebar_pop            =  0xFF8A4CDB;
+defcolor_vim_chord_text               =  defcolor_text_default;
+defcolor_vim_chord_unresolved         =  defcolor_mark;
+defcolor_vim_chord_error              =  defcolor_special_character;
 
 // NOTE(edye): see comments in 4coder_fluery.cpp
-fleury_color_syntax_crap           = orange; // ; {} () 
-fleury_color_operators             = yellow;
-fleury_color_inactive_pane_overlay = base0_extra_transparent;
+fleury_color_syntax_crap              = orange; // ; {} () 
+fleury_color_operators                = yellow;
+fleury_color_inactive_pane_overlay    = base0_extra_transparent;
 fleury_color_inactive_pane_background = bg;
-fleury_color_file_progress_bar     = base8_extra_transparent;
-fleury_color_brace_highlight       = { yellow };
-fleury_color_brace_line            = { base8_extra_transparent }; // vertical scope indentation lines
-fleury_color_brace_annotation      = { green_transparent }; // annotate code at start of scope at the bottom of scope
-fleury_color_index_product_type    = yellow; // structs, classes
-fleury_color_index_sum_type        = yellow; // unions
-fleury_color_index_function        = ochre; //function names
-fleury_color_index_macro           = yellow_transparent; // macros: #define, ...
-fleury_color_index_constant        = green; // constants and enum
-fleury_color_index_comment_tag     = orange; // @example_comment_tag
-fleury_color_index_decl            = violet; // declarations: max_u8, ...
-fleury_color_cursor_macro          = orange; // cursor when macro is being recorded
-fleury_color_cursor_power_mode     = base8;
-fleury_color_cursor_inactive       = base6;
-fleury_color_plot_cycle            = { blue, green, orange, magenta, cyan, violet, yellow, teal, red_transparent }; // colors for plotting
-fleury_color_token_highlight       = yellow_transparent; // underline string cursor is at
-fleury_color_token_minor_highlight = ochre_transparent; // other occurances of the string at the cursor
-fleury_color_error_annotation      = red;
-fleury_color_lego_grab             = orange_transparent;
-fleury_color_lego_splat            = orange_transparent;
-fleury_color_comment_user_name     = violet;
+fleury_color_file_progress_bar        = base8_extra_transparent;
+fleury_color_brace_highlight          = { yellow };
+fleury_color_brace_line               = { base8_extra_transparent }; // vertical scope indentation lines
+fleury_color_brace_annotation         = { green_transparent }; // annotate code at start of scope at the bottom of scope
+fleury_color_index_product_type       = yellow; // structs, classes
+fleury_color_index_sum_type           = yellow; // unions
+fleury_color_index_function           = ochre; //function names
+fleury_color_index_macro              = yellow_transparent; // macros: #define, ...
+fleury_color_index_constant           = green; // constants and enum
+fleury_color_index_comment_tag        = orange; // @example_comment_tag
+fleury_color_index_decl               = violet; // declarations: max_u8, ...
+fleury_color_cursor_macro             = orange; // cursor when macro is being recorded
+fleury_color_cursor_power_mode        = base8;
+fleury_color_cursor_inactive          = base6;
+fleury_color_plot_cycle               = { blue, green, orange, magenta, cyan, violet, yellow, teal, red_transparent }; // colors for plotting
+fleury_color_token_highlight          = yellow_transparent; // underline string cursor is at
+fleury_color_token_minor_highlight    = ochre_transparent; // other occurances of the string at the cursor
+fleury_color_error_annotation         = red;
+fleury_color_lego_grab                = orange_transparent;
+fleury_color_lego_splat               = orange_transparent;
+fleury_color_comment_user_name        = violet;
 
 
 // NOTE(edye): org and markdown headings by level.
