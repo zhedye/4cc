@@ -122,12 +122,10 @@ defcolor_include               = defcolor_char_constant;
 defcolor_preproc               = ochre;
 defcolor_special_character     = red;
 
-//defcolor_ghost_character = base5; // byp?
-
 defcolor_paste = cyan;
-defcolor_undo = violet;
+defcolor_undo  = violet;
 
-defcolor_highlight_junk = orange_extra_transparent; // error line highlighting
+defcolor_highlight_junk  = orange_extra_transparent; // error line highlighting
 defcolor_highlight_white = base2;
 
 // nested code blocks background and text colors
@@ -147,9 +145,10 @@ defcolor_control                      = defcolor_preproc;
 defcolor_primitive                    = green;
 defcolor_struct                       = defcolor_keyword;
 defcolor_non_text                     = orange; // ; {} () 
+defcolor_ghost_character              = orange_transparent; // indentation lines, close brace annotations
 
 /// Vim Colors
- defcolor_vim_filebar_pop            =  0xFF8A4CDB;
+defcolor_vim_filebar_pop              =  violet;
 defcolor_vim_chord_text               =  defcolor_text_default;
 defcolor_vim_chord_unresolved         =  defcolor_mark;
 defcolor_vim_chord_error              =  defcolor_special_character;
