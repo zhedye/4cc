@@ -26,14 +26,17 @@ show_line_number_margins = true;
 enable_output_wrapping = false;
 highlight_line_at_cursor = true;
 
-
+// BYP qol.
 filebar_on_top = false;
 show_hex_colors = true;
 file_explorer_cli = "FPilot"; // "explorer";   // non-Windows set to "open"
-bot_line_count = 1.5f;
 
-scroll_margin_x = 1.f;
-scroll_margin_y = 2.f;
+// --- parsing float doesn't work normally. ---
+//bot_line_count = 1.5f;
+
+//scroll_margin_x = 1.f;
+//scroll_margin_y = 2.f;
+// END BYP qol
 
 enable_undo_fade_out = true;
 
