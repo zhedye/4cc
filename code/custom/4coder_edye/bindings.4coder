@@ -143,7 +143,7 @@ keys_file =
     //{ "f4_reverse_search",           "R", "Control" },
     { "edye_search",                   "F", "Control" },
     { "edye_reverse_search",           "R", "Control" },
-    { "list_all_locations",          "F", "Control", "Shift" },
+    //{ "list_all_locations",          "F", "Control", "Shift" },
     { "list_all_substring_locations_case_insensitive", "F", "Alt" },
     { "goto_line",                   "G", "Control" },
     { "list_all_locations_of_selection",  "G", "Control", "Shift" },
