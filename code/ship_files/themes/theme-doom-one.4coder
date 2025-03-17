@@ -95,14 +95,16 @@ defcolor_line_numbers_back = bg_alt;
 defcolor_line_numbers_text = fg_alt;
 
 /// BYP Colors
-defcolor_function                   =  0xFFBDA3F9;
-defcolor_type                       =  0xFFB84AFD;
-defcolor_primitive                  =  0xFFB84AFD;
-defcolor_macro                      =  0xFF579EA8;
-defcolor_control                    =  defcolor_preproc;
-defcolor_struct                     =  defcolor_keyword;
-defcolor_non_text                   =  0xFFDAAEFE;
-//defcolor_struct                   =  0xFF70A7F7;
+defcolor_type                         = yellow;
+defcolor_function                     = magenta;
+defcolor_macro                        = blue;
+defcolor_enum                         = green;
+defcolor_global                       = magenta;
+defcolor_primitive                    = green;
+defcolor_struct                       = defcolor_keyword;
+defcolor_non_text                     = magenta; // ; {} ()
+defcolor_operator                     = defcolor_non_text; // =, &, +, - 
+defcolor_control                      = defcolor_preproc;
 
 /// Vim Colors
 defcolor_vim_filebar_pop            =  0xFF8A4CDB;
