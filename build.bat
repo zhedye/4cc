@@ -22,7 +22,8 @@ if "%mode%" == "" (set mode="/DDEV_BUILD")
 echo "---"
 echo "Building Executable ..."
 pushd %src_root%
-call %bin_root%\build.bat %mode%
+call %bin_root%\build.bat %mode% /DWIN32_DX11
+REM /DWIN32_OPENGL
 popd
 
 call build-custom.bat
