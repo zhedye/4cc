@@ -1,4 +1,4 @@
-#!/usr/bin/env sh
+#!/usr/bin/env bash
 
 # -e exit when anything returns non-zero status
 # -u unset variables are an error, exit immediately
@@ -26,7 +26,7 @@ CUSTOM_BIN="$CUSTOM_ROOT/bin"
 
 echo "---"
 echo "Building Executable ..."
-sh "$BIN_ROOT/build-linux.sh" "-DDEV_BUILD" # "-DPACKAGE_SUPER_X64"
+"$BIN_ROOT/build-linux.sh" "-DDEV_BUILD" # "-DPACKAGE_SUPER_X64"
 
-sh "$PROJECT_ROOT/build-custom-linux.sh"
+"$PROJECT_ROOT/build-custom-linux.sh"
 

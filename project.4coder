@@ -35,7 +35,7 @@ load_paths = {
 commands = {
     .build_x64 = {
         .win = "echo build: x64 & build.bat",
-        .linux = "echo build: x64 && build-linux.sh",
+        .linux = "echo build: x64 && ./build-linux.sh",
         .mac = "echo build: x64 && build-mac.sh",
         .out = "*compilation*",
         .footer_panel = true,
@@ -44,7 +44,7 @@ commands = {
     },
     .build_custom_x64 = {
         .win = "echo build custom: x64 & build-custom.bat",
-        .linux = "echo build custom: x64 && build-custom-linux.sh",
+        .linux = "echo build custom: x64 && ./build-custom-linux.sh",
         .mac = "echo build custom: x64 && build-custom-mac.sh",
         .out = "*compilation*",
         .footer_panel = true,
