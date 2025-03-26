@@ -1152,11 +1152,11 @@ CUSTOM_DOC("Command Mode from byp")
 function Rect_f32
 edye_buffer_region(Application_Links *app, View_ID view_id, Rect_f32 region){
     
-	Buffer_ID buffer = view_get_buffer(app, view_id, Access_Always);
-	Face_ID face_id = get_face_id(app, 0);
-	Face_Metrics metrics = get_face_metrics(app, face_id);
-	f32 line_height = metrics.line_height;
-	f32 digit_advance = metrics.decimal_digit_advance;
+    Buffer_ID buffer = view_get_buffer(app, view_id, Access_Always);
+    Face_ID face_id = get_face_id(app, 0);
+    Face_Metrics metrics = get_face_metrics(app, face_id);
+    f32 line_height = metrics.line_height;
+    f32 digit_advance = metrics.decimal_digit_advance;
     
     // NOTE(allen): margins
     region = rect_inner(region, 3.f);
