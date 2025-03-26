@@ -6,3 +6,4 @@ distributions/
 .DS_Store
 custom_4coder.*
 vc140.pdb
+.session.4coder
